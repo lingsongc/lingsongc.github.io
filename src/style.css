@@ -1,0 +1,63 @@
+/* Shared styles */
+
+:root {
+    color-scheme: dark;
+
+    --colour-background: #120818;
+    --colour-surface: #321847;
+    --colour-text: #f7f1e8;
+    --colour-text-muted: #b9aabd;
+    --colour-accent: #f15153;
+    --colour-line: #725d7b;
+
+    --font-title: "Sora", Arial, sans-serif;
+    --font-text: "Manrope", Arial, sans-serif;
+
+    --text-page-title: clamp(2.75rem, 8vw, 7rem);
+    --text-section-title: clamp(2rem, 5vw, 4rem);
+    --text-subtitle: clamp(1.25rem, 2.5vw, 2rem);
+    --text-body: 1rem;
+    --text-small: 0.875rem;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background-color: var(--colour-background);
+    color: var(--colour-text);
+    font-family: var(--font-text);
+    font-size: 100%;
+    line-height: 1.6;
+}
+
+body {
+    min-width: 20rem;
+    margin: 0;
+    background-color: var(--colour-background);
+}
+
+h1,
+h2,
+h3 {
+    margin: 0;
+    font-family: var(--font-title);
+    line-height: 1.1;
+}
+
+h1 { font-size: var(--text-page-title); }
+h2 { font-size: var(--text-section-title); }
+h3 { font-size: var(--text-subtitle); }
+
+p {
+    margin: 0;
+    color: var(--colour-text-muted);
+    font-size: var(--text-body);
+}
+
+a,
+button {
+    color: inherit;
+    font: inherit;
+}
