@@ -20,6 +20,9 @@
     --text-small: 0.875rem;
 
     --home-circle-size: clamp(8rem, 28vw, 22rem);
+    --navigation-ring-size: calc(var(--home-circle-size) + 10rem);
+    --navigation-ring-width: 0.25rem;
+    --navigation-button-size: 1.25rem;
 }
 
 * {
@@ -41,6 +44,8 @@ body {
 }
 
 main {
+    position: relative;
+    z-index: 1;
     overflow: clip;
 }
 
@@ -92,7 +97,7 @@ button {
 
 .main-circle-container {
     position: fixed;
-    z-index: 1;
+    z-index: 2;
     top: 50%;
     left: 50%;
     width: var(--home-circle-size);
@@ -113,11 +118,126 @@ button {
 /* navigation */
 
 .navigation-container {
+    --navigation-radius: calc((var(--navigation-ring-size) - var(--navigation-ring-width)) / 2);
+
     position: fixed;
-    z-index: 2;
+    z-index: 3;
     top: 50%;
-    right: 1rem;
-    transform: translateY(-50%);
+    left: 50%;
+    width: calc(var(--navigation-ring-size) + var(--navigation-button-size));
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.navigation-list {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.navigation-ring {
+    position: fixed;
+    z-index: 0;
+    top: 50%;
+    left: 50%;
+    width: var(--navigation-ring-size);
+    aspect-ratio: 1;
+    border: var(--navigation-ring-width) solid var(--colour-line);
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.navigation-item {
+    --navigation-angle: 0deg;
+    --navigation-label-position: translate(-50%, calc(-100% - 1.5rem));
+    --navigation-label-hidden: inset(100% 0 0 0);
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(var(--navigation-angle))
+        translateY(calc(var(--navigation-radius) * -1))
+        rotate(calc(var(--navigation-angle) * -1));
+}
+
+.navigation-item:nth-child(2) { --navigation-angle: 60deg; }
+.navigation-item:nth-child(3) { --navigation-angle: 120deg; }
+.navigation-item:nth-child(4) { --navigation-angle: 180deg; }
+.navigation-item:nth-child(5) { --navigation-angle: 240deg; }
+.navigation-item:nth-child(6) { --navigation-angle: 300deg; }
+
+.navigation-item:nth-child(2),
+.navigation-item:nth-child(3) {
+    --navigation-label-position: translate(1.5rem, -50%);
+    --navigation-label-hidden: inset(0 100% 0 0);
+}
+
+.navigation-item:nth-child(4) {
+    --navigation-label-position: translate(-50%, 1.5rem);
+    --navigation-label-hidden: inset(0 0 100% 0);
+}
+
+.navigation-item:nth-child(5),
+.navigation-item:nth-child(6) {
+    --navigation-label-position: translate(calc(-100% - 1.5rem), -50%);
+    --navigation-label-hidden: inset(0 0 0 100%);
+}
+
+.navigation-link {
+    position: relative;
+    display: grid;
+    width: 2.75rem;
+    aspect-ratio: 1;
+    place-items: center;
+    border-radius: 50%;
+    text-decoration: none;
+    pointer-events: auto;
+}
+
+.navigation-link::before,
+.navigation-theme-slot::before {
+    display: block;
+    width: var(--navigation-button-size);
+    aspect-ratio: 1;
+    border: var(--navigation-ring-width) solid var(--colour-text);
+    border-radius: 50%;
+    background-color: var(--colour-background);
+    content: "";
+    transition: border-radius 180ms ease, transform 180ms ease;
+}
+
+.navigation-label {
+    position: absolute;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    width: max-content;
+    clip-path: var(--navigation-label-hidden);
+    font-size: var(--text-bodyl);
+    transform: var(--navigation-label-position);
+    transition: clip-path 180ms ease;
+    pointer-events: none;
+}
+
+.navigation-link:hover::before,
+.navigation-link:focus-visible::before {
+    border-radius: 0.5rem;
+    transform: rotate(45deg);
+}
+
+.navigation-link:hover .navigation-label,
+.navigation-link:focus-visible .navigation-label {
+    clip-path: inset(0);
+}
+
+.navigation-link:focus-visible {
+    outline: 2px solid var(--colour-text);
+    outline-offset: 0.125rem;
 }
 
 /* home */
@@ -150,8 +270,16 @@ button {
 
 .home-description {
     position: absolute;
-    top: calc(50% + var(--home-circle-size) / 2 + 1.5rem);
+    top: calc(50% + var(--home-circle-size) / 2 + 3.5rem);
     right: 1.5rem;
     left: 1.5rem;
     text-align: center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navigation-link::before,
+    .navigation-theme-slot::before,
+    .navigation-label {
+        transition: none;
+    }
 }
