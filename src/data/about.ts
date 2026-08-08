@@ -39,6 +39,10 @@ const aboutStatistics: AboutStatistics[] = [
 ]
 
 export const aboutDetails: AboutDetails = {
-    description: "",
+    description: `
+        Hello! I’m a Computer Science student at NUS who spends a lot of time thinking about ideas, designing interfaces, and occasionally have a crisis on the state of AI.\n
+        My main interest is frontend development because it sits at the intersection of technology and creativity. I enjoy taking an idea and shaping it into an enjoyable experience. Before writing any code, I usually explore the problem and flesh out the concept first. A little extra thinking at the beginning often makes the building process much more rewarding.\n
+        When I’m not working on a project, I enjoy designing and making handicrafts. Both coding and crafting give me the same satisfaction of starting with a simple idea and turning it into something real. Ultimately, I hope to create projects that are ell-designed and capable of making a meaningful difference.
+    `,
     statistics: aboutStatistics
 }
