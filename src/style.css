@@ -1,4 +1,4 @@
-/* Shared styles */
+/* root */
 
 :root {
     color-scheme: dark;
@@ -18,6 +18,8 @@
     --text-subtitle: clamp(1.25rem, 2.5vw, 2rem);
     --text-body: 1rem;
     --text-small: 0.875rem;
+
+    --home-circle-size: clamp(8rem, 28vw, 22rem);
 }
 
 * {
@@ -36,6 +38,10 @@ body {
     min-width: 20rem;
     margin: 0;
     background-color: var(--colour-background);
+}
+
+main {
+    overflow: clip;
 }
 
 h1,
@@ -60,4 +66,92 @@ a,
 button {
     color: inherit;
     font: inherit;
+}
+
+/* shared */
+
+.home-container,
+.about-container,
+.experience-container,
+.project-container,
+.skill-container {
+    display: grid;
+    min-height: 100vh;
+    min-height: 100svh;
+    align-items: center;
+    padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem);
+    scroll-margin-block-start: 2rem;
+}
+
+.contact-container {
+    padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem);
+    scroll-margin-block-start: 2rem;
+}
+
+/* main circle */
+
+.main-circle-container {
+    position: fixed;
+    z-index: 1;
+    top: 50%;
+    left: 50%;
+    width: var(--home-circle-size);
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.main-circle-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 55%;
+}
+
+/* navigation */
+
+.navigation-container {
+    position: fixed;
+    z-index: 2;
+    top: 50%;
+    right: 1rem;
+    transform: translateY(-50%);
+}
+
+/* home */
+
+.home-container {
+    position: relative;
+}
+
+.home-text {
+    width: 100%;
+}
+
+.home-title {
+    display: grid;
+    grid-template-columns: 1fr var(--home-circle-size) 1fr;
+    gap: clamp(0.75rem, 3vw, 2rem);
+    align-items: center;
+    font-size: clamp(1.5rem, 7vw, 7rem);
+}
+
+.home-name-left {
+    grid-column: 1;
+    justify-self: end;
+}
+
+.home-name-right {
+    grid-column: 3;
+    justify-self: start;
+}
+
+.home-description {
+    position: absolute;
+    top: calc(50% + var(--home-circle-size) / 2 + 1.5rem);
+    right: 1.5rem;
+    left: 1.5rem;
+    text-align: center;
 }
