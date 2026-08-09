@@ -10,7 +10,7 @@
     --colour-accent: #f15153;
     --colour-line: #725d7b;
 
-    --font-statement: "Climate Crisis", "Arial Black", sans-serif;
+    --font-statement: "Notable", "Arial Black", sans-serif;
     --font-title: "Sora", Arial, sans-serif;
     --font-text: "Manrope", Arial, sans-serif;
 
@@ -308,7 +308,6 @@ button {
     font-family: var(--font-statement);
     font-size: clamp(1.5rem, 7vw, 7rem);
     font-weight: 400;
-    font-variation-settings: "YEAR" 1980;
     line-height: 0.85;
 }
 
@@ -365,6 +364,5 @@ button {
 .project-number {
     font-family: var(--font-statement);
     font-size: clamp(3rem, 8vw, 7rem);
-    font-variation-settings: "YEAR" 1980;
     line-height: 0.85;
 }
