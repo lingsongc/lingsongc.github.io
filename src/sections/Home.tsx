@@ -11,11 +11,23 @@ export function Home() {
     return (
         <section id="home" className="home-container" aria-labelledby="home-title">
             <div className="home-text">
-                <h1 id="home-title" className="home-title">
-                    <span className="home-name-left">{leftName}</span>
-                    <span className="home-name-right">{rightName}</span>
+                <h1 id="home-title" className="home-title" aria-label={homeDetails.name.fullName}>
+                    <span className="home-name-left" aria-hidden="true">{leftName}</span>
+                    <span className="home-name-right" aria-hidden="true">
+                        {rightName.split(" ").map((name) => <span key={name}>{name}</span>)}
+                    </span>
                 </h1>
                 <p className="home-description">{homeDetails.introduction}</p>
+                <svg className="home-description-curve" viewBox="0 0 100 100" aria-hidden="true">
+                    <defs>
+                        <path id="home-description-path" d="M 0 50 A 50 50 0 0 0 100 50" />
+                    </defs>
+                    <text>
+                        <textPath href="#home-description-path" startOffset="50%" textAnchor="middle">
+                            {homeDetails.introduction}
+                        </textPath>
+                    </text>
+                </svg>
             </div>
         </section>
     );
