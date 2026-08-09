@@ -294,13 +294,15 @@ button {
 }
 
 :is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:hover::before,
-:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible::before {
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible::before,
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link-touch-open::before {
     border-radius: 0.5rem;
     transform: rotate(45deg);
 }
 
 :is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:hover .navigation-label,
-:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible .navigation-label {
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible .navigation-label,
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link-touch-open .navigation-label {
     clip-path: inset(0);
 }
 

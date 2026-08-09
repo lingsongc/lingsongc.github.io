@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { sections } from "../motion/sceneStates";
 import { useActiveSection } from "../motion/useActiveSection";
 import { useScrollScene } from "../motion/useScrollScene";
@@ -10,9 +10,20 @@ export function Navigation() {
     const railRef = useRef<HTMLDivElement>(null);
     const ringRef = useRef<HTMLDivElement>(null);
     const activeSection = useActiveSection();
+    const [touchLabel, setTouchLabel] = useState<string | null>(null);
     const navigationSections = sections.filter((section) => section.id !== "home");
 
     useScrollScene({ navigationRef, copyrightRef, railRef, ringRef });
+    useEffect(() => setTouchLabel(null), [activeSection]);
+
+    const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+        const usesTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+
+        if (!usesTouch || event.detail === 0 || touchLabel === sectionId) return;
+
+        event.preventDefault();
+        setTouchLabel(sectionId);
+    };
 
     return (
         <>
@@ -39,10 +50,13 @@ export function Navigation() {
                             <a
                                 className={`navigation-link${activeSection === section.id
                                     ? " navigation-link-active"
+                                    : ""}${touchLabel === section.id
+                                    ? " navigation-link-touch-open"
                                     : ""}`}
                                 href={`#${section.id}`}
                                 aria-label={section.label}
                                 aria-current={activeSection === section.id ? "location" : undefined}
+                                onClick={(event) => handleNavigationClick(event, section.id)}
                             >
                                 <span className="navigation-label">{section.label}</span>
                             </a>
