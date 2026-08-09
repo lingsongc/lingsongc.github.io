@@ -9,6 +9,7 @@
     --colour-text-muted: #b9aabd;
     --colour-accent: #f15153;
     --colour-line: #725d7b;
+    --colour-image-blank: #d6d1c9;
 
     --font-statement: "Notable", "Arial Black", sans-serif;
     --font-title: "Sora", Arial, sans-serif;
@@ -108,15 +109,28 @@ button {
     aspect-ratio: 1;
     overflow: hidden;
     border-radius: 50%;
+    background-color: var(--colour-image-blank);
     transform: translate(-50%, -50%);
     pointer-events: none;
 }
 
 .main-circle-image {
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+}
+
+.main-circle-image-home {
     object-position: center 55%;
+}
+
+.main-circle-image-about {
+    object-position: center;
+    opacity: 0;
+    transform: translate(21%, -20%)
+        scale(1.15);
 }
 
 /* navigation */
