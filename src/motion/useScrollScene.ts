@@ -1,17 +1,29 @@
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { RefObject } from "react";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-export function useScrollScene() {
-    useGSAP(() => {
-        const navigation = document.querySelector<HTMLElement>(".navigation-container");
-        const copyright = document.querySelector<HTMLElement>(".navigation-copyright");
-        const ring = document.querySelector<HTMLElement>(".navigation-ring");
-        const items = gsap.utils.toArray<HTMLElement>(".navigation-item");
+type ScrollSceneRefs = {
+    navigationRef: RefObject<HTMLElement | null>;
+    copyrightRef: RefObject<HTMLElement | null>;
+    ringRef: RefObject<HTMLDivElement | null>;
+};
 
-        if (!navigation || !ring || items.length === 0) return;
+export function useScrollScene({ navigationRef, copyrightRef, ringRef }: ScrollSceneRefs) {
+    useGSAP(() => {
+        const navigation = navigationRef.current;
+        const copyright = copyrightRef.current;
+        const ring = ringRef.current;
+
+        if (!navigation || !ring) return;
+
+        const items = gsap.utils.toArray<HTMLElement>(
+            navigation.querySelectorAll<HTMLElement>(".navigation-item"),
+        );
+
+        if (items.length === 0) return;
 
         const radius = () => ring.offsetWidth / 2 - Number.parseFloat(getComputedStyle(ring).borderLeftWidth) / 2;
         const angle = (index: number) => (index * 60 + 30) * Math.PI / 180;

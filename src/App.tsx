@@ -1,6 +1,5 @@
 import { MainCircle } from "./components/MainCircle";
 import { Navigation } from "./components/Navigation";
-import { useScrollScene } from "./motion/useScrollScene";
 import { About } from "./sections/About";
 import { Contact } from "./sections/Contact";
 import { Experience } from "./sections/Experience";
@@ -9,8 +8,6 @@ import { Projects } from "./sections/Projects";
 import { Skills } from "./sections/Skills";
 
 export default function App() {
-    useScrollScene();
-
     return (
         <>
             <MainCircle />

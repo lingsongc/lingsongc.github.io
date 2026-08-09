@@ -240,7 +240,11 @@ button {
     border-radius: 50%;
     background-color: var(--colour-background);
     content: "";
-    transition: border-radius 180ms ease, transform 180ms ease;
+    transition: background-color 180ms ease, border-radius 180ms ease, transform 180ms ease;
+}
+
+.navigation-link-active::before {
+    background-color: var(--colour-text);
 }
 
 .navigation-label {
