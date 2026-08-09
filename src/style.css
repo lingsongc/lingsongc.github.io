@@ -10,6 +10,7 @@
     --colour-accent: #f15153;
     --colour-line: #725d7b;
 
+    --font-statement: "Climate Crisis", "Arial Black", sans-serif;
     --font-title: "Sora", Arial, sans-serif;
     --font-text: "Manrope", Arial, sans-serif;
 
@@ -222,6 +223,11 @@ button {
     place-items: center;
     border-radius: 50%;
     text-decoration: none;
+    pointer-events: none;
+}
+
+.navigation-home-ready .navigation-link,
+.navigation-effects-ready .navigation-link {
     pointer-events: auto;
 }
 
@@ -250,25 +256,33 @@ button {
     pointer-events: none;
 }
 
-.navigation-effects-ready .navigation-label {
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-label {
     visibility: visible;
     transition: clip-path 180ms ease;
 }
 
-.navigation-effects-ready .navigation-link:hover::before,
-.navigation-effects-ready .navigation-link:focus-visible::before {
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:hover::before,
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible::before {
     border-radius: 0.5rem;
     transform: rotate(45deg);
 }
 
-.navigation-effects-ready .navigation-link:hover .navigation-label,
-.navigation-effects-ready .navigation-link:focus-visible .navigation-label {
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:hover .navigation-label,
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible .navigation-label {
     clip-path: inset(0);
 }
 
 .navigation-link:focus-visible {
     outline: 2px solid var(--colour-text);
     outline-offset: 0.125rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .navigation-link::before,
+    .navigation-theme-slot::before,
+    .navigation-label {
+        transition: none;
+    }
 }
 
 /* home */
@@ -287,7 +301,11 @@ button {
 
 .home-title {
     display: contents;
+    font-family: var(--font-statement);
     font-size: clamp(1.5rem, 7vw, 7rem);
+    font-weight: 400;
+    font-variation-settings: "YEAR" 1980;
+    line-height: 0.85;
 }
 
 .home-name-left {
@@ -338,10 +356,11 @@ button {
 
 }
 
-@media (prefers-reduced-motion: reduce) {
-    .navigation-link::before,
-    .navigation-theme-slot::before,
-    .navigation-label {
-        transition: none;
-    }
+/* projects */
+
+.project-number {
+    font-family: var(--font-statement);
+    font-size: clamp(3rem, 8vw, 7rem);
+    font-variation-settings: "YEAR" 1980;
+    line-height: 0.85;
 }

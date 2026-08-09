@@ -13,24 +13,32 @@ export function useScrollScene() {
 
         if (!navigation || !ring || items.length === 0) return;
 
-        const radius = () => ring.offsetWidth / 2
-            - Number.parseFloat(getComputedStyle(ring).borderLeftWidth) / 2;
+        const radius = () => ring.offsetWidth / 2 - Number.parseFloat(getComputedStyle(ring).borderLeftWidth) / 2;
         const angle = (index: number) => (index * 60 + 30) * Math.PI / 180;
         const dockedY = (index: number) => index === 0
             ? 32 - window.innerHeight / 2
             : window.innerHeight / 2 - 32 - (items.length - 1 - index) * 48;
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        
         let dockedFrame: number | undefined;
         let effectsFrame: number | undefined;
 
-        const clearDockedState = () => {
+        const clearReadyState = () => {
             if (dockedFrame !== undefined) cancelAnimationFrame(dockedFrame);
             if (effectsFrame !== undefined) cancelAnimationFrame(effectsFrame);
             dockedFrame = undefined;
             effectsFrame = undefined;
-            navigation.classList.remove("navigation-docked", "navigation-effects-ready");
+            navigation.classList.remove(
+                "navigation-home-ready",
+                "navigation-docked",
+                "navigation-effects-ready",
+            );
+            navigation.setAttribute("inert", "");
             copyright?.classList.remove("navigation-copyright-visible");
         };
+
+        navigation.classList.add("navigation-home-ready");
+        navigation.removeAttribute("inert");
 
         gsap.timeline({
             defaults: { ease: "none" },
@@ -43,18 +51,25 @@ export function useScrollScene() {
                 scrub: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
-                    if (self.progress === 1 && !navigation.classList.contains("navigation-docked")) {
+                    if (self.progress === 0) {
+                        clearReadyState();
+                        navigation.classList.add("navigation-home-ready");
+                        navigation.removeAttribute("inert");
+                    } else if (self.progress === 1
+                        && !navigation.classList.contains("navigation-docked")) {
+                        clearReadyState();
                         dockedFrame = requestAnimationFrame(() => {
                             navigation.classList.add("navigation-docked");
                             dockedFrame = undefined;
                             effectsFrame = requestAnimationFrame(() => {
                                 navigation.classList.add("navigation-effects-ready");
+                                navigation.removeAttribute("inert");
                                 copyright?.classList.add("navigation-copyright-visible");
                                 effectsFrame = undefined;
                             });
                         });
                     } else if (self.progress < 1) {
-                        clearDockedState();
+                        clearReadyState();
                     }
 
                     if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
@@ -71,7 +86,7 @@ export function useScrollScene() {
             .to(ring, { opacity: 0, scale: 0.1 }, 0);
 
         return () => {
-            clearDockedState();
+            clearReadyState();
         };
     }, []);
 }
