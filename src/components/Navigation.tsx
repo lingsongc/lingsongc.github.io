@@ -1,9 +1,14 @@
 import { sections } from "../motion/sceneStates";
 
 export function Navigation() {
+    const currentYear = new Date().getFullYear();
+
     return (
         <>
             <div className="navigation-ring" aria-hidden="true" />
+            <small className="navigation-copyright">
+                Copyright © {currentYear} Chen Ling Song. All Rights Reserved.
+            </small>
 
             <nav className="navigation-container" aria-label="Portfolio sections">
                 <ul className="navigation-list">

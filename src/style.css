@@ -154,13 +154,16 @@ button {
 
 .navigation-item {
     --navigation-angle: 0deg;
+    --navigation-x: 0px;
+    --navigation-y: 0px;
     --navigation-label-position: translate(-50%, calc(-100% - 1.5rem));
     --navigation-label-hidden: inset(100% 0 0 0);
 
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(var(--navigation-angle))
+    transform: translate(-50%, -50%) translate(var(--navigation-x), var(--navigation-y))
+        rotate(var(--navigation-angle))
         translateY(calc(var(--navigation-radius) * -1))
         rotate(calc(var(--navigation-angle) * -1));
 }
@@ -186,6 +189,29 @@ button {
 .navigation-item:nth-child(6) {
     --navigation-label-position: translate(calc(-100% - 1.5rem), -50%);
     --navigation-label-hidden: inset(0 0 0 100%);
+}
+
+.navigation-docked .navigation-item {
+    --navigation-label-position: translate(calc(-100% - 1.5rem), -50%);
+    --navigation-label-hidden: inset(0 0 0 100%);
+}
+
+.navigation-copyright {
+    position: fixed;
+    z-index: 3;
+    top: 50%;
+    right: 2rem;
+    color: var(--colour-text-muted);
+    font-size: var(--text-small);
+    opacity: 0;
+    writing-mode: vertical-rl;
+    transform: translate(50%, -50%);
+    transition: opacity 180ms ease;
+    pointer-events: none;
+}
+
+.navigation-copyright-visible {
+    opacity: 0.75;
 }
 
 .navigation-link {
@@ -220,18 +246,23 @@ button {
     clip-path: var(--navigation-label-hidden);
     font-size: var(--text-bodyl);
     transform: var(--navigation-label-position);
-    transition: clip-path 180ms ease;
+    visibility: hidden;
     pointer-events: none;
 }
 
-.navigation-link:hover::before,
-.navigation-link:focus-visible::before {
+.navigation-effects-ready .navigation-label {
+    visibility: visible;
+    transition: clip-path 180ms ease;
+}
+
+.navigation-effects-ready .navigation-link:hover::before,
+.navigation-effects-ready .navigation-link:focus-visible::before {
     border-radius: 0.5rem;
     transform: rotate(45deg);
 }
 
-.navigation-link:hover .navigation-label,
-.navigation-link:focus-visible .navigation-label {
+.navigation-effects-ready .navigation-link:hover .navigation-label,
+.navigation-effects-ready .navigation-link:focus-visible .navigation-label {
     clip-path: inset(0);
 }
 
