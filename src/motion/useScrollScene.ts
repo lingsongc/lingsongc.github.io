@@ -8,28 +8,38 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 type ScrollSceneRefs = {
     navigationRef: RefObject<HTMLElement | null>;
     copyrightRef: RefObject<HTMLElement | null>;
+    railRef: RefObject<HTMLDivElement | null>;
     ringRef: RefObject<HTMLDivElement | null>;
 };
 
-export function useScrollScene({ navigationRef, copyrightRef, ringRef }: ScrollSceneRefs) {
+export function useScrollScene({ navigationRef, copyrightRef, railRef, ringRef }: ScrollSceneRefs) {
     useGSAP(() => {
         const navigation = navigationRef.current;
         const copyright = copyrightRef.current;
+        const rail = railRef.current;
         const ring = ringRef.current;
 
-        if (!navigation || !ring) return;
+        if (!navigation || !rail || !ring) return;
 
         const items = gsap.utils.toArray<HTMLElement>(
             navigation.querySelectorAll<HTMLElement>(".navigation-item"),
         );
+        const slots = gsap.utils.toArray<HTMLElement>(
+            rail.querySelectorAll<HTMLElement>(".navigation-rail-slot"),
+        );
 
-        if (items.length === 0) return;
+        if (items.length === 0 || slots.length !== items.length) return;
 
         const radius = () => ring.offsetWidth / 2 - Number.parseFloat(getComputedStyle(ring).borderLeftWidth) / 2;
         const angle = (index: number) => (index * 60 + 30) * Math.PI / 180;
-        const dockedY = (index: number) => index === 0
-            ? 32 - window.innerHeight / 2
-            : window.innerHeight / 2 - 32 - (items.length - 1 - index) * 48;
+        const slotCenter = (index: number) => {
+            const bounds = slots[index].getBoundingClientRect();
+            return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 };
+        };
+        const navigationCenter = () => {
+            const bounds = navigation.getBoundingClientRect();
+            return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 };
+        };
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         
         let dockedFrame: number | undefined;
@@ -90,9 +100,9 @@ export function useScrollScene({ navigationRef, copyrightRef, ringRef }: ScrollS
         })
             .to(items, {
                 "--navigation-angle": (index: number) => `${index * 60 + 30}deg`,
-                "--navigation-x": (index: number) => `${window.innerWidth / 2 - 32
+                "--navigation-x": (index: number) => `${slotCenter(index).x - navigationCenter().x
                     - radius() * Math.sin(angle(index))}px`,
-                "--navigation-y": (index: number) => `${dockedY(index)
+                "--navigation-y": (index: number) => `${slotCenter(index).y - navigationCenter().y
                     + radius() * Math.cos(angle(index))}px`,
             }, 0)
             .to(ring, { opacity: 0, scale: 0.1 }, 0);
