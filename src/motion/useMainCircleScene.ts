@@ -37,11 +37,9 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
-                trigger: "#home",
-                start: "top top",
-                end: () => `bottom ${2 * Number.parseFloat(
-                    getComputedStyle(document.documentElement).fontSize,
-                )}px`,
+                trigger: "#home-about-transition",
+                start: "top 10%",
+                end: "bottom 90%",
                 scrub: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
@@ -60,11 +58,9 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
-                trigger: "#about",
-                start: "top top",
-                end: () => `bottom ${2 * Number.parseFloat(
-                    getComputedStyle(document.documentElement).fontSize,
-                )}px`,
+                trigger: "#about-experience-transition",
+                start: "top 10%",
+                end: "bottom 90%",
                 scrub: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {

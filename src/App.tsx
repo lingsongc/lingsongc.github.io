@@ -14,10 +14,15 @@ export default function App() {
             <Navigation />
             <main>
                 <Home />
+                <div id="home-about-transition" className="section-transition-spacer" aria-hidden="true" />
                 <About />
+                <div id="about-experience-transition" className="section-transition-spacer" aria-hidden="true" />
                 <Experience />
+                <div className="section-transition-spacer" aria-hidden="true" />
                 <Projects />
+                <div className="section-transition-spacer" aria-hidden="true" />
                 <Skills />
+                <div className="section-transition-spacer" aria-hidden="true" />
                 <Contact />
             </main>
         </>

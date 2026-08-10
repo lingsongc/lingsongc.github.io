@@ -98,6 +98,11 @@ button {
     scroll-margin-block-start: 2rem;
 }
 
+.section-transition-spacer {
+    min-height: 100vh;
+    min-height: 100svh;
+}
+
 /* main circle */
 
 .main-circle-container {
