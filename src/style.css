@@ -490,14 +490,76 @@ button {
 /* experience and education */
 
 .experience-container {
+    --experience-panel-right: calc(var(--navigation-link-size) + var(--navigation-rail-inset) + 1rem);
+    --experience-panel-width: clamp(17rem, 26vw, 22rem);
+    --experience-section-padding-inline: clamp(1.5rem, 6vw, 6rem);
+    --experience-left-width: calc(100cqw + 2 * var(--experience-section-padding-inline) - var(--experience-panel-right) - var(--experience-panel-width));
+    --experience-circle-size: min(38.4vw, 54.4vh);
+    --experience-text-width: min(48rem, calc(var(--experience-left-width) - 4rem));
+    --experience-text-left: calc((var(--experience-left-width) - var(--experience-text-width)) / 2);
+    --experience-content-width: calc(var(--experience-left-width) + 64px - var(--experience-circle-size) - var(--experience-text-left) - 1rem);
+
     position: relative;
+    container-type: inline-size;
+}
+
+.experience-text {
+    position: absolute;
+    top: 50%;
+    left: calc(var(--experience-left-width) / 2);
+    width: var(--experience-text-width);
+    height: min(72vh, 36rem);
+    height: min(72svh, 36rem);
+    overflow-y: auto;
+    scrollbar-width: none;
+    transform: translate(-50%, -50%);
+}
+
+.experience-text::-webkit-scrollbar { display: none; }
+
+.experience-title {
+    font-size: clamp(2rem, 3.5vw, 3.5rem);
+}
+
+.experience-event-title {
+    width: min(100%, var(--experience-content-width));
+    margin-top: 2.5rem;
+    font-size: clamp(1.75rem, 3vw, 3rem);
+    overflow-wrap: anywhere;
+}
+
+.experience-role {
+    margin-top: 1.5rem;
+    color: var(--colour-text);
+    font-size: var(--text-subtitle);
+}
+
+.experience-dates { margin-top: 0.25rem; }
+.experience-description {
+    width: min(100%, var(--experience-content-width));
+    margin-top: 1.5rem;
+}
+
+.experience-highlights {
+    width: min(100%, var(--experience-content-width));
+    margin: 1.5rem 0 0;
+    padding-left: 1.25rem;
+    color: var(--colour-text-muted);
+}
+
+.experience-highlights li + li { margin-top: 0.75rem; }
+
+@media (max-width: 48rem) {
+    .experience-container {
+        --experience-circle-size: 57.6vw;
+    }
 }
 
 .experience-panel {
     position: absolute;
     top: 50%;
-    right: calc(var(--navigation-link-size) + var(--navigation-rail-inset) + 1rem);
-    width: clamp(17rem, 26vw, 22rem);
+    right: var(--experience-panel-right);
+    width: var(--experience-panel-width);
     height: calc(100vh - clamp(2rem, 5vw, 4rem));
     height: calc(100svh - clamp(2rem, 5vw, 4rem));
     padding: 0.5rem;

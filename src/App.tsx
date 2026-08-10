@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { MainCircle } from "./components/MainCircle";
 import { Navigation } from "./components/Navigation";
 import { About } from "./sections/About";
@@ -8,16 +9,20 @@ import { Projects } from "./sections/Projects";
 import { Skills } from "./sections/Skills";
 
 export default function App() {
+    const [experienceImage, setExperienceImage] = useState("/picolove.jpg");
+
     return (
         <>
-            <MainCircle />
+            <MainCircle experienceImage={experienceImage} />
             <Navigation />
             <main>
                 <div className="section-static-container"><Home /></div>
                 <div id="home-about-transition" className="section-transition-spacer" aria-hidden="true" />
                 <div className="section-static-container"><About /></div>
                 <div id="about-experience-transition" className="section-transition-spacer" aria-hidden="true" />
-                <div className="section-static-container"><Experience /></div>
+                <div className="section-static-container">
+                    <Experience onActiveEventChange={setExperienceImage} />
+                </div>
                 <div className="section-transition-spacer" aria-hidden="true" />
                 <div className="section-static-container"><Projects /></div>
                 <div className="section-transition-spacer" aria-hidden="true" />

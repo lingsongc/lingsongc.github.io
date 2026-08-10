@@ -1,7 +1,11 @@
 import { useRef } from "react";
 import { useMainCircleScene } from "../motion/useMainCircleScene";
 
-export function MainCircle() {
+type MainCircleProps = {
+    experienceImage: string;
+};
+
+export function MainCircle({ experienceImage }: MainCircleProps) {
     const circleRef = useRef<HTMLDivElement>(null);
 
     useMainCircleScene(circleRef);
@@ -10,7 +14,7 @@ export function MainCircle() {
         <div ref={circleRef} className="main-circle-container" aria-hidden="true">
             <img className="main-circle-image main-circle-image-home" src="/profile.jpeg" alt="" />
             <img className="main-circle-image main-circle-image-about" src="/profile-2.jpg" alt="" />
-            <img className="main-circle-image main-circle-image-experience" src="/ns.jpg" alt="" />
+            <img className="main-circle-image main-circle-image-experience" src={experienceImage} alt="" />
         </div>
     );
 }
