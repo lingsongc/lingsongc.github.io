@@ -13,17 +13,17 @@ export default function App() {
             <MainCircle />
             <Navigation />
             <main>
-                <Home />
+                <div className="section-static-container"><Home /></div>
                 <div id="home-about-transition" className="section-transition-spacer" aria-hidden="true" />
-                <About />
+                <div className="section-static-container"><About /></div>
                 <div id="about-experience-transition" className="section-transition-spacer" aria-hidden="true" />
-                <Experience />
+                <div className="section-static-container"><Experience /></div>
                 <div className="section-transition-spacer" aria-hidden="true" />
-                <Projects />
+                <div className="section-static-container"><Projects /></div>
                 <div className="section-transition-spacer" aria-hidden="true" />
-                <Skills />
+                <div className="section-static-container"><Skills /></div>
                 <div className="section-transition-spacer" aria-hidden="true" />
-                <Contact />
+                <div className="section-static-container"><Contact /></div>
             </main>
         </>
     );

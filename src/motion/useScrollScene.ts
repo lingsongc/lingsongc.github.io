@@ -2,6 +2,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { RefObject } from "react";
+import { sectionTransitionEnd, sectionTransitionStart } from "./sectionTransitionBounds";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -18,8 +19,10 @@ export function useScrollScene({ navigationRef, copyrightRef, railRef, ringRef }
         const copyright = copyrightRef.current;
         const rail = railRef.current;
         const ring = ringRef.current;
+        const homeSection = document.getElementById("home");
+        const aboutSection = document.getElementById("about");
 
-        if (!navigation || !rail || !ring) return;
+        if (!navigation || !rail || !ring || !homeSection || !aboutSection) return;
 
         const items = gsap.utils.toArray<HTMLElement>(
             navigation.querySelectorAll<HTMLElement>(".navigation-item"),
@@ -65,9 +68,9 @@ export function useScrollScene({ navigationRef, copyrightRef, railRef, ringRef }
         gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
-                trigger: "#home",
-                start: "top top",
-                end: "bottom 25%",
+                trigger: "#home-about-transition",
+                start: () => sectionTransitionStart(homeSection),
+                end: () => sectionTransitionEnd(aboutSection),
                 scrub: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {

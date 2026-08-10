@@ -84,16 +84,24 @@ button {
 .about-container,
 .experience-container,
 .project-container,
-.skill-container {
+.skill-container,
+.contact-container {
     display: grid;
     min-height: 100vh;
     min-height: 100svh;
     align-items: center;
     padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem);
+    scroll-margin-block-start: 0;
 }
 
-.contact-container {
-    padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem);
+.section-static-container {
+    min-height: 150vh;
+    min-height: 150svh;
+}
+
+.section-static-container > section {
+    position: sticky;
+    top: 0;
 }
 
 .section-transition-spacer {
@@ -421,6 +429,7 @@ button {
         minmax(0, 1fr)
         calc(var(--navigation-link-size) + var(--navigation-rail-inset));
     justify-items: center;
+    padding-block: clamp(2rem, 4vh, 3rem);
     padding-inline: 0;
 }
 

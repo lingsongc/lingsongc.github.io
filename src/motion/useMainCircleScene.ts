@@ -2,6 +2,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { RefObject } from "react";
+import { sectionTransitionEnd, sectionTransitionStart } from "./sectionTransitionBounds";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -14,7 +15,11 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const aboutImage = circle.querySelector<HTMLElement>(".main-circle-image-about");
         const experienceImage = circle.querySelector<HTMLElement>(".main-circle-image-experience");
         const experiencePanel = document.querySelector<HTMLElement>(".experience-panel");
-        if (!homeImage || !aboutImage || !experienceImage || !experiencePanel) return;
+        const homeSection = document.getElementById("home");
+        const aboutSection = document.getElementById("about");
+        const experienceSection = document.getElementById("experience");
+        if (!homeImage || !aboutImage || !experienceImage || !experiencePanel
+            || !homeSection || !aboutSection || !experienceSection) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const aboutCircleSize = () => window.innerWidth <= 768
@@ -35,13 +40,12 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             - experienceCircleSize() / 2;
         const experienceCircleTop = () => window.innerHeight * 0.58
             + experienceCircleEdgeOffset();
-
         gsap.timeline({
             defaults: { ease: "none" },
             scrollTrigger: {
                 trigger: "#home-about-transition",
-                start: "top 10%",
-                end: "bottom 90%",
+                start: () => sectionTransitionStart(homeSection),
+                end: () => sectionTransitionEnd(aboutSection),
                 scrub: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
@@ -61,8 +65,8 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             defaults: { ease: "none" },
             scrollTrigger: {
                 trigger: "#about-experience-transition",
-                start: "top 10%",
-                end: "bottom 90%",
+                start: () => sectionTransitionStart(aboutSection),
+                end: () => sectionTransitionEnd(experienceSection),
                 scrub: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
