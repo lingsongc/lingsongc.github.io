@@ -507,6 +507,19 @@ button {
     transform: translateY(-50%);
 }
 
+.experience-panel::after {
+    position: absolute;
+    z-index: 2;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    left: 0.5rem;
+    height: 5rem;
+    border-radius: 0 0 0.75rem 0.75rem;
+    background: linear-gradient(to bottom, transparent, var(--colour-accent));
+    content: "";
+    pointer-events: none;
+}
+
 .experience-type-toggle {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -535,6 +548,65 @@ button {
 .experience-type-button:focus-visible {
     outline: 2px solid var(--colour-background);
     outline-offset: 2px;
+}
+
+.experience-event-list {
+    display: flex;
+    height: calc(100% - 3rem);
+    margin: 0;
+    padding: 2rem 0 4rem;
+    box-sizing: border-box;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 2.5rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    list-style: none;
+}
+
+.experience-event-list[hidden] {
+    display: none;
+}
+
+.experience-event-button {
+    position: relative;
+    display: block;
+    width: clamp(4.375rem, 6.25vw, 5.625rem);
+    padding: 0;
+    border: 2px solid var(--colour-text);
+    border-radius: 50%;
+    aspect-ratio: 1;
+    background-color: var(--colour-background);
+    cursor: pointer;
+}
+
+.experience-event-image {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.experience-event-button-active::before,
+.experience-event-button-active::after {
+    position: absolute;
+    content: "";
+    border: 1px solid var(--colour-text);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.experience-event-button-active::before { inset: -0.55rem; }
+.experience-event-button-active::after {
+    inset: -0.9rem;
+    border-style: dotted;
+}
+
+.experience-event-button:focus-visible {
+    outline: 2px solid var(--colour-background);
+    outline-offset: 0.4rem;
 }
 
 /* projects */

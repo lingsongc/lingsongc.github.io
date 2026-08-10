@@ -25,7 +25,7 @@ export const experiences: Experience[] = [
     {
         id: "ns",
         organisation: "Singapore Armed Forces",
-        role: "Leopard 2SG Tracked Automobile Technician",
+        role: "Leopard 2SG Tracked Technician",
         startDate: "2023",
         endDate: "2025",
         description: "Provided maintenance support for Leopard 2SG main battle tanks as a Corporal First Class.",
@@ -38,7 +38,7 @@ export const experiences: Experience[] = [
     {
         id: "bbcs",
         organisation: "BuildingBloCS",
-        role: "Project Manager, Head of Administration and Team Lead",
+        role: "Head of Administration and Team Lead",
         startDate: "Jan 2022",
         endDate: "Jun 2022",
         description: "Helped plan and deliver BuildingBloCS 2022 for students nationwide.",
