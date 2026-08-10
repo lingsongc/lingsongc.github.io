@@ -18,8 +18,9 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const homeSection = document.getElementById("home");
         const aboutSection = document.getElementById("about");
         const experienceSection = document.getElementById("experience");
+        const projectsSection = document.getElementById("projects");
         if (!homeImage || !aboutImage || !experienceImage || !experiencePanel
-            || !homeSection || !aboutSection || !experienceSection) return;
+            || !homeSection || !aboutSection || !experienceSection || !projectsSection) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const aboutCircleSize = () => window.innerWidth <= 768
@@ -81,5 +82,21 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             }, 0)
             .to(aboutImage, { opacity: 0, duration: 0.2 }, 0)
             .to(experienceImage, { opacity: 1, duration: 0.2 }, 0.8);
+
+        gsap.timeline({
+            defaults: { ease: "none" },
+            scrollTrigger: {
+                trigger: "#experience-projects-transition",
+                start: () => sectionTransitionStart(experienceSection),
+                end: () => sectionTransitionEnd(projectsSection),
+                scrub: true,
+                invalidateOnRefresh: true,
+                onUpdate: (self) => {
+                    if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
+                },
+            },
+        })
+            .to(circle, { top: "50%", left: "50%", duration: 1 }, 0)
+            .to(experienceImage, { opacity: 0, duration: 0.2 }, 0);
     }, []);
 }

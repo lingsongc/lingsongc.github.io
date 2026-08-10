@@ -23,7 +23,7 @@ export default function App() {
                 <div className="section-static-container">
                     <Experience onActiveEventChange={setExperienceImage} />
                 </div>
-                <div className="section-transition-spacer" aria-hidden="true" />
+                <div id="experience-projects-transition" className="section-transition-spacer" aria-hidden="true" />
                 <div className="section-static-container"><Projects /></div>
                 <div className="section-transition-spacer" aria-hidden="true" />
                 <div className="section-static-container"><Skills /></div>
