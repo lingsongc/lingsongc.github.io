@@ -406,14 +406,21 @@ button {
 /* about */
 
 .about-container {
-    justify-items: end;
+    --about-circle-arc: 64vh;
+
+    grid-template-columns:
+        var(--about-circle-arc)
+        minmax(0, 1fr)
+        calc(var(--navigation-link-size) + var(--navigation-rail-inset));
+    justify-items: center;
+    padding-inline: 0;
 }
 
 .about-text {
     display: grid;
+    grid-column: 2;
     width: min(42rem, 48vw);
     gap: clamp(1.5rem, 3vw, 2.5rem);
-    margin-inline-end: clamp(4rem, 8vw, 8rem);
 }
 
 .about-description {
@@ -454,8 +461,12 @@ button {
 }
 
 @media (max-width: 48rem) {
+    .about-container {
+        --about-circle-arc: 28.5vw;
+    }
+
     .about-text {
-        width: 65vw;
+        width: min(65vw, calc(100% - 1.5rem));
     }
 }
 

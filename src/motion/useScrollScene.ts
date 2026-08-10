@@ -41,7 +41,7 @@ export function useScrollScene({ navigationRef, copyrightRef, railRef, ringRef }
             return { x: bounds.left + bounds.width / 2, y: bounds.top + bounds.height / 2 };
         };
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        
+
         let dockedFrame: number | undefined;
         let effectsFrame: number | undefined;
 
@@ -67,9 +67,7 @@ export function useScrollScene({ navigationRef, copyrightRef, railRef, ringRef }
             scrollTrigger: {
                 trigger: "#home",
                 start: "top top",
-                end: () => `bottom ${2 * Number.parseFloat(
-                    getComputedStyle(document.documentElement).fontSize,
-                )}px`,
+                end: "bottom 25%",
                 scrub: true,
                 invalidateOnRefresh: true,
                 onUpdate: (self) => {
