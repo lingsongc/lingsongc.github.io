@@ -90,12 +90,10 @@ button {
     min-height: 100svh;
     align-items: center;
     padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem);
-    scroll-margin-block-start: 2rem;
 }
 
 .contact-container {
     padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem);
-    scroll-margin-block-start: 2rem;
 }
 
 .section-transition-spacer {
@@ -478,6 +476,56 @@ button {
     .about-text {
         width: min(65vw, calc(100% - 1.5rem));
     }
+}
+
+/* experience and education */
+
+.experience-container {
+    position: relative;
+}
+
+.experience-panel {
+    position: absolute;
+    top: 50%;
+    right: calc(var(--navigation-link-size) + var(--navigation-rail-inset) + 1rem);
+    width: clamp(17rem, 26vw, 22rem);
+    height: calc(100vh - clamp(2rem, 5vw, 4rem));
+    height: calc(100svh - clamp(2rem, 5vw, 4rem));
+    padding: 0.5rem;
+    box-sizing: border-box;
+    border-radius: 1.25rem;
+    background-color: var(--colour-accent);
+    transform: translateY(-50%);
+}
+
+.experience-type-toggle {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.25rem;
+    padding: 0.25rem;
+    border-radius: 999px;
+    background-color: var(--colour-text);
+}
+
+.experience-type-button {
+    min-width: 0;
+    padding: 0.4rem 0.25rem;
+    border: 0;
+    border-radius: 999px;
+    background-color: transparent;
+    color: var(--colour-background);
+    font-size: clamp(0.625rem, 0.8vw, 0.75rem);
+    cursor: pointer;
+}
+
+.experience-type-button-active {
+    background-color: var(--colour-background);
+    color: var(--colour-text);
+}
+
+.experience-type-button:focus-visible {
+    outline: 2px solid var(--colour-background);
+    outline-offset: 2px;
 }
 
 /* projects */

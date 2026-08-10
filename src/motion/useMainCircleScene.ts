@@ -13,7 +13,8 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const homeImage = circle.querySelector<HTMLElement>(".main-circle-image-home");
         const aboutImage = circle.querySelector<HTMLElement>(".main-circle-image-about");
         const experienceImage = circle.querySelector<HTMLElement>(".main-circle-image-experience");
-        if (!homeImage || !aboutImage || !experienceImage) return;
+        const experiencePanel = document.querySelector<HTMLElement>(".experience-panel");
+        if (!homeImage || !aboutImage || !experienceImage || !experiencePanel) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const aboutCircleSize = () => window.innerWidth <= 768
@@ -25,13 +26,14 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             ? window.innerWidth * 0.72
             : Math.min(window.innerWidth * 0.48, window.innerHeight * 0.68);
         const experienceCircleSize = () => experienceCircleReferenceSize() * 0.8;
+        const experienceCircleOverlap = 64;
         const experienceCircleEdgeOffset = () => (
             experienceCircleReferenceSize() - experienceCircleSize()
         ) / 2;
-        const experienceCircleLeft = () => window.innerWidth
-            * (window.innerWidth <= 768 ? 0.5 : 0.6)
-            + experienceCircleEdgeOffset();
-        const experienceCircleTop = () => window.innerHeight * 0.55
+        const experienceCircleLeft = () => experiencePanel.getBoundingClientRect().left
+            + experienceCircleOverlap
+            - experienceCircleSize() / 2;
+        const experienceCircleTop = () => window.innerHeight * 0.58
             + experienceCircleEdgeOffset();
 
         gsap.timeline({
