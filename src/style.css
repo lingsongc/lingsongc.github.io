@@ -133,6 +133,11 @@ button {
         scale(1.15);
 }
 
+.main-circle-image-experience {
+    object-position: center;
+    opacity: 0;
+}
+
 /* navigation */
 
 .navigation-container {

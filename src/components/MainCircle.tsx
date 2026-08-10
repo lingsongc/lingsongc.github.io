@@ -10,6 +10,7 @@ export function MainCircle() {
         <div ref={circleRef} className="main-circle-container" aria-hidden="true">
             <img className="main-circle-image main-circle-image-home" src="/profile.jpeg" alt="" />
             <img className="main-circle-image main-circle-image-about" src="/profile-2.jpg" alt="" />
+            <img className="main-circle-image main-circle-image-experience" src="/ns.jpg" alt="" />
         </div>
     );
 }
