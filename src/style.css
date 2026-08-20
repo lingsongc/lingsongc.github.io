@@ -673,32 +673,76 @@ button {
 
 .project-container {
     --project-circle-size: min(38.4vw, 54.4vh);
+    --project-planet-size: clamp(2.5rem, 6vmin, 5rem);
     --project-ring-gap: clamp(4rem, 11vw, 10rem);
     --project-ring-step: calc(var(--project-ring-gap) + var(--project-ring-gap));
+    --project-ring-one-size: calc(var(--project-circle-size) + var(--project-ring-step));
+    --project-ring-two-size: calc(var(--project-circle-size) + var(--project-ring-step) + var(--project-ring-step));
+    --project-ring-three-size: calc(var(--project-circle-size) + var(--project-ring-step) + var(--project-ring-step) + var(--project-ring-step));
 
     position: relative;
 }
 
-.project-rings,
 .project-ring {
     position: absolute;
     top: 50%;
     left: 50%;
-    aspect-ratio: 1;
-    border-radius: 50%;
     transform: translate(-50%, -50%);
+}
+
+.project-ring-one { width: var(--project-ring-one-size); }
+.project-ring-two { width: var(--project-ring-two-size); }
+.project-ring-three { width: var(--project-ring-three-size); }
+
+.project-list {
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
     pointer-events: none;
 }
 
-.project-rings { width: var(--project-circle-size); }
-.project-ring-one { width: calc(100% + var(--project-ring-step)); }
-.project-ring-two { width: calc(100% + var(--project-ring-step) + var(--project-ring-step)); }
-.project-ring-three { width: calc(100% + var(--project-ring-step) + var(--project-ring-step) + var(--project-ring-step)); }
+.project-item {
+    --project-orbit-size: var(--project-ring-one-size);
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) rotate(var(--project-angle))
+        translateY(calc(var(--project-orbit-size) / -2)) rotate(var(--project-angle-inverse));
+    pointer-events: auto;
+}
+
+.project-item-ring-2 { --project-orbit-size: var(--project-ring-two-size); }
+.project-item-ring-3 { --project-orbit-size: var(--project-ring-three-size); }
+
+.project-link {
+    display: grid;
+    width: var(--project-planet-size);
+    aspect-ratio: 1;
+    place-items: center;
+    border: var(--orbit-ring-width) solid var(--colour-text);
+    border-radius: 50%;
+    background-color: var(--colour-surface);
+    color: var(--colour-text);
+    text-decoration: none;
+}
 
 .project-number {
     font-family: var(--font-statement);
-    font-size: clamp(3rem, 8vw, 7rem);
+    font-size: clamp(1rem, 2.5vmin, 1.75rem);
     line-height: 0.85;
+}
+
+.project-name,
+.project-summary {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
 }
 
 @media (max-width: 48rem) {
