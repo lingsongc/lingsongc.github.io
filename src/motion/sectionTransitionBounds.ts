@@ -10,21 +10,14 @@ function documentTop(element: HTMLElement) {
     return top;
 }
 
-export function sectionTransitionStart(section: HTMLElement) {
-    const restingContainer = section.parentElement;
-    const sectionHeight = section.offsetHeight;
+export const sectionTransitionTimelineDefaults = { duration: 1, ease: "none" };
 
-    if (!restingContainer || sectionHeight > window.innerHeight) {
-        return documentTop(section) + sectionHeight * 0.9;
-    }
-
-    return documentTop(restingContainer)
-        + restingContainer.offsetHeight
-        - sectionHeight * 0.1;
-}
-
-export function sectionTransitionEnd(section: HTMLElement) {
-    return documentTop(section)
-        - window.innerHeight
-        + section.offsetHeight * 0.1;
+export function sectionTransitionScroll(incomingSection: HTMLElement) {
+    return {
+        trigger: incomingSection,
+        start: () => documentTop(incomingSection) - window.innerHeight,
+        end: () => documentTop(incomingSection),
+        scrub: true,
+        invalidateOnRefresh: true,
+    };
 }

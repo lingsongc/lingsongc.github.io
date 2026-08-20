@@ -16,19 +16,14 @@ export default function App() {
             <MainCircle experienceImage={experienceImage} />
             <Navigation />
             <main>
-                <div className="section-static-container"><Home /></div>
-                <div id="home-about-transition" className="section-transition-spacer" aria-hidden="true" />
+                <Home />
                 <div className="section-static-container"><About /></div>
-                <div id="about-experience-transition" className="section-transition-spacer" aria-hidden="true" />
                 <div className="section-static-container">
                     <Experience onActiveEventChange={setExperienceImage} />
                 </div>
-                <div id="experience-projects-transition" className="section-transition-spacer" aria-hidden="true" />
                 <div className="section-static-container"><Projects /></div>
-                <div className="section-transition-spacer" aria-hidden="true" />
                 <div className="section-static-container"><Skills /></div>
-                <div className="section-transition-spacer" aria-hidden="true" />
-                <div className="section-static-container"><Contact /></div>
+                <Contact />
             </main>
         </>
     );

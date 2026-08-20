@@ -2,7 +2,10 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { RefObject } from "react";
-import { sectionTransitionEnd, sectionTransitionStart } from "./sectionTransitionBounds";
+import {
+    sectionTransitionScroll,
+    sectionTransitionTimelineDefaults,
+} from "./sectionTransitionBounds";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -15,12 +18,11 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const aboutImage = circle.querySelector<HTMLElement>(".main-circle-image-about");
         const experienceImage = circle.querySelector<HTMLElement>(".main-circle-image-experience");
         const experiencePanel = document.querySelector<HTMLElement>(".experience-panel");
-        const homeSection = document.getElementById("home");
         const aboutSection = document.getElementById("about");
         const experienceSection = document.getElementById("experience");
         const projectsSection = document.getElementById("projects");
         if (!homeImage || !aboutImage || !experienceImage || !experiencePanel
-            || !homeSection || !aboutSection || !experienceSection || !projectsSection) return;
+            || !aboutSection || !experienceSection || !projectsSection) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const aboutCircleSize = () => window.innerWidth <= 768
@@ -42,13 +44,9 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const experienceCircleTop = () => window.innerHeight * 0.58
             + experienceCircleEdgeOffset();
         gsap.timeline({
-            defaults: { ease: "none" },
+            defaults: sectionTransitionTimelineDefaults,
             scrollTrigger: {
-                trigger: "#home-about-transition",
-                start: () => sectionTransitionStart(homeSection),
-                end: () => sectionTransitionEnd(aboutSection),
-                scrub: true,
-                invalidateOnRefresh: true,
+                ...sectionTransitionScroll(aboutSection),
                 onUpdate: (self) => {
                     if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
                 },
@@ -57,19 +55,14 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             .to(circle, {
                 width: aboutCircleSize,
                 left: aboutCircleLeft,
-                duration: 1,
             }, 0)
             .to(homeImage, { opacity: 0, duration: 0.2 }, 0)
             .to(aboutImage, { opacity: 1, duration: 0.2 }, 0.8);
 
         gsap.timeline({
-            defaults: { ease: "none" },
+            defaults: sectionTransitionTimelineDefaults,
             scrollTrigger: {
-                trigger: "#about-experience-transition",
-                start: () => sectionTransitionStart(aboutSection),
-                end: () => sectionTransitionEnd(experienceSection),
-                scrub: true,
-                invalidateOnRefresh: true,
+                ...sectionTransitionScroll(experienceSection),
                 onUpdate: (self) => {
                     if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
                 },
@@ -84,19 +77,15 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             .to(experienceImage, { opacity: 1, duration: 0.2 }, 0.8);
 
         gsap.timeline({
-            defaults: { ease: "none" },
+            defaults: sectionTransitionTimelineDefaults,
             scrollTrigger: {
-                trigger: "#experience-projects-transition",
-                start: () => sectionTransitionStart(experienceSection),
-                end: () => sectionTransitionEnd(projectsSection),
-                scrub: true,
-                invalidateOnRefresh: true,
+                ...sectionTransitionScroll(projectsSection),
                 onUpdate: (self) => {
                     if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
                 },
             },
         })
-            .to(circle, { top: "50%", left: "50%", duration: 1 }, 0)
+            .to(circle, { top: "50%", left: "50%" }, 0)
             .to(experienceImage, { opacity: 0, duration: 0.2 }, 0);
     }, []);
 }

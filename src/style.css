@@ -104,11 +104,6 @@ button {
     top: 0;
 }
 
-.section-transition-spacer {
-    min-height: 100vh;
-    min-height: 100svh;
-}
-
 /* main circle */
 
 .main-circle-container {
