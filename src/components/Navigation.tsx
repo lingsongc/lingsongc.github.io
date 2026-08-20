@@ -8,12 +8,11 @@ export function Navigation() {
     const navigationRef = useRef<HTMLElement>(null);
     const copyrightRef = useRef<HTMLElement>(null);
     const railRef = useRef<HTMLDivElement>(null);
-    const ringRef = useRef<HTMLDivElement>(null);
     const activeSection = useActiveSection();
     const [touchLabel, setTouchLabel] = useState<string | null>(null);
     const navigationSections = sections.filter((section) => section.id !== "home");
 
-    useScrollScene({ navigationRef, copyrightRef, railRef, ringRef });
+    useScrollScene({ navigationRef, copyrightRef, railRef });
     useEffect(() => setTouchLabel(null), [activeSection]);
 
     const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
@@ -27,8 +26,6 @@ export function Navigation() {
 
     return (
         <>
-            <div ref={ringRef} className="navigation-ring" aria-hidden="true" />
-
             <div ref={railRef} className="navigation-rail">
                 <span className="navigation-rail-slot" aria-hidden="true" />
                 <small ref={copyrightRef} className="navigation-copyright">

@@ -22,8 +22,8 @@
     --text-small: 0.875rem;
 
     --home-circle-size: clamp(8rem, 28vw, 22rem);
-    --navigation-ring-size: calc(var(--home-circle-size) + 10rem);
-    --navigation-ring-width: 0.25rem;
+    --home-ring-size: calc(var(--home-circle-size) + 10rem);
+    --orbit-ring-width: 0.25rem;
     --navigation-button-size: 1.25rem;
     --navigation-link-size: 2.75rem;
     --navigation-link-gap: 0.25rem;
@@ -104,6 +104,13 @@ button {
     top: 0;
 }
 
+.orbit-ring {
+    aspect-ratio: 1;
+    border: var(--orbit-ring-width) solid var(--colour-line);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
 /* main circle */
 
 .main-circle-container {
@@ -147,13 +154,13 @@ button {
 /* navigation */
 
 .navigation-container {
-    --navigation-radius: calc((var(--navigation-ring-size) - var(--navigation-ring-width)) / 2);
+    --navigation-radius: calc((var(--home-ring-size) - var(--orbit-ring-width)) / 2);
 
     position: fixed;
     z-index: 3;
     top: 50%;
     left: 50%;
-    width: calc(var(--navigation-ring-size) + var(--navigation-button-size));
+    width: calc(var(--home-ring-size) + var(--navigation-button-size));
     aspect-ratio: 1;
     transform: translate(-50%, -50%);
     pointer-events: none;
@@ -168,17 +175,13 @@ button {
     list-style: none;
 }
 
-.navigation-ring {
-    position: fixed;
+.home-navigation-ring {
+    position: absolute;
     z-index: 0;
     top: 50%;
     left: 50%;
-    width: var(--navigation-ring-size);
-    aspect-ratio: 1;
-    border: var(--navigation-ring-width) solid var(--colour-line);
-    border-radius: 50%;
+    width: var(--home-ring-size);
     transform: translate(-50%, -50%);
-    pointer-events: none;
 }
 
 .navigation-item {
@@ -289,7 +292,7 @@ button {
     display: block;
     width: var(--navigation-button-size);
     aspect-ratio: 1;
-    border: var(--navigation-ring-width) solid var(--colour-text);
+    border: var(--orbit-ring-width) solid var(--colour-text);
     border-radius: 50%;
     background-color: var(--colour-background);
     content: "";
@@ -688,7 +691,6 @@ button {
 }
 
 .project-rings { width: var(--project-circle-size); }
-.project-ring { border: 1px solid var(--colour-line); }
 .project-ring-one { width: calc(100% + var(--project-ring-step)); }
 .project-ring-two { width: calc(100% + var(--project-ring-step) + var(--project-ring-step)); }
 .project-ring-three { width: calc(100% + var(--project-ring-step) + var(--project-ring-step) + var(--project-ring-step)); }

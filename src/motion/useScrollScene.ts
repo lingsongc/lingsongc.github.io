@@ -13,15 +13,14 @@ type ScrollSceneRefs = {
     navigationRef: RefObject<HTMLElement | null>;
     copyrightRef: RefObject<HTMLElement | null>;
     railRef: RefObject<HTMLDivElement | null>;
-    ringRef: RefObject<HTMLDivElement | null>;
 };
 
-export function useScrollScene({ navigationRef, copyrightRef, railRef, ringRef }: ScrollSceneRefs) {
+export function useScrollScene({ navigationRef, copyrightRef, railRef }: ScrollSceneRefs) {
     useGSAP(() => {
         const navigation = navigationRef.current;
         const copyright = copyrightRef.current;
         const rail = railRef.current;
-        const ring = ringRef.current;
+        const ring = document.querySelector<HTMLElement>(".home-navigation-ring");
         const aboutSection = document.getElementById("about");
 
         if (!navigation || !rail || !ring || !aboutSection) return;
@@ -103,8 +102,7 @@ export function useScrollScene({ navigationRef, copyrightRef, railRef, ringRef }
                     - radius() * Math.sin(angle(index))}px`,
                 "--navigation-y": (index: number) => `${slotCenter(index).y - navigationCenter().y
                     + radius() * Math.cos(angle(index))}px`,
-            }, 0)
-            .to(ring, { opacity: 0, scale: 0.1 }, 0);
+            }, 0);
 
         return () => {
             clearReadyState();
