@@ -704,6 +704,16 @@ button {
     position: relative;
 }
 
+.project-title {
+    position: absolute;
+    z-index: 1;
+    top: calc(50% - var(--project-circle-size) / 2 - 8rem);
+    left: 50%;
+    font-size: clamp(4rem, 10.5vw, 10rem);
+    transform: translateX(-50%);
+    white-space: nowrap;
+}
+
 .project-ring {
     position: absolute;
     top: 50%;

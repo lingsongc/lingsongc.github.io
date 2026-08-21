@@ -12,6 +12,17 @@ type ProjectsProps = {
     onProjectSelect: (project: Project) => void;
 };
 
+function projectAngle(id: string, index: number, projectCount: number) {
+    const separation = 360 / projectCount;
+    const jitterLimit = Math.min(18, separation * 0.2);
+    const hash = Array.from(id).reduce(
+        (value, character) => (value * 31 + character.charCodeAt(0)) % 1000,
+        0,
+    );
+    const jitter = (hash / 999 * 2 - 1) * jitterLimit;
+    return 90 + index * separation + jitter;
+}
+
 function fitAngleToViewport(angle: number, radius: number, planetRadius: number, viewportHeight: number) {
     const verticalLimit = Math.max(0, viewportHeight / 2 - planetRadius - 1);
     const safeOffset = Math.acos(Math.min(1, verticalLimit / radius)) * 180 / Math.PI;
@@ -69,10 +80,7 @@ export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
                 {projects.map((project, index) => {
                     const placementIndex = index % ringCount;
                     const ringIndex = placementIndex;
-                    const positionOnRing = Math.floor(index / ringCount);
-                    const projectsOnRing = Math.ceil((projects.length - placementIndex) / ringCount);
-                    const ringAngle = projects.length === 2 ? placementIndex * 180 : placementIndex * 120;
-                    const angle = 90 + ringAngle + positionOnRing * 360 / projectsOnRing;
+                    const angle = projectAngle(project.id, index, projects.length);
                     const style: ProjectPlanetStyle = {
                         "--project-angle": `${angle}deg`,
                         "--project-angle-inverse": `${-angle}deg`,
