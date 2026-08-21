@@ -9,7 +9,7 @@ import { Projects } from "./sections/Projects";
 import { Skills } from "./sections/Skills";
 
 export default function App() {
-    const [experienceImage, setExperienceImage] = useState("/picolove.jpg");
+    const [experienceImage, setExperienceImage] = useState("/experience/picolove.jpg");
 
     return (
         <>

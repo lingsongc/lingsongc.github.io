@@ -11,6 +11,7 @@ const educationEvents = education.map(({ id, institution, qualification, ...even
     id, title: institution, subtitle: qualification, ...event,
 }));
 const eventsByType = { experience: experienceEvents, education: educationEvents };
+const eventImagePath = (type: ExperienceType, id: string) => `/${type}/${id}.jpg`;
 
 type ExperienceProps = {
     onActiveEventChange: (image: string) => void;
@@ -55,7 +56,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                             aria-pressed={experienceType === type}
                             onClick={() => {
                                 setExperienceType(type);
-                                onActiveEventChange(`/${activeEventIds[type]}.jpg`);
+                                onActiveEventChange(eventImagePath(type, activeEventIds[type]));
                             }}
                             key={type}
                         >
@@ -81,10 +82,10 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                                     aria-pressed={activeEventIds[type] === event.id}
                                     onClick={() => {
                                         setActiveEventIds((current) => ({ ...current, [type]: event.id }));
-                                        onActiveEventChange(`/${event.id}.jpg`);
+                                        onActiveEventChange(eventImagePath(type, event.id));
                                     }}
                                 >
-                                    <img className="experience-event-image" src={`/${event.id}.jpg`} alt="" />
+                                    <img className="experience-event-image" src={eventImagePath(type, event.id)} alt="" />
                                 </button>
                             </li>
                         ))}
