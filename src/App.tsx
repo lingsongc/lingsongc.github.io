@@ -7,13 +7,15 @@ import { Experience } from "./sections/Experience";
 import { Home } from "./sections/Home";
 import { Projects } from "./sections/Projects";
 import { Skills } from "./sections/Skills";
+import { projects } from "./data/projects";
 
 export default function App() {
     const [experienceImage, setExperienceImage] = useState("/experience/picolove.jpg");
+    const [activeProject, setActiveProject] = useState(projects[0]);
 
     return (
         <>
-            <MainCircle experienceImage={experienceImage} />
+            <MainCircle experienceImage={experienceImage} activeProject={activeProject} />
             <Navigation />
             <main>
                 <Home />
@@ -21,7 +23,9 @@ export default function App() {
                 <div className="section-static-container">
                     <Experience onActiveEventChange={setExperienceImage} />
                 </div>
-                <div className="section-static-container"><Projects /></div>
+                <div className="section-static-container">
+                    <Projects activeProjectId={activeProject.id} onProjectSelect={setActiveProject} />
+                </div>
                 <div className="section-static-container"><Skills /></div>
                 <Contact />
             </main>

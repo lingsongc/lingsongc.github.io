@@ -151,6 +151,27 @@ button {
     opacity: 0;
 }
 
+.main-circle-image-project {
+    object-position: center;
+    opacity: 0;
+}
+
+.main-circle-project-description {
+    position: absolute;
+    z-index: 1;
+    right: 15%;
+    bottom: 15%;
+    left: 15%;
+    padding: clamp(0.5rem, 1.2vmin, 1rem);
+    border-radius: 0.75rem;
+    background-color: rgb(18 8 24 / 78%);
+    color: var(--colour-text);
+    font-size: clamp(0.625rem, 1.8vmin, 1rem);
+    line-height: 1.5;
+    text-align: center;
+    opacity: 0;
+}
+
 /* navigation */
 
 .navigation-container {
@@ -722,17 +743,30 @@ button {
     width: var(--project-planet-size);
     aspect-ratio: 1;
     place-items: center;
+    overflow: hidden;
+    padding: 0;
     border: var(--orbit-ring-width) solid var(--colour-text);
     border-radius: 50%;
     background-color: var(--colour-surface);
     color: var(--colour-text);
     text-decoration: none;
+    cursor: pointer;
 }
 
-.project-number {
-    font-family: var(--font-statement);
-    font-size: clamp(1rem, 2.5vmin, 1.75rem);
-    line-height: 0.85;
+.project-link[aria-pressed="true"] {
+    outline: var(--orbit-ring-width) solid var(--colour-accent);
+    outline-offset: var(--orbit-ring-width);
+}
+
+.project-link:focus-visible {
+    outline: var(--orbit-ring-width) solid var(--colour-text);
+    outline-offset: var(--orbit-ring-width);
+}
+
+.project-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .project-name,

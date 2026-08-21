@@ -1,10 +1,15 @@
 import { useLayoutEffect, useRef, type CSSProperties } from "react";
-import { projects } from "../data/projects";
+import { projects, type Project } from "../data/projects";
 
 const ringCount = 3;
 type ProjectPlanetStyle = CSSProperties & {
     "--project-angle": string;
     "--project-angle-inverse": string;
+};
+
+type ProjectsProps = {
+    activeProjectId: string;
+    onProjectSelect: (project: Project) => void;
 };
 
 function fitAngleToViewport(angle: number, radius: number, planetRadius: number, viewportHeight: number) {
@@ -21,7 +26,7 @@ function fitAngleToViewport(angle: number, radius: number, planetRadius: number,
     return normalizedAngle;
 }
 
-export function Projects() {
+export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
     const containerRef = useRef<HTMLElement>(null);
 
     useLayoutEffect(() => {
@@ -81,13 +86,16 @@ export function Projects() {
                             data-project-angle={angle}
                             data-project-ring={ringIndex}
                         >
-                            <a className="project-link" href={project.href || "#projects"}>
-                                <span className="project-number" aria-hidden="true">
-                                    {String(index + 1).padStart(2, "0")}
-                                </span>
+                            <button
+                                className="project-link"
+                                type="button"
+                                aria-pressed={activeProjectId === project.id}
+                                onClick={() => onProjectSelect(project)}
+                            >
+                                <img className="project-image" src={`/projects/${project.id}.png`} alt="" />
                                 <h3 className="project-name">{project.name}</h3>
                                 <p className="project-summary">{project.summary}</p>
-                            </a>
+                            </button>
                         </li>
                     );
                 })}

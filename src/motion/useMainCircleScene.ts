@@ -17,12 +17,14 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const homeImage = circle.querySelector<HTMLElement>(".main-circle-image-home");
         const aboutImage = circle.querySelector<HTMLElement>(".main-circle-image-about");
         const experienceImage = circle.querySelector<HTMLElement>(".main-circle-image-experience");
+        const projectImage = circle.querySelector<HTMLElement>(".main-circle-image-project");
+        const projectDescription = circle.querySelector<HTMLElement>(".main-circle-project-description");
         const experiencePanel = document.querySelector<HTMLElement>(".experience-panel");
         const aboutSection = document.getElementById("about");
         const experienceSection = document.getElementById("experience");
         const projectsSection = document.getElementById("projects");
-        if (!homeImage || !aboutImage || !experienceImage || !experiencePanel
-            || !aboutSection || !experienceSection || !projectsSection) return;
+        if (!homeImage || !aboutImage || !experienceImage || !projectImage || !projectDescription
+            || !experiencePanel || !aboutSection || !experienceSection || !projectsSection) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const aboutCircleSize = () => window.innerWidth <= 768
@@ -86,6 +88,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             },
         })
             .to(circle, { top: "50%", left: "50%" }, 0)
-            .to(experienceImage, { opacity: 0, duration: 0.2 }, 0);
+            .to(experienceImage, { opacity: 0, duration: 0.2 }, 0)
+            .to([projectImage, projectDescription], { opacity: 1, duration: 0.2 }, 0.8);
     }, []);
 }
