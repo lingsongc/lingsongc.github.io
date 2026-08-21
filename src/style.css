@@ -50,7 +50,6 @@ body {
 
 main {
     position: relative;
-    z-index: 1;
     overflow: clip;
 }
 
@@ -791,4 +790,18 @@ button {
 
 @media (max-width: 48rem) {
     .project-container { --project-circle-size: 57.6vw; }
+}
+
+/* contact */
+
+.contact-container {
+    align-content: end;
+    padding-bottom: clamp(4rem, 8vh, 7rem);
+}
+
+.contact-title,
+.contact-description {
+    position: relative;
+    z-index: 3;
+    color: var(--colour-background);
 }

@@ -25,9 +25,10 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const experienceSection = document.getElementById("experience");
         const projectsSection = document.getElementById("projects");
         const skillsSection = document.getElementById("skills");
+        const contactSection = document.getElementById("contact");
         if (!homeImage || !aboutImage || !experienceImage || !projectImage || !projectDescription
             || !experiencePanel || !navigationRail || !aboutSection || !experienceSection
-            || !projectsSection || !skillsSection) return;
+            || !projectsSection || !skillsSection || !contactSection) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const aboutCircleSize = () => window.innerWidth <= 768
@@ -53,6 +54,8 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const skillsCircleLeft = () => navigationRail.getBoundingClientRect().left
             - skillsCircleGap()
             - skillsCircleSize() / 2;
+        const contactCircleSize = () => Math.max(window.innerWidth, window.innerHeight) * 2.4;
+        const contactCircleTop = () => window.innerHeight * 0.46 + contactCircleSize() / 2;
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
             scrollTrigger: {
@@ -110,5 +113,19 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         })
             .to(circle, { width: skillsCircleSize, top: "50%", left: skillsCircleLeft }, 0)
             .to([projectImage, projectDescription], { opacity: 0, duration: 0.2 }, 0);
+
+        gsap.timeline({
+            defaults: sectionTransitionTimelineDefaults,
+            scrollTrigger: {
+                ...sectionTransitionScroll(contactSection),
+                onUpdate: (self) => {
+                    if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
+                },
+            },
+        }).to(circle, {
+            width: contactCircleSize,
+            top: contactCircleTop,
+            left: "50%",
+        }, 0);
     }, []);
 }
