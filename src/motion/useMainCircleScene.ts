@@ -20,11 +20,14 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const projectImage = circle.querySelector<HTMLElement>(".main-circle-image-project");
         const projectDescription = circle.querySelector<HTMLElement>(".main-circle-project-description");
         const experiencePanel = document.querySelector<HTMLElement>(".experience-panel");
+        const navigationRail = document.querySelector<HTMLElement>(".navigation-rail");
         const aboutSection = document.getElementById("about");
         const experienceSection = document.getElementById("experience");
         const projectsSection = document.getElementById("projects");
+        const skillsSection = document.getElementById("skills");
         if (!homeImage || !aboutImage || !experienceImage || !projectImage || !projectDescription
-            || !experiencePanel || !aboutSection || !experienceSection || !projectsSection) return;
+            || !experiencePanel || !navigationRail || !aboutSection || !experienceSection
+            || !projectsSection || !skillsSection) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const aboutCircleSize = () => window.innerWidth <= 768
@@ -45,6 +48,11 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             - experienceCircleSize() / 2;
         const experienceCircleTop = () => window.innerHeight * 0.58
             + experienceCircleEdgeOffset();
+        const skillsCircleSize = () => Math.min(window.innerWidth, window.innerHeight) * 0.9;
+        const skillsCircleGap = () => (window.innerHeight - skillsCircleSize()) / 2;
+        const skillsCircleLeft = () => navigationRail.getBoundingClientRect().left
+            - skillsCircleGap()
+            - skillsCircleSize() / 2;
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
             scrollTrigger: {
@@ -90,5 +98,17 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             .to(circle, { top: "50%", left: "50%" }, 0)
             .to(experienceImage, { opacity: 0, duration: 0.2 }, 0)
             .to([projectImage, projectDescription], { opacity: 1, duration: 0.2 }, 0.8);
+
+        gsap.timeline({
+            defaults: sectionTransitionTimelineDefaults,
+            scrollTrigger: {
+                ...sectionTransitionScroll(skillsSection),
+                onUpdate: (self) => {
+                    if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
+                },
+            },
+        })
+            .to(circle, { width: skillsCircleSize, top: "50%", left: skillsCircleLeft }, 0)
+            .to([projectImage, projectDescription], { opacity: 0, duration: 0.2 }, 0);
     }, []);
 }
