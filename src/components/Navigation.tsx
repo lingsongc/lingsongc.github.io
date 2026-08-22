@@ -7,12 +7,11 @@ export function Navigation() {
     const currentYear = new Date().getFullYear();
     const navigationRef = useRef<HTMLElement>(null);
     const copyrightRef = useRef<HTMLElement>(null);
-    const railRef = useRef<HTMLDivElement>(null);
     const activeSection = useActiveSection();
     const [touchLabel, setTouchLabel] = useState<string | null>(null);
     const navigationSections = sections.filter((section) => section.id !== "home");
 
-    useScrollScene({ navigationRef, copyrightRef, railRef });
+    useScrollScene({ navigationRef, copyrightRef });
     useEffect(() => setTouchLabel(null), [activeSection]);
 
     const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
@@ -26,7 +25,7 @@ export function Navigation() {
 
     return (
         <>
-            <div ref={railRef} className="navigation-rail">
+            <div className="navigation-rail">
                 <span className="navigation-rail-slot" aria-hidden="true" />
                 <small ref={copyrightRef} className="navigation-copyright">
                     Copyright © {currentYear} Chen Ling Song. All Rights Reserved.

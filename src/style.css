@@ -210,16 +210,13 @@ button {
 
 .navigation-item {
     --navigation-angle: 0deg;
-    --navigation-x: 0px;
-    --navigation-y: 0px;
     --navigation-label-position: translate(-50%, calc(-100% - 1.5rem));
     --navigation-label-hidden: inset(100% 0 0 0);
 
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) translate(var(--navigation-x), var(--navigation-y))
-        rotate(var(--navigation-angle))
+    transform: translate(-50%, -50%) rotate(var(--navigation-angle))
         translateY(calc(var(--navigation-radius) * -1))
         rotate(calc(var(--navigation-angle) * -1));
 }
@@ -250,7 +247,25 @@ button {
 .navigation-docked .navigation-item {
     --navigation-label-position: translate(calc(-100% - 1.5rem), -50%);
     --navigation-label-hidden: inset(0 0 0 100%);
+
+    top: auto;
+    left: 0;
+    transform: none;
 }
+
+.navigation-container.navigation-docked {
+    inset: var(--navigation-rail-inset) var(--navigation-rail-inset) var(--navigation-rail-inset) auto;
+    width: var(--navigation-link-size);
+    aspect-ratio: auto;
+    transform: none;
+}
+
+.navigation-docked .navigation-theme-slot { top: 0; }
+.navigation-docked .navigation-item:nth-child(2) { bottom: calc(4 * (var(--navigation-link-size) + var(--navigation-link-gap))); }
+.navigation-docked .navigation-item:nth-child(3) { bottom: calc(3 * (var(--navigation-link-size) + var(--navigation-link-gap))); }
+.navigation-docked .navigation-item:nth-child(4) { bottom: calc(2 * (var(--navigation-link-size) + var(--navigation-link-gap))); }
+.navigation-docked .navigation-item:nth-child(5) { bottom: calc(var(--navigation-link-size) + var(--navigation-link-gap)); }
+.navigation-docked .navigation-item:nth-child(6) { bottom: 0; }
 
 .navigation-rail {
     position: fixed;
@@ -281,7 +296,6 @@ button {
     font-size: var(--text-small);
     opacity: 0;
     writing-mode: vertical-rl;
-    transition: opacity 180ms ease;
 }
 
 .navigation-copyright-visible {
