@@ -10,7 +10,11 @@ export function Home() {
 
     return (
         <section id="home" className="home-container" aria-labelledby="home-title">
-            <div className="orbit-ring home-navigation-ring" aria-hidden="true" />
+            <div className="orbit-ring home-navigation-ring" aria-hidden="true">
+                {Array.from({ length: 6 }, (_, index) => (
+                    <span className="home-navigation-exit-marker" key={index} />
+                ))}
+            </div>
             <div className="home-text">
                 <h1 id="home-title" className="home-title" aria-label={homeDetails.name.fullName}>
                     <span className={`home-name-left ${homeDetails.name.isWestern ? "home-first-name" : ""}`} aria-hidden="true">{leftName}</span>

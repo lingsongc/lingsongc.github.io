@@ -206,7 +206,37 @@ button {
     left: 50%;
     width: var(--home-ring-size);
     transform: translate(-50%, -50%);
+    transition: transform 500ms ease, opacity 125ms linear;
 }
+
+.home-navigation-ring-exiting {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 500ms ease, opacity 125ms linear 375ms;
+}
+
+.home-navigation-exit-marker {
+    --home-marker-angle: 0deg;
+
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--navigation-button-size);
+    aspect-ratio: 1;
+    border: var(--orbit-ring-width) solid var(--colour-text);
+    border-radius: 50%;
+    background-color: var(--colour-background);
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--home-marker-angle))
+        translateY(calc((var(--home-ring-size) - var(--orbit-ring-width)) / -2));
+}
+
+.home-navigation-ring-exiting .home-navigation-exit-marker { opacity: 1; }
+.home-navigation-exit-marker:nth-child(2) { --home-marker-angle: 60deg; }
+.home-navigation-exit-marker:nth-child(3) { --home-marker-angle: 120deg; }
+.home-navigation-exit-marker:nth-child(4) { --home-marker-angle: 180deg; }
+.home-navigation-exit-marker:nth-child(5) { --home-marker-angle: 240deg; }
+.home-navigation-exit-marker:nth-child(6) { --home-marker-angle: 300deg; }
 
 .navigation-item {
     --navigation-angle: 0deg;
@@ -257,7 +287,56 @@ button {
     inset: var(--navigation-rail-inset) var(--navigation-rail-inset) var(--navigation-rail-inset) auto;
     width: var(--navigation-link-size);
     aspect-ratio: auto;
+    animation: navigation-rail-enter 250ms ease 500ms both;
     transform: none;
+}
+
+@keyframes navigation-rail-enter {
+    0% {
+        visibility: hidden;
+        transform: translateX(calc(100% + var(--navigation-rail-inset)));
+    }
+
+    0.01% { visibility: visible; }
+    100% {
+        visibility: visible;
+        transform: translateX(0);
+    }
+}
+
+.navigation-container.navigation-rail-exiting {
+    animation: navigation-rail-exit 250ms ease both;
+}
+
+@keyframes navigation-rail-exit {
+    from {
+        visibility: visible;
+        transform: translateX(0);
+    }
+
+    to {
+        visibility: hidden;
+        transform: translateX(calc(100% + var(--navigation-rail-inset)));
+    }
+}
+
+.navigation-container.navigation-home-entering {
+    animation: navigation-home-enter 500ms ease both;
+}
+
+@keyframes navigation-home-enter {
+    0% {
+        visibility: visible;
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0);
+    }
+
+    25% { opacity: 1; }
+    100% {
+        visibility: visible;
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
 }
 
 .navigation-docked .navigation-theme-slot { top: 0; }
@@ -300,6 +379,12 @@ button {
 
 .navigation-copyright-visible {
     opacity: 0.75;
+    transition: opacity 250ms ease 500ms;
+}
+
+.navigation-copyright-exiting {
+    opacity: 0;
+    transition: opacity 250ms ease;
 }
 
 .navigation-theme-slot {
@@ -380,9 +465,17 @@ button {
 @media (prefers-reduced-motion: reduce) {
     .navigation-link::before,
     .navigation-theme-slot::before,
-    .navigation-label {
+    .navigation-label,
+    .home-navigation-ring {
         transition: none;
     }
+
+    .navigation-container.navigation-docked,
+    .navigation-container.navigation-rail-exiting,
+    .navigation-container.navigation-home-entering { animation: none; }
+
+    .navigation-copyright-visible,
+    .navigation-copyright-exiting { transition: none; }
 }
 
 /* home */
