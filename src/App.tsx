@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { BackgroundGrid } from "./components/BackgroundGrid";
 import { MainCircle } from "./components/MainCircle";
 import { Navigation } from "./components/Navigation";
 import { About } from "./sections/About";
@@ -15,6 +16,7 @@ export default function App() {
 
     return (
         <>
+            <BackgroundGrid />
             <MainCircle experienceImage={experienceImage} activeProject={activeProject} />
             <Navigation />
             <main>

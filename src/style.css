@@ -48,8 +48,26 @@ body {
     background-color: var(--colour-background);
 }
 
+.background-grid {
+    position: fixed;
+    z-index: 0;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    color: var(--colour-line);
+    pointer-events: none;
+}
+
+.background-grid-lines {
+    fill: none;
+    stroke: currentcolor;
+    stroke-width: 1;
+    stroke-opacity: 0.2;
+}
+
 main {
     position: relative;
+    z-index: 0;
     overflow: clip;
 }
 
