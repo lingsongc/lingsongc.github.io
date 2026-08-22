@@ -66,6 +66,7 @@ h2 {
     color: var(--colour-accent);
     font-size: var(--text-section-title);
     font-weight: 800;
+    text-transform: uppercase;
 }
 h3 { font-size: var(--text-subtitle); }
 
@@ -181,7 +182,7 @@ button {
     --navigation-radius: calc((var(--home-ring-size) - var(--orbit-ring-width)) / 2);
 
     position: fixed;
-    z-index: 3;
+    z-index: 1;
     top: 50%;
     left: 50%;
     width: calc(var(--home-ring-size) + var(--navigation-button-size));
@@ -284,6 +285,7 @@ button {
 }
 
 .navigation-container.navigation-docked {
+    z-index: 3;
     inset: var(--navigation-rail-inset) var(--navigation-rail-inset) var(--navigation-rail-inset) auto;
     width: var(--navigation-link-size);
     aspect-ratio: auto;
