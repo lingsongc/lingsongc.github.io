@@ -56,6 +56,37 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             - skillsCircleSize() / 2;
         const contactCircleSize = () => Math.max(window.innerWidth, window.innerHeight) * 2.4;
         const contactCircleTop = () => window.innerHeight * 0.46 + contactCircleSize() / 2;
+        const imageLayers = [
+            [homeImage],
+            [aboutImage],
+            [experienceImage],
+            [projectImage, projectDescription],
+        ];
+        let visibleImageLayer = -1;
+        const updateImageLayer = () => {
+            const nextLayer = aboutSection.getBoundingClientRect().top >= window.innerHeight ? 0
+                : aboutSection.getBoundingClientRect().top <= 0
+                    && experienceSection.getBoundingClientRect().top >= window.innerHeight ? 1
+                : experienceSection.getBoundingClientRect().top <= 0
+                    && projectsSection.getBoundingClientRect().top >= window.innerHeight ? 2
+                : projectsSection.getBoundingClientRect().top <= 0
+                    && skillsSection.getBoundingClientRect().top >= window.innerHeight ? 3
+                : -1;
+
+            if (nextLayer === visibleImageLayer) return;
+            gsap.set(imageLayers.flat(), { opacity: 0 });
+            if (nextLayer >= 0) gsap.set(imageLayers[nextLayer], { opacity: 1 });
+            visibleImageLayer = nextLayer;
+        };
+
+        ScrollTrigger.create({
+            start: 0,
+            end: "max",
+            onUpdate: updateImageLayer,
+            onRefresh: updateImageLayer,
+        });
+        updateImageLayer();
+
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
             scrollTrigger: {
@@ -68,9 +99,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             .to(circle, {
                 width: aboutCircleSize,
                 left: aboutCircleLeft,
-            }, 0)
-            .to(homeImage, { opacity: 0, duration: 0.2 }, 0)
-            .to(aboutImage, { opacity: 1, duration: 0.2 }, 0.8);
+            }, 0);
 
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
@@ -85,9 +114,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
                 width: experienceCircleSize,
                 top: experienceCircleTop,
                 left: experienceCircleLeft,
-            }, 0)
-            .to(aboutImage, { opacity: 0, duration: 0.2 }, 0)
-            .to(experienceImage, { opacity: 1, duration: 0.2 }, 0.8);
+            }, 0);
 
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
@@ -98,9 +125,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
                 },
             },
         })
-            .to(circle, { top: "50%", left: "50%" }, 0)
-            .to(experienceImage, { opacity: 0, duration: 0.2 }, 0)
-            .to([projectImage, projectDescription], { opacity: 1, duration: 0.2 }, 0.8);
+            .to(circle, { top: "50%", left: "50%" }, 0);
 
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
@@ -111,8 +136,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
                 },
             },
         })
-            .to(circle, { width: skillsCircleSize, top: "50%", left: skillsCircleLeft }, 0)
-            .to([projectImage, projectDescription], { opacity: 0, duration: 0.2 }, 0);
+            .to(circle, { width: skillsCircleSize, top: "50%", left: skillsCircleLeft }, 0);
 
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
