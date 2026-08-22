@@ -62,7 +62,11 @@ h3 {
 }
 
 h1 { font-size: var(--text-page-title); }
-h2 { font-size: var(--text-section-title); }
+h2 {
+    color: var(--colour-accent);
+    font-size: var(--text-section-title);
+    font-weight: 800;
+}
 h3 { font-size: var(--text-subtitle); }
 
 p {
@@ -389,6 +393,10 @@ button {
     line-height: 0.85;
 }
 
+.home-first-name {
+    color: var(--colour-accent);
+}
+
 .home-name-left {
     grid-column: 1;
     grid-row: 1;
@@ -484,6 +492,7 @@ button {
 }
 
 .about-statistic-amount {
+    color: var(--colour-accent);
     font-family: var(--font-statement);
     font-weight: 400;
     font-size: clamp(1.5rem, 7vw, 7rem);
@@ -803,5 +812,8 @@ button {
 .contact-description {
     position: relative;
     z-index: 3;
+}
+
+.contact-description {
     color: var(--colour-background);
 }

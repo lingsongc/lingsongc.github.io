@@ -13,8 +13,8 @@ export function Home() {
             <div className="orbit-ring home-navigation-ring" aria-hidden="true" />
             <div className="home-text">
                 <h1 id="home-title" className="home-title" aria-label={homeDetails.name.fullName}>
-                    <span className="home-name-left" aria-hidden="true">{leftName}</span>
-                    <span className="home-name-right" aria-hidden="true">
+                    <span className={`home-name-left ${homeDetails.name.isWestern ? "home-first-name" : ""}`} aria-hidden="true">{leftName}</span>
+                    <span className={`home-name-right ${homeDetails.name.isWestern ? "" : "home-first-name"}`} aria-hidden="true">
                         {rightName.split(" ").map((name) => <span key={name}>{name}</span>)}
                     </span>
                 </h1>
