@@ -5,8 +5,8 @@ export type GridCircle = {
 };
 
 const SAMPLE_STEP = 24;
-const WARP_FALLOFF = 192;
-const WARP_STRENGTH = 56;
+const WARP_FALLOFF = 240;
+const WARP_STRENGTH = 36;
 
 function warpPoint(x: number, y: number, circle: GridCircle) {
     const offsetX = x - circle.x;
@@ -18,8 +18,8 @@ function warpPoint(x: number, y: number, circle: GridCircle) {
 
     const displacement = WARP_STRENGTH * influence * influence;
     return [
-        x + (offsetX / distance) * displacement,
-        y + (offsetY / distance) * displacement,
+        x - (offsetX / distance) * displacement,
+        y - (offsetY / distance) * displacement,
     ];
 }
 
