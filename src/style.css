@@ -466,7 +466,8 @@ button {
     .navigation-link::before,
     .navigation-theme-slot::before,
     .navigation-label,
-    .home-navigation-ring {
+    .home-navigation-ring,
+    .home-name-value {
         transition: none;
     }
 
@@ -509,6 +510,7 @@ button {
     grid-row: 1;
     align-self: center;
     justify-self: end;
+    clip-path: inset(-0.2em 0);
     white-space: nowrap;
 }
 
@@ -518,7 +520,27 @@ button {
     display: grid;
     align-content: space-between;
     justify-self: start;
+    clip-path: inset(-0.2em 0);
     white-space: nowrap;
+}
+
+.home-name-value {
+    display: block;
+    transition: transform 500ms ease;
+}
+
+.home-name-right .home-name-value {
+    display: grid;
+    height: 100%;
+    align-content: space-between;
+}
+
+.home-navigation-ring-exiting ~ .home-text .home-name-left .home-name-value {
+    transform: translateX(100%);
+}
+
+.home-navigation-ring-exiting ~ .home-text .home-name-right .home-name-value {
+    transform: translateX(-100%);
 }
 
 .home-description {
