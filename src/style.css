@@ -469,7 +469,8 @@ button {
     .navigation-theme-slot::before,
     .navigation-label,
     .home-navigation-ring,
-    .home-name-value {
+    .home-name-value,
+    .home-description-curve {
         transition: none;
     }
 
@@ -566,7 +567,14 @@ button {
     font-family: var(--font-text);
     font-size: calc(100 * var(--text-small) / (var(--home-circle-size) + 4rem) * 1px);
     transform: translate(-50%, -50%);
+    transition: transform 500ms ease, opacity 125ms linear;
     pointer-events: none;
+}
+
+.home-navigation-ring-exiting ~ .home-text .home-description-curve {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 500ms ease, opacity 125ms linear 375ms;
 }
 
 @media (max-width: 48rem) {
