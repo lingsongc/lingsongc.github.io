@@ -64,12 +64,21 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             instagram: [-0.62, -0.58],
             linkedin: [0.78, -0.28],
         };
+        const contactDiameterRatios: Record<string, number> = {
+            github: 0.36,
+            instagram: 0.28,
+            linkedin: 0.31,
+        };
         const contactOffset = (element: HTMLElement, axis: 0 | 1) => (
             contactOffsets[element.dataset.contactLink ?? ""]?.[axis] ?? 0
         ) * contactCircleSize();
-        const contactInitialOffset = (element: HTMLElement, axis: 0 | 1) => (
-            contactOffset(element, axis) * 0.46
-        );
+        const contactInitialOffset = (element: HTMLElement, axis: 0 | 1) => {
+            const id = element.dataset.contactLink ?? "";
+            const direction = contactOffsets[id] ?? [0, 0];
+            const directionLength = Math.hypot(...direction) || 1;
+            const insetRadius = 0.5 - (contactDiameterRatios[id] ?? 0) / 2 - 0.02;
+            return direction[axis] / directionLength * insetRadius * contactCircleSize();
+        };
         const imageLayers = [
             [homeImage],
             [aboutImage],
