@@ -67,6 +67,9 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const contactOffset = (element: HTMLElement, axis: 0 | 1) => (
             contactOffsets[element.dataset.contactLink ?? ""]?.[axis] ?? 0
         ) * contactCircleSize();
+        const contactInitialOffset = (element: HTMLElement, axis: 0 | 1) => (
+            contactOffset(element, axis) * 0.46
+        );
         const imageLayers = [
             [homeImage],
             [aboutImage],
@@ -160,13 +163,18 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         }).to(circle, { width: contactCircleSize, top: "50%", left: "50%" }, 0);
 
         gsap.set([contactBlobLayer, contactLinkLayer], { autoAlpha: 0 });
-        gsap.set(contactSatellites, { x: 0, y: 0, scale: 0.18 });
+        gsap.set(contactSatellites, {
+            xPercent: -50,
+            yPercent: -50,
+            x: (_, element: HTMLElement) => contactInitialOffset(element, 0),
+            y: (_, element: HTMLElement) => contactInitialOffset(element, 1),
+            scale: 1,
+        });
         const contactSplit = gsap.timeline({ paused: true })
             .to(contactBlobLayer, { autoAlpha: 1, duration: 0.06 }, 0)
             .to(contactSatellites, {
                 x: (_, element: HTMLElement) => contactOffset(element, 0),
                 y: (_, element: HTMLElement) => contactOffset(element, 1),
-                scale: 1,
                 duration: 0.5,
                 ease: "power2.inOut",
             }, 0)
