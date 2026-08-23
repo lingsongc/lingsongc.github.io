@@ -19,6 +19,9 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const experienceImage = circle.querySelector<HTMLElement>(".main-circle-image-experience");
         const projectImage = circle.querySelector<HTMLElement>(".main-circle-image-project");
         const projectDescription = circle.querySelector<HTMLElement>(".main-circle-project-description");
+        const contactBlobLayer = circle.querySelector<HTMLElement>(".contact-blob-layer");
+        const contactLinkLayer = circle.querySelector<HTMLElement>(".contact-link-layer");
+        const contactSatellites = circle.querySelectorAll<HTMLElement>(".contact-satellite, .contact-link");
         const experiencePanel = document.querySelector<HTMLElement>(".experience-panel");
         const navigationRail = document.querySelector<HTMLElement>(".navigation-rail");
         const aboutSection = document.getElementById("about");
@@ -27,6 +30,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const skillsSection = document.getElementById("skills");
         const contactSection = document.getElementById("contact");
         if (!homeImage || !aboutImage || !experienceImage || !projectImage || !projectDescription
+            || !contactBlobLayer || !contactLinkLayer || !contactSatellites.length
             || !experiencePanel || !navigationRail || !aboutSection || !experienceSection
             || !projectsSection || !skillsSection || !contactSection) return;
 
@@ -54,8 +58,15 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const skillsCircleLeft = () => navigationRail.getBoundingClientRect().left
             - skillsCircleGap()
             - skillsCircleSize() / 2;
-        const contactCircleSize = () => Math.max(window.innerWidth, window.innerHeight) * 2.4;
-        const contactCircleTop = () => window.innerHeight * 0.46 + contactCircleSize() / 2;
+        const contactCircleSize = () => Math.min(window.innerWidth, window.innerHeight) * 0.56;
+        const contactOffsets: Record<string, [number, number]> = {
+            github: [-0.78, 0.26],
+            instagram: [-0.62, -0.58],
+            linkedin: [0.78, -0.28],
+        };
+        const contactOffset = (element: HTMLElement, axis: 0 | 1) => (
+            contactOffsets[element.dataset.contactLink ?? ""]?.[axis] ?? 0
+        ) * contactCircleSize();
         const imageLayers = [
             [homeImage],
             [aboutImage],
@@ -146,10 +157,18 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
                     if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
                 },
             },
-        }).to(circle, {
-            width: contactCircleSize,
-            top: contactCircleTop,
-            left: "50%",
-        }, 0);
+        })
+            .to(circle, { width: contactCircleSize, top: "50%", left: "50%" }, 0)
+            .fromTo(contactBlobLayer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.08 }, 0)
+            .fromTo(contactLinkLayer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.18 }, 0.7)
+            .fromTo(contactSatellites, {
+                x: 0,
+                y: 0,
+                scale: 0.18,
+            }, {
+                x: (_, element: HTMLElement) => contactOffset(element, 0),
+                y: (_, element: HTMLElement) => contactOffset(element, 1),
+                scale: 1,
+            }, 0);
     }, []);
 }

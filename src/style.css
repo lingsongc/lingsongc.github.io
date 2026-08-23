@@ -142,11 +142,17 @@ button {
     left: 50%;
     width: var(--home-circle-size);
     aspect-ratio: 1;
-    overflow: hidden;
     border-radius: 50%;
-    background-color: var(--colour-image-blank);
     transform: translate(-50%, -50%);
     pointer-events: none;
+}
+
+.main-circle-mask {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    background-color: var(--colour-image-blank);
 }
 
 .main-circle-image {
@@ -1004,16 +1010,85 @@ button {
 /* contact */
 
 .contact-container {
-    align-content: end;
-    padding-bottom: clamp(4rem, 8vh, 7rem);
+    place-items: center;
 }
 
-.contact-title,
-.contact-description {
+.contact-content {
     position: relative;
     z-index: 3;
+    display: grid;
+    max-width: min(24rem, 70vw);
+    justify-items: center;
+    gap: 0.75rem;
+    text-align: center;
 }
 
 .contact-description {
     color: var(--colour-background);
+}
+
+.contact-action {
+    color: var(--colour-background);
+    font-weight: 700;
+    text-underline-offset: 0.25rem;
+}
+
+.contact-blob-layer,
+.contact-link-layer {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.contact-blob-layer {
+    filter: blur(0.65rem) contrast(18);
+}
+
+.contact-blob-center,
+.contact-satellite {
+    position: absolute;
+    border-radius: 50%;
+    background-color: var(--colour-image-blank);
+}
+
+.contact-blob-center { inset: 0; }
+
+.contact-satellite,
+.contact-link {
+    top: 50%;
+    left: 50%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+}
+
+.contact-satellite-github,
+.contact-link-github { width: 36%; }
+
+.contact-satellite-instagram,
+.contact-link-instagram { width: 28%; }
+
+.contact-satellite-linkedin,
+.contact-link-linkedin { width: 31%; }
+
+.contact-link {
+    position: absolute;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    color: var(--colour-background);
+    font-size: clamp(0.625rem, 1.2vmin, 0.875rem);
+    font-weight: 700;
+    text-decoration: none;
+    pointer-events: auto;
+}
+
+.contact-link:focus-visible {
+    outline: 0.2rem solid var(--colour-accent);
+    outline-offset: 0.2rem;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .contact-blob-layer { filter: none; }
 }

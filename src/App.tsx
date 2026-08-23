@@ -17,9 +17,9 @@ export default function App() {
     return (
         <>
             <BackgroundGrid />
-            <MainCircle experienceImage={experienceImage} activeProject={activeProject} />
             <Navigation />
             <main>
+                <MainCircle experienceImage={experienceImage} activeProject={activeProject} />
                 <Home />
                 <div className="section-static-container"><About /></div>
                 <div className="section-static-container">
