@@ -14,6 +14,19 @@ export function MainCircle({ experienceImage, activeProject }: MainCircleProps) 
 
     return (
         <div ref={circleRef} className="main-circle-container">
+            <svg width="0" height="0" aria-hidden="true">
+                <defs>
+                    <filter id="contact-goo" x="-50%" y="-50%" width="200%" height="200%" colorInterpolationFilters="sRGB">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="contact-blur" />
+                        <feColorMatrix
+                            in="contact-blur"
+                            values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -10"
+                            result="contact-goo-alpha"
+                        />
+                        <feBlend in="SourceGraphic" in2="contact-goo-alpha" />
+                    </filter>
+                </defs>
+            </svg>
             <div className="main-circle-mask" aria-hidden="true">
                 <img className="main-circle-image main-circle-image-home" src="/about/profile.jpeg" alt="" />
                 <img className="main-circle-image main-circle-image-about" src="/about/profile-2.jpg" alt="" />

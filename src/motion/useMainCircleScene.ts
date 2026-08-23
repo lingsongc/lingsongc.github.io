@@ -67,6 +67,9 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const contactOffset = (element: HTMLElement, axis: 0 | 1) => (
             contactOffsets[element.dataset.contactLink ?? ""]?.[axis] ?? 0
         ) * contactCircleSize();
+        const contactInitialOffset = (element: HTMLElement, axis: 0 | 1) => (
+            contactOffset(element, axis) * 0.46
+        );
         const imageLayers = [
             [homeImage],
             [aboutImage],
@@ -162,13 +165,14 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             .fromTo(contactBlobLayer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.08 }, 0)
             .fromTo(contactLinkLayer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.18 }, 0.7)
             .fromTo(contactSatellites, {
-                x: 0,
-                y: 0,
-                scale: 0.18,
+                xPercent: -50,
+                yPercent: -50,
+                x: (_, element: HTMLElement) => contactInitialOffset(element, 0),
+                y: (_, element: HTMLElement) => contactInitialOffset(element, 1),
+                scale: 1,
             }, {
                 x: (_, element: HTMLElement) => contactOffset(element, 0),
                 y: (_, element: HTMLElement) => contactOffset(element, 1),
-                scale: 1,
             }, 0);
     }, []);
 }

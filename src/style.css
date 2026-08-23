@@ -1043,7 +1043,7 @@ button {
 }
 
 .contact-blob-layer {
-    filter: blur(0.65rem) contrast(18);
+    filter: url("#contact-goo");
 }
 
 .contact-blob-center,
