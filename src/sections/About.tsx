@@ -1,10 +1,39 @@
+import { useEffect, useRef } from "react";
 import { aboutDetails } from "../data/about";
 
 export function About() {
+    const sectionRef = useRef<HTMLElement>(null);
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
 
+    useEffect(() => {
+        const section = sectionRef.current;
+        const restingContainer = section?.parentElement;
+        if (!section || !restingContainer) return;
+        const restingStart = () => restingContainer.getBoundingClientRect().top + window.scrollY;
+        const updateContentVisibility = () => {
+            const start = restingStart();
+            const end = start + restingContainer.offsetHeight - window.innerHeight;
+            section.classList.toggle(
+                "about-content-visible",
+                window.scrollY >= start && window.scrollY < end,
+            );
+        };
+
+        const animationFrame = window.requestAnimationFrame(updateContentVisibility);
+        window.addEventListener("scroll", updateContentVisibility, { passive: true });
+        window.addEventListener("resize", updateContentVisibility);
+        updateContentVisibility();
+
+        return () => {
+            window.cancelAnimationFrame(animationFrame);
+            window.removeEventListener("scroll", updateContentVisibility);
+            window.removeEventListener("resize", updateContentVisibility);
+            section.classList.remove("about-content-visible");
+        };
+    }, []);
+
     return (
-        <section id="about" className="about-container" aria-labelledby="about-title">
+        <section ref={sectionRef} id="about" className="about-container" aria-labelledby="about-title">
             <div className="about-text">
                 <h2 id="about-title" className="about-title">About Me</h2>
                 <div className="about-description">

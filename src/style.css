@@ -606,6 +606,8 @@ button {
 
 .about-container {
     --about-circle-arc: 64vh;
+    --about-transition-duration: 300ms;
+    --about-transition-stagger: 100ms;
 
     grid-template-columns:
         var(--about-circle-arc)
@@ -614,6 +616,38 @@ button {
     justify-items: center;
     padding-block: clamp(2rem, 4vh, 3rem);
     padding-inline: 0;
+}
+
+.about-title,
+.about-description,
+.about-statistics {
+    visibility: hidden;
+    transform: translateX(calc(
+        -50% - (100vw - var(--about-circle-arc) - var(--navigation-link-size) - var(--navigation-rail-inset)) / 2
+    ));
+    transition:
+        transform var(--about-transition-duration) ease var(--about-transition-delay),
+        visibility 0s linear 500ms;
+}
+
+.about-title {
+    --about-transition-delay: 0ms;
+}
+
+.about-description {
+    --about-transition-delay: var(--about-transition-stagger);
+}
+
+.about-statistics {
+    --about-transition-delay: calc(2 * var(--about-transition-stagger));
+}
+
+.about-content-visible :is(.about-title, .about-description, .about-statistics) {
+    visibility: visible;
+    transform: translateX(0);
+    transition:
+        transform var(--about-transition-duration) ease var(--about-transition-delay),
+        visibility 0s linear 0s;
 }
 
 .about-text {
@@ -668,6 +702,15 @@ button {
 
     .about-text {
         width: min(65vw, calc(100% - 1.5rem));
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .about-title,
+    .about-description,
+    .about-statistics {
+        transform: none;
+        transition: none;
     }
 }
 
