@@ -73,7 +73,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             [experienceImage],
             [projectImage, projectDescription],
         ];
-        let visibleImageLayer = -1;
+        let visibleImageLayer: number | null = null;
         const updateImageLayer = () => {
             const nextLayer = aboutSection.getBoundingClientRect().top >= window.innerHeight ? 0
                 : aboutSection.getBoundingClientRect().top <= 0
