@@ -73,7 +73,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             [experienceImage],
             [projectImage, projectDescription],
         ];
-        let visibleImageLayer = -1;
+        let visibleImageLayer: number | null = null;
         const updateImageLayer = () => {
             const nextLayer = aboutSection.getBoundingClientRect().top >= window.innerHeight ? 0
                 : aboutSection.getBoundingClientRect().top <= 0
@@ -157,18 +157,29 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
                     if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
                 },
             },
-        })
-            .to(circle, { width: contactCircleSize, top: "50%", left: "50%" }, 0)
-            .fromTo(contactBlobLayer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.08 }, 0)
-            .fromTo(contactLinkLayer, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.18 }, 0.7)
-            .fromTo(contactSatellites, {
-                x: 0,
-                y: 0,
-                scale: 0.18,
-            }, {
+        }).to(circle, { width: contactCircleSize, top: "50%", left: "50%" }, 0);
+
+        gsap.set([contactBlobLayer, contactLinkLayer], { autoAlpha: 0 });
+        gsap.set(contactSatellites, { x: 0, y: 0, scale: 0.18 });
+        const contactSplit = gsap.timeline({ paused: true })
+            .to(contactBlobLayer, { autoAlpha: 1, duration: 0.06 }, 0)
+            .to(contactSatellites, {
                 x: (_, element: HTMLElement) => contactOffset(element, 0),
                 y: (_, element: HTMLElement) => contactOffset(element, 1),
                 scale: 1,
-            }, 0);
+                duration: 0.5,
+                ease: "power2.inOut",
+            }, 0)
+            .to(contactLinkLayer, { autoAlpha: 1, duration: 0.12 }, 0.38);
+
+        ScrollTrigger.create({
+            trigger: contactSection,
+            start: "top 1px",
+            onEnter: () => reducedMotion ? contactSplit.progress(1) : contactSplit.play(),
+            onLeaveBack: () => reducedMotion ? contactSplit.progress(0) : contactSplit.reverse(),
+            onRefresh: (self) => {
+                if (self.isActive) contactSplit.progress(reducedMotion ? 1 : contactSplit.progress()).play();
+            },
+        });
     }, []);
 }
