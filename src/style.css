@@ -724,14 +724,16 @@ button {
 
 .experience-container {
     --experience-section-padding-inline: clamp(1.5rem, 6vw, 6rem);
-    --experience-circle-size: min(31vw, 46vh);
+    --experience-circle-size: min(46.5vw, 69vh);
     --experience-rail-gap: clamp(1rem, 2vw, 2rem);
+    --experience-ring-rail-gap: clamp(0.5rem, 1vw, 1rem);
     --experience-orbit-center-x: calc(100% - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
     --experience-content-boundary-x: calc(100cqw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
-    --experience-orbit-size: min(50vw, 72vh);
+    --experience-orbit-size: min(75vw, 108vh);
     --experience-planet-size: clamp(4.375rem, 6.25vw, 5.625rem);
     --experience-content-gap: clamp(1rem, 2vw, 2rem);
     --experience-content-width: calc(var(--experience-content-boundary-x) - var(--experience-circle-size) / 2 - var(--experience-section-padding-inline) - var(--experience-content-gap));
+    --experience-ring-cutout: max(0px, calc((var(--experience-orbit-size) - var(--experience-planet-size) - var(--experience-circle-size)) / 2 - var(--experience-rail-gap) + var(--experience-ring-rail-gap)));
 
     position: relative;
     grid-template-columns: minmax(0, var(--experience-content-width)) minmax(0, 1fr);
@@ -856,7 +858,14 @@ button {
 .experience-orbit-ring {
     position: absolute;
     inset: calc(var(--experience-planet-size) / 2);
-    opacity: 0.65;
+    clip-path: polygon(
+        0 0,
+        calc(100% - var(--experience-ring-cutout)) 0,
+        calc(100% - var(--experience-ring-cutout)) 50%,
+        50% 50%,
+        50% 100%,
+        0 100%
+    );
 }
 
 .experience-event-orbit-list {
@@ -926,8 +935,8 @@ button {
 
 @media (max-width: 48rem) {
     .experience-container {
-        --experience-circle-size: 52vw;
-        --experience-orbit-size: 82vw;
+        --experience-circle-size: 78vw;
+        --experience-orbit-size: 123vw;
     }
 
     .experience-orbit { top: 72%; }

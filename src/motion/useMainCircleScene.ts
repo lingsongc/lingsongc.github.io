@@ -41,8 +41,8 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const aboutCircleLeft = () => aboutCircleSize()
             * (window.innerWidth <= 768 ? -0.2 : -0.1);
         const experienceCircleSize = () => window.innerWidth <= 768
-            ? window.innerWidth * 0.52
-            : Math.min(window.innerWidth * 0.31, window.innerHeight * 0.46);
+            ? window.innerWidth * 0.78
+            : Math.min(window.innerWidth * 0.465, window.innerHeight * 0.69);
         const experienceCirclePosition = (axis: "left" | "top") => axis === "left"
             ? experienceOrbit.offsetLeft
             : experienceOrbit.offsetTop;
