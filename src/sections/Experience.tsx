@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { education } from "../data/education";
 import { experiences } from "../data/experiences";
 
@@ -12,46 +12,70 @@ const educationEvents = education.map(({ id, institution, qualification, ...even
 }));
 const eventsByType = { experience: experienceEvents, education: educationEvents };
 const eventImagePath = (type: ExperienceType, id: string) => `/${type}/${id}.jpg`;
+const orbitScrollStep = 112;
+const orbitAngleStep = 36;
+const orbitFocusAngle = -36;
 
 type ExperienceProps = {
     onActiveEventChange: (image: string) => void;
 };
 
 export function Experience({ onActiveEventChange }: ExperienceProps) {
+    const orbitScrollRef = useRef<HTMLDivElement>(null);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
+    const [orbitPosition, setOrbitPosition] = useState(0);
     const [activeEventIds, setActiveEventIds] = useState({
         experience: experienceEvents[0].id,
         education: educationEvents[0].id,
     });
-    const activeEvent = eventsByType[experienceType].find(
+    const activeEvents = eventsByType[experienceType];
+    const activeEvent = activeEvents.find(
         (event) => event.id === activeEventIds[experienceType],
-    ) ?? eventsByType[experienceType][0];
+    ) ?? activeEvents[0];
+
+    useEffect(() => {
+        const activeIndex = activeEvents.findIndex(
+            (event) => event.id === activeEventIds[experienceType],
+        );
+        const nextPosition = Math.max(0, activeIndex);
+        orbitScrollRef.current?.scrollTo({ top: nextPosition * orbitScrollStep });
+        setOrbitPosition(nextPosition);
+    }, [experienceType]);
+
+    const activateEvent = (index: number) => {
+        const event = activeEvents[index];
+        if (!event) return;
+        setActiveEventIds((current) => ({ ...current, [experienceType]: event.id }));
+        onActiveEventChange(eventImagePath(experienceType, event.id));
+    };
+
+    const selectEvent = (index: number, behavior?: ScrollBehavior) => {
+        const event = activeEvents[index];
+        if (!event) return;
+        activateEvent(index);
+        const scrollBehavior = behavior ?? (window.matchMedia("(prefers-reduced-motion: reduce)").matches
+            ? "auto"
+            : "smooth");
+        orbitScrollRef.current?.scrollTo({ top: index * orbitScrollStep, behavior: scrollBehavior });
+    };
+
+    const handleOrbitScroll = () => {
+        const nextPosition = (orbitScrollRef.current?.scrollTop ?? 0) / orbitScrollStep;
+        const nextIndex = Math.min(activeEvents.length - 1, Math.max(0, Math.round(nextPosition)));
+        setOrbitPosition(nextPosition);
+        if (activeEvents[nextIndex].id !== activeEvent.id) activateEvent(nextIndex);
+    };
 
     return (
-        <section
-            id="experience"
-            className="experience-container"
-            aria-labelledby="experience-title"
-        >
-            <article className="experience-text">
+        <section id="experience" className="experience-container" aria-labelledby="experience-title">
+            <header className="experience-header">
                 <h2 id="experience-title" className="experience-title">
                     {experienceType === "experience" ? "Experience" : "Education"}
                 </h2>
-                <h3 className="experience-event-title">{activeEvent.title}</h3>
-                <p className="experience-role">{activeEvent.subtitle}</p>
-                <p className="experience-dates">{activeEvent.startDate} to {activeEvent.endDate}</p>
-                <p className="experience-description">{activeEvent.description}</p>
-                <ul className="experience-highlights">
-                    {activeEvent.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
-                </ul>
-            </article>
-            <aside className="experience-panel" aria-label="Experience timeline controls">
                 <div className="experience-type-toggle" role="group" aria-label="Timeline type">
                     {(["experience", "education"] as const).map((type) => (
                         <button
-                            className={`experience-type-button${experienceType === type
-                                ? " experience-type-button-active"
-                                : ""}`}
+                            className={`experience-type-button${experienceType === type ? " experience-type-button-active" : ""}`}
                             type="button"
                             aria-pressed={experienceType === type}
                             onClick={() => {
@@ -64,33 +88,74 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                         </button>
                     ))}
                 </div>
-                {(["experience", "education"] as const).map((type) => (
-                    <ol
-                        className="experience-event-list"
-                        aria-label={`${type[0].toUpperCase() + type.slice(1)} entries`}
-                        hidden={experienceType !== type}
-                        key={type}
+            </header>
+            <article className="experience-text">
+                <h3 className="experience-event-title">{activeEvent.title}</h3>
+                <p className="experience-role">{activeEvent.subtitle}</p>
+                <p className="experience-dates">{activeEvent.startDate} to {activeEvent.endDate}</p>
+                <p className="experience-description">{activeEvent.description}</p>
+                <ul className="experience-highlights">
+                    {activeEvent.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+                </ul>
+            </article>
+            <aside className="experience-orbit" aria-label={`${experienceType} entries`}>
+                <div
+                    ref={orbitScrollRef}
+                    className="experience-orbit-scroll"
+                    onScroll={handleOrbitScroll}
+                    onKeyDown={(event) => {
+                        if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
+                        event.preventDefault();
+                        const direction = event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 1;
+                        selectEvent(Math.round(orbitPosition) + direction);
+                    }}
+                    tabIndex={0}
+                    aria-label={`Scroll through ${experienceType} entries`}
+                >
+                    <div
+                        className="experience-orbit-track"
+                        style={{ "--experience-scroll-distance": `${(activeEvents.length - 1) * orbitScrollStep}px` } as CSSProperties}
                     >
-                        {eventsByType[type].map((event) => (
-                            <li key={event.id}>
-                                <button
-                                    className={`experience-event-button${activeEventIds[type] === event.id
-                                        ? " experience-event-button-active"
-                                        : ""}`}
-                                    type="button"
-                                    aria-label={event.title}
-                                    aria-pressed={activeEventIds[type] === event.id}
-                                    onClick={() => {
-                                        setActiveEventIds((current) => ({ ...current, [type]: event.id }));
-                                        onActiveEventChange(eventImagePath(type, event.id));
-                                    }}
-                                >
-                                    <img className="experience-event-image" src={eventImagePath(type, event.id)} alt="" />
-                                </button>
-                            </li>
+                        <div className="experience-orbit-stage">
+                            <span className="orbit-ring experience-orbit-ring" aria-hidden="true" />
+                            <ol className="experience-event-orbit-list">
+                                {activeEvents.map((event, index) => {
+                                    const angle = orbitFocusAngle - (index - orbitPosition) * orbitAngleStep;
+                                    const visible = angle >= -160 && angle <= 45;
+                                    return (
+                                        <li
+                                            className={`experience-event-orbit-item${visible ? "" : " experience-event-orbit-item-hidden"}`}
+                                            style={{
+                                                "--experience-event-angle": `${angle}deg`,
+                                                "--experience-event-angle-inverse": `${-angle}deg`,
+                                            } as CSSProperties}
+                                            key={event.id}
+                                        >
+                                            <button
+                                                className={`experience-event-button${activeEvent.id === event.id ? " experience-event-button-active" : ""}`}
+                                                type="button"
+                                                aria-label={event.title}
+                                                aria-pressed={activeEvent.id === event.id}
+                                                tabIndex={visible ? 0 : -1}
+                                                onClick={() => selectEvent(index)}
+                                            >
+                                                <img className="experience-event-image" src={eventImagePath(experienceType, event.id)} alt="" />
+                                            </button>
+                                        </li>
+                                    );
+                                })}
+                            </ol>
+                        </div>
+                        {activeEvents.map((event, index) => (
+                            <span
+                                className="experience-orbit-snap-point"
+                                style={{ top: index * orbitScrollStep }}
+                                aria-hidden="true"
+                                key={event.id}
+                            />
                         ))}
-                    </ol>
-                ))}
+                    </div>
+                </div>
             </aside>
         </section>
     );

@@ -22,7 +22,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const contactBlobLayer = circle.querySelector<HTMLElement>(".contact-blob-layer");
         const contactLinkLayer = circle.querySelector<HTMLElement>(".contact-link-layer");
         const contactSatellites = circle.querySelectorAll<HTMLElement>(".contact-satellite, .contact-link");
-        const experiencePanel = document.querySelector<HTMLElement>(".experience-panel");
+        const experienceOrbit = document.querySelector<HTMLElement>(".experience-orbit");
         const navigationRail = document.querySelector<HTMLElement>(".navigation-rail");
         const aboutSection = document.getElementById("about");
         const experienceSection = document.getElementById("experience");
@@ -31,7 +31,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const contactSection = document.getElementById("contact");
         if (!homeImage || !aboutImage || !experienceImage || !projectImage || !projectDescription
             || !contactBlobLayer || !contactLinkLayer || !contactSatellites.length
-            || !experiencePanel || !navigationRail || !aboutSection || !experienceSection
+            || !experienceOrbit || !navigationRail || !aboutSection || !experienceSection
             || !projectsSection || !skillsSection || !contactSection) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -40,19 +40,12 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             : window.innerHeight * 1.6;
         const aboutCircleLeft = () => aboutCircleSize()
             * (window.innerWidth <= 768 ? -0.2 : -0.1);
-        const experienceCircleReferenceSize = () => window.innerWidth <= 768
-            ? window.innerWidth * 0.72
-            : Math.min(window.innerWidth * 0.48, window.innerHeight * 0.68);
-        const experienceCircleSize = () => experienceCircleReferenceSize() * 0.8;
-        const experienceCircleOverlap = 64;
-        const experienceCircleEdgeOffset = () => (
-            experienceCircleReferenceSize() - experienceCircleSize()
-        ) / 2;
-        const experienceCircleLeft = () => experiencePanel.getBoundingClientRect().left
-            + experienceCircleOverlap
-            - experienceCircleSize() / 2;
-        const experienceCircleTop = () => window.innerHeight * 0.58
-            + experienceCircleEdgeOffset();
+        const experienceCircleSize = () => window.innerWidth <= 768
+            ? window.innerWidth * 0.52
+            : Math.min(window.innerWidth * 0.31, window.innerHeight * 0.46);
+        const experienceCirclePosition = (axis: "left" | "top") => axis === "left"
+            ? experienceOrbit.offsetLeft
+            : experienceOrbit.offsetTop;
         const skillsCircleSize = () => Math.min(window.innerWidth, window.innerHeight) * 0.9;
         const skillsCircleGap = () => (window.innerHeight - skillsCircleSize()) / 2;
         const skillsCircleLeft = () => navigationRail.getBoundingClientRect().left
@@ -135,8 +128,8 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         })
             .to(circle, {
                 width: experienceCircleSize,
-                top: experienceCircleTop,
-                left: experienceCircleLeft,
+                top: () => experienceCirclePosition("top"),
+                left: () => experienceCirclePosition("left"),
             }, 0);
 
         gsap.timeline({
