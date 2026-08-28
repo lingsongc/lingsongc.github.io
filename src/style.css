@@ -724,30 +724,38 @@ button {
 
 .experience-container {
     --experience-section-padding-inline: clamp(1.5rem, 6vw, 6rem);
+    --experience-circle-size: min(31vw, 46vh);
+    --experience-rail-gap: clamp(1rem, 2vw, 2rem);
+    --experience-orbit-center-x: calc(100% - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
+    --experience-content-boundary-x: calc(100cqw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
     --experience-orbit-size: min(50vw, 72vh);
     --experience-planet-size: clamp(4.375rem, 6.25vw, 5.625rem);
+    --experience-content-gap: clamp(1rem, 2vw, 2rem);
+    --experience-content-width: calc(var(--experience-content-boundary-x) - var(--experience-circle-size) / 2 - var(--experience-section-padding-inline) - var(--experience-content-gap));
 
     position: relative;
+    grid-template-columns: minmax(0, var(--experience-content-width)) minmax(0, 1fr);
+    grid-template-rows: auto minmax(0, 1fr);
+    align-items: stretch;
+    padding-block: clamp(2rem, 5vw, 4rem);
     container-type: inline-size;
 }
 
 .experience-header {
-    position: absolute;
+    position: relative;
     z-index: 1;
-    top: clamp(2rem, 5vw, 4rem);
-    left: var(--experience-section-padding-inline);
+    grid-column: 1;
+    grid-row: 1;
 }
 
 .experience-text {
-    position: absolute;
-    top: 52%;
-    left: var(--experience-section-padding-inline);
-    width: min(38rem, 43vw);
-    max-height: min(52vh, 30rem);
-    max-height: min(52svh, 30rem);
+    position: relative;
+    grid-column: 1;
+    grid-row: 2;
+    min-height: 0;
+    padding: clamp(2rem, 4vh, 3rem) var(--experience-content-gap) 0 0;
     overflow-y: auto;
     scrollbar-width: none;
-    transform: translateY(-50%);
 }
 
 .experience-text::-webkit-scrollbar { display: none; }
@@ -816,7 +824,7 @@ button {
 .experience-orbit {
     position: absolute;
     top: 70%;
-    left: 72%;
+    left: var(--experience-orbit-center-x);
     width: var(--experience-orbit-size);
     height: var(--experience-orbit-size);
     transform: translate(-50%, -50%);
@@ -848,6 +856,7 @@ button {
 .experience-orbit-ring {
     position: absolute;
     inset: calc(var(--experience-planet-size) / 2);
+    opacity: 0.65;
 }
 
 .experience-event-orbit-list {
@@ -917,11 +926,11 @@ button {
 
 @media (max-width: 48rem) {
     .experience-container {
+        --experience-circle-size: 52vw;
         --experience-orbit-size: 82vw;
     }
 
-    .experience-text { width: 52vw; }
-    .experience-orbit { top: 72%; left: 74%; }
+    .experience-orbit { top: 72%; }
 }
 
 /* projects */
