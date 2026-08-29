@@ -858,14 +858,7 @@ button {
 .experience-orbit-ring {
     position: absolute;
     inset: calc(var(--experience-planet-size) / 2);
-    clip-path: polygon(
-        0 0,
-        calc(100% - var(--experience-ring-cutout)) 0,
-        calc(100% - var(--experience-ring-cutout)) 50%,
-        50% 50%,
-        50% 100%,
-        0 100%
-    );
+    clip-path: inset(0 var(--experience-ring-cutout) 0 0);
 }
 
 .experience-event-orbit-list {
