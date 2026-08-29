@@ -68,36 +68,40 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
 
     return (
         <section id="experience" className="experience-container" aria-labelledby="experience-title">
-            <header className="experience-header">
-                <h2 id="experience-title" className="experience-title">
-                    {experienceType === "experience" ? "Experience" : "Education"}
-                </h2>
-                <div className="experience-type-toggle" role="group" aria-label="Timeline type">
-                    {(["experience", "education"] as const).map((type) => (
-                        <button
-                            className={`experience-type-button${experienceType === type ? " experience-type-button-active" : ""}`}
-                            type="button"
-                            aria-pressed={experienceType === type}
-                            onClick={() => {
-                                setExperienceType(type);
-                                onActiveEventChange(eventImagePath(type, activeEventIds[type]));
-                            }}
-                            key={type}
-                        >
-                            {type[0].toUpperCase() + type.slice(1)}
-                        </button>
-                    ))}
+            <div className="experience-copy">
+                <header className="experience-header">
+                    <h2 id="experience-title" className="experience-title">
+                        {experienceType === "experience" ? "Experience" : "Education"}
+                    </h2>
+                    <div className="experience-type-toggle" role="group" aria-label="Timeline type">
+                        {(["experience", "education"] as const).map((type) => (
+                            <button
+                                className={`experience-type-button${experienceType === type ? " experience-type-button-active" : ""}`}
+                                type="button"
+                                aria-pressed={experienceType === type}
+                                onClick={() => {
+                                    setExperienceType(type);
+                                    onActiveEventChange(eventImagePath(type, activeEventIds[type]));
+                                }}
+                                key={type}
+                            >
+                                {type[0].toUpperCase() + type.slice(1)}
+                            </button>
+                        ))}
+                    </div>
+                </header>
+                <div className="experience-content-region">
+                    <article className="experience-text">
+                        <h3 className="experience-event-title">{activeEvent.title}</h3>
+                        <p className="experience-role">{activeEvent.subtitle}</p>
+                        <p className="experience-dates">{activeEvent.startDate} to {activeEvent.endDate}</p>
+                        <p className="experience-description">{activeEvent.description}</p>
+                        <ul className="experience-highlights">
+                            {activeEvent.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
+                        </ul>
+                    </article>
                 </div>
-            </header>
-            <article className="experience-text">
-                <h3 className="experience-event-title">{activeEvent.title}</h3>
-                <p className="experience-role">{activeEvent.subtitle}</p>
-                <p className="experience-dates">{activeEvent.startDate} to {activeEvent.endDate}</p>
-                <p className="experience-description">{activeEvent.description}</p>
-                <ul className="experience-highlights">
-                    {activeEvent.highlights.map((highlight) => <li key={highlight}>{highlight}</li>)}
-                </ul>
-            </article>
+            </div>
             <aside className="experience-orbit" aria-label={`${experienceType} entries`}>
                 <div
                     ref={orbitScrollRef}

@@ -732,30 +732,48 @@ button {
     --experience-orbit-size: min(75vw, 108vh);
     --experience-planet-size: clamp(4.375rem, 6.25vw, 5.625rem);
     --experience-content-gap: clamp(1rem, 2vw, 2rem);
+    --experience-header-space: clamp(7.5rem, 14vh, 9.5rem);
     --experience-content-width: calc(var(--experience-content-boundary-x) - var(--experience-circle-size) / 2 - var(--experience-section-padding-inline) - var(--experience-content-gap));
     --experience-ring-cutout: max(0px, calc((var(--experience-orbit-size) - var(--experience-planet-size) - var(--experience-circle-size)) / 2 - var(--experience-rail-gap) + var(--experience-ring-rail-gap)));
 
     position: relative;
     grid-template-columns: minmax(0, var(--experience-content-width)) minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
     align-items: stretch;
     padding-block: clamp(2rem, 5vw, 4rem);
     container-type: inline-size;
 }
 
-.experience-header {
+.experience-copy {
     position: relative;
     z-index: 1;
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
     grid-column: 1;
-    grid-row: 1;
+}
+
+.experience-copy::after,
+.experience-header {
+    flex: 0 0 var(--experience-header-space);
+}
+
+.experience-copy::after {
+    content: "";
+}
+
+.experience-content-region {
+    display: flex;
+    min-height: 0;
+    flex: 1 1 auto;
+    align-items: center;
+    overflow: hidden;
 }
 
 .experience-text {
-    position: relative;
-    grid-column: 1;
-    grid-row: 2;
+    width: 100%;
+    max-height: 100%;
     min-height: 0;
-    padding: clamp(2rem, 4vh, 3rem) var(--experience-content-gap) 0 0;
+    padding-right: var(--experience-content-gap);
     overflow-y: auto;
     scrollbar-width: none;
 }
