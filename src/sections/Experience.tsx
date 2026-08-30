@@ -151,7 +151,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                                             key={event.id}
                                         >
                                             <button
-                                                className={`experience-event-button${activeEvent.id === event.id ? " experience-event-button-active" : ""}`}
+                                                className="experience-event-button"
                                                 type="button"
                                                 aria-label={event.title}
                                                 aria-pressed={activeEvent.id === event.id}
@@ -164,6 +164,14 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                                     );
                                 })}
                             </ol>
+                            <span
+                                className="experience-orbit-focus-marker"
+                                style={{
+                                    "--experience-event-angle": `${orbitFocusAngle}deg`,
+                                    "--experience-event-angle-inverse": `${-orbitFocusAngle}deg`,
+                                } as CSSProperties}
+                                aria-hidden="true"
+                            />
                         </div>
                         {activeEvents.map((event, index) => (
                             <span
