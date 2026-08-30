@@ -24,6 +24,7 @@ type ExperienceProps = {
 export function Experience({ onActiveEventChange }: ExperienceProps) {
     const orbitScrollRef = useRef<HTMLDivElement>(null);
     const orbitTargetIndexRef = useRef(0);
+    const activateEventRef = useRef<(index: number) => void>(() => undefined);
     const selectEventRef = useRef<(index: number) => void>(() => undefined);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
     const [orbitPosition, setOrbitPosition] = useState(0);
@@ -49,10 +50,11 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
 
     const activateEvent = (index: number) => {
         const event = activeEvents[index];
-        if (!event) return;
+        if (!event || event.id === activeEvent.id) return;
         setActiveEventIds((current) => ({ ...current, [experienceType]: event.id }));
         onActiveEventChange(eventImagePath(experienceType, event.id));
     };
+    activateEventRef.current = activateEvent;
 
     const selectEvent = (index: number, behavior?: ScrollBehavior) => {
         const event = activeEvents[index];
@@ -86,7 +88,9 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
             selectEventRef.current(orbitTargetIndexRef.current + direction);
         };
         const syncTargetIndex = () => {
-            orbitTargetIndexRef.current = Math.round(scrollArea.scrollTop / orbitScrollStep);
+            const nextIndex = Math.round(scrollArea.scrollTop / orbitScrollStep);
+            orbitTargetIndexRef.current = nextIndex;
+            activateEventRef.current(nextIndex);
         };
         scrollArea.addEventListener("wheel", handleWheel, { passive: false });
         scrollArea.addEventListener("scrollend", syncTargetIndex);
@@ -98,9 +102,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
 
     const handleOrbitScroll = () => {
         const nextPosition = (orbitScrollRef.current?.scrollTop ?? 0) / orbitScrollStep;
-        const nextIndex = Math.min(activeEvents.length - 1, Math.max(0, Math.round(nextPosition)));
         setOrbitPosition(nextPosition);
-        if (activeEvents[nextIndex].id !== activeEvent.id) activateEvent(nextIndex);
     };
 
     return (
