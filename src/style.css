@@ -728,13 +728,13 @@ button {
     --experience-rail-gap: clamp(1rem, 2vw, 2rem);
     --experience-ring-rail-gap: clamp(0.5rem, 1vw, 1rem);
     --experience-orbit-center-x: calc(100% - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
-    --experience-content-boundary-x: calc(100cqw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
+    --experience-content-boundary-x: calc(100cqw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2 - var(--experience-orbit-size) / 2);
     --experience-orbit-size: min(75vw, 108vh);
     --experience-planet-size: clamp(4.375rem, 6.25vw, 5.625rem);
     --experience-content-gap: clamp(1rem, 2vw, 2rem);
     --experience-header-space: clamp(7.5rem, 14vh, 9.5rem);
     --experience-event-text-size: clamp(1rem, min(1.25vw, 2.1vh), 1.25rem);
-    --experience-content-width: calc(var(--experience-content-boundary-x) - var(--experience-circle-size) / 2 - var(--experience-section-padding-inline) - var(--experience-content-gap));
+    --experience-content-width: calc(var(--experience-content-boundary-x) - var(--experience-section-padding-inline) - var(--experience-content-gap));
     --experience-ring-cutout: max(0px, calc((var(--experience-orbit-size) - var(--experience-planet-size) - var(--experience-circle-size)) / 2 - var(--experience-rail-gap) + var(--experience-ring-rail-gap)));
 
     position: relative;
@@ -782,7 +782,7 @@ button {
 .experience-text::-webkit-scrollbar { display: none; }
 
 .experience-title {
-    font-size: clamp(2rem, 3.5vw, 3.5rem);
+    font-size: clamp(3rem, 5.25vw, 5.25rem);
 }
 
 .experience-event-title {
@@ -818,7 +818,6 @@ button {
 }
 
 .experience-highlights {
-    width: min(29rem, 100%);
     margin: clamp(1.5rem, 3.5vh, 2.25rem) 0 0;
     padding: 0;
     color: var(--colour-text);
@@ -835,8 +834,8 @@ button {
 
 .experience-highlights li {
     display: grid;
-    grid-template-columns: 1.5rem minmax(0, 1fr);
-    align-items: start;
+    grid-template-columns: 2rem minmax(0, 1fr);
+    align-items: center;
     column-gap: 1.25rem;
 }
 
@@ -847,14 +846,15 @@ button {
 .experience-highlight-marker {
     position: relative;
     display: grid;
-    width: 1.5rem;
-    height: 1.5rem;
+    width: 2rem;
+    height: 2rem;
     place-items: center;
 }
 
 .experience-highlight-marker::before,
 .experience-highlight-marker::after {
     position: absolute;
+    box-sizing: border-box;
     width: 0.625rem;
     border-radius: 50%;
     aspect-ratio: 1;
@@ -866,17 +866,17 @@ button {
 }
 
 .experience-highlight-marker::after {
-    border: 1px solid var(--colour-accent);
-    animation: experience-highlight-pulse 1.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+    border: 2px solid var(--colour-accent);
+    animation: experience-highlight-pulse 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
-.experience-highlights li:nth-child(2) .experience-highlight-marker::after { animation-delay: 300ms; }
-.experience-highlights li:nth-child(3) .experience-highlight-marker::after { animation-delay: 600ms; }
+.experience-highlights li:nth-child(2) .experience-highlight-marker::after { animation-delay: 900ms; }
+.experience-highlights li:nth-child(3) .experience-highlight-marker::after { animation-delay: 1800ms; }
 
 @keyframes experience-highlight-pulse {
-    0% { opacity: 0.45; transform: scale(0.9); }
+    0% { opacity: 0.8; transform: scale(0.9); }
     75%,
-    100% { opacity: 0; transform: scale(2.4); }
+    100% { opacity: 0; transform: scale(3); }
 }
 
 .experience-type-toggle {
