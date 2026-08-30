@@ -928,7 +928,7 @@ button {
     overflow: hidden auto;
     border-radius: 50%;
     scrollbar-width: none;
-    scroll-snap-type: y proximity;
+    scroll-snap-type: y mandatory;
 }
 
 .experience-orbit-scroll::-webkit-scrollbar { display: none; }
@@ -1016,6 +1016,7 @@ button {
     width: 1px;
     height: 1px;
     scroll-snap-align: start;
+    scroll-snap-stop: always;
 }
 
 @media (max-width: 48rem) {

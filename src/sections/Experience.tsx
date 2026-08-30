@@ -23,6 +23,8 @@ type ExperienceProps = {
 
 export function Experience({ onActiveEventChange }: ExperienceProps) {
     const orbitScrollRef = useRef<HTMLDivElement>(null);
+    const orbitTargetIndexRef = useRef(0);
+    const selectEventRef = useRef<(index: number) => void>(() => undefined);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
     const [orbitPosition, setOrbitPosition] = useState(0);
     const [activeEventIds, setActiveEventIds] = useState({
@@ -40,6 +42,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
             (event) => event.id === activeEventIds[experienceType],
         );
         const nextPosition = Math.max(0, activeIndex);
+        orbitTargetIndexRef.current = nextPosition;
         orbitScrollRef.current?.scrollTo({ top: nextPosition * orbitScrollStep });
         setOrbitPosition(nextPosition);
     }, [experienceType]);
@@ -54,12 +57,44 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
     const selectEvent = (index: number, behavior?: ScrollBehavior) => {
         const event = activeEvents[index];
         if (!event) return;
+        orbitTargetIndexRef.current = index;
         activateEvent(index);
         const scrollBehavior = behavior ?? (window.matchMedia("(prefers-reduced-motion: reduce)").matches
             ? "auto"
             : "smooth");
         orbitScrollRef.current?.scrollTo({ top: index * orbitScrollStep, behavior: scrollBehavior });
     };
+    selectEventRef.current = selectEvent;
+
+    useEffect(() => {
+        const scrollArea = orbitScrollRef.current;
+        if (!scrollArea) return;
+        const handleWheel = (event: WheelEvent) => {
+            if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+            const direction = event.deltaY < 0 ? -1 : 1;
+            const deltaScale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? scrollArea.clientHeight : 1;
+            const normalizedDelta = event.deltaY * deltaScale;
+            const atBoundary = direction < 0
+                ? orbitTargetIndexRef.current === 0
+                : orbitTargetIndexRef.current === activeEvents.length - 1;
+            if (atBoundary) {
+                event.preventDefault();
+                window.scrollBy({ top: normalizedDelta });
+                return;
+            }
+            event.preventDefault();
+            selectEventRef.current(orbitTargetIndexRef.current + direction);
+        };
+        const syncTargetIndex = () => {
+            orbitTargetIndexRef.current = Math.round(scrollArea.scrollTop / orbitScrollStep);
+        };
+        scrollArea.addEventListener("wheel", handleWheel, { passive: false });
+        scrollArea.addEventListener("scrollend", syncTargetIndex);
+        return () => {
+            scrollArea.removeEventListener("wheel", handleWheel);
+            scrollArea.removeEventListener("scrollend", syncTargetIndex);
+        };
+    }, [activeEvents.length]);
 
     const handleOrbitScroll = () => {
         const nextPosition = (orbitScrollRef.current?.scrollTop ?? 0) / orbitScrollStep;
