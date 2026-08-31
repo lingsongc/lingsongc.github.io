@@ -1,0 +1,31 @@
+/* root */
+
+:root {
+    color-scheme: dark;
+
+    --colour-background: #120818;
+    --colour-surface: #321847;
+    --colour-text: #f7f1e8;
+    --colour-text-muted: #b9aabd;
+    --colour-accent: #f15153;
+    --colour-line: #725d7b;
+    --colour-image-blank: #d6d1c9;
+
+    --font-statement: "Notable", "Arial Black", sans-serif;
+    --font-title: "Sora", Arial, sans-serif;
+    --font-text: "Manrope", Arial, sans-serif;
+
+    --text-page-title: clamp(2.75rem, 8vw, 7rem);
+    --text-section-title: clamp(2rem, 5vw, 4rem);
+    --text-subtitle: clamp(1.25rem, 2.5vw, 2rem);
+    --text-body: 1rem;
+    --text-small: 0.875rem;
+
+    --home-circle-size: clamp(8rem, 28vw, 22rem);
+    --home-ring-size: calc(var(--home-circle-size) + 10rem);
+    --orbit-ring-width: 0.25rem;
+    --navigation-button-size: 1.25rem;
+    --navigation-link-size: 2.75rem;
+    --navigation-link-gap: 0.25rem;
+    --navigation-rail-inset: 0.625rem;
+}

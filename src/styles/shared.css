@@ -1,0 +1,32 @@
+/* shared */
+
+.home-container,
+.about-container,
+.experience-container,
+.project-container,
+.skill-container,
+.contact-container {
+    display: grid;
+    min-height: 100vh;
+    min-height: 100svh;
+    align-items: center;
+    padding: clamp(4rem, 8vw, 8rem) clamp(1.5rem, 6vw, 6rem);
+    scroll-margin-block-start: 0;
+}
+
+.section-static-container {
+    min-height: 150vh;
+    min-height: 150svh;
+}
+
+.section-static-container > section {
+    position: sticky;
+    top: 0;
+}
+
+.orbit-ring {
+    aspect-ratio: 1;
+    border: var(--orbit-ring-width) solid var(--colour-line);
+    border-radius: 50%;
+    pointer-events: none;
+}

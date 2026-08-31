@@ -1,0 +1,17 @@
+* {
+    box-sizing: border-box;
+}
+
+html {
+    background-color: var(--colour-background);
+    color: var(--colour-text);
+    font-family: var(--font-text);
+    font-size: 100%;
+    line-height: 1.6;
+}
+
+body {
+    min-width: 20rem;
+    margin: 0;
+    background-color: var(--colour-background);
+}

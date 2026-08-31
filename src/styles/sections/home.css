@@ -1,0 +1,101 @@
+/* home */
+
+.home-container {
+    position: relative;
+}
+
+.home-text {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) var(--home-circle-size) minmax(0, 1fr);
+    column-gap: clamp(5rem, 10vw, 8rem);
+    align-items: stretch;
+    width: 100%;
+}
+
+.home-title {
+    display: contents;
+    font-family: var(--font-statement);
+    font-size: clamp(1.5rem, 7vw, 7rem);
+    font-weight: 400;
+    line-height: 0.85;
+}
+
+.home-first-name {
+    color: var(--colour-accent);
+}
+
+.home-name-left {
+    grid-column: 1;
+    grid-row: 1;
+    align-self: center;
+    justify-self: end;
+    clip-path: inset(-0.2em 0);
+    white-space: nowrap;
+}
+
+.home-name-right {
+    grid-column: 3;
+    grid-row: 1;
+    display: grid;
+    align-content: space-between;
+    justify-self: start;
+    clip-path: inset(-0.2em 0);
+    white-space: nowrap;
+}
+
+.home-name-value {
+    display: block;
+    transition: transform 500ms ease;
+}
+
+.home-name-right .home-name-value {
+    display: grid;
+    height: 100%;
+    align-content: space-between;
+}
+
+.home-navigation-ring-exiting ~ .home-text .home-name-left .home-name-value {
+    transform: translateX(100%);
+}
+
+.home-navigation-ring-exiting ~ .home-text .home-name-right .home-name-value {
+    transform: translateX(-100%);
+}
+
+.home-description {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+.home-description-curve {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: calc(var(--home-circle-size) + 4rem);
+    height: calc(var(--home-circle-size) + 4rem);
+    overflow: visible;
+    color: var(--colour-text-muted);
+    fill: currentcolor;
+    font-family: var(--font-text);
+    font-size: calc(100 * var(--text-small) / (var(--home-circle-size) + 4rem) * 1px);
+    transform: translate(-50%, -50%);
+    transition: transform 500ms ease, opacity 125ms linear;
+    pointer-events: none;
+}
+
+.home-navigation-ring-exiting ~ .home-text .home-description-curve {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 500ms ease, opacity 125ms linear 375ms;
+}
+
+@media (max-width: 48rem) {
+    .home-text {
+        column-gap: clamp(0.75rem, 3vw, 2rem);
+    }
+
+}
