@@ -28,6 +28,8 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
     const orbitTargetIndexRef = useRef(0);
     const activateEventRef = useRef<(index: number) => void>(() => undefined);
     const selectEventRef = useRef<(index: number) => void>(() => undefined);
+    const [contentVisible, setContentVisible] = useState(false);
+    const [orbitReady, setOrbitReady] = useState(false);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
     const [orbitPosition, setOrbitPosition] = useState(0);
     const [activeEventIds, setActiveEventIds] = useState({
@@ -48,7 +50,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         let orbitReadyTimer: number | undefined;
         const setOrbitInteractive = (interactive: boolean) => {
             orbitInteractiveRef.current = interactive;
-            section.classList.toggle("experience-orbit-ready", interactive);
+            setOrbitReady(interactive);
         };
         const updateContentVisibility = () => {
             const start = restingContainer.getBoundingClientRect().top + window.scrollY;
@@ -56,7 +58,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
             const shouldShow = window.scrollY >= start && window.scrollY < end;
             if (shouldShow === contentVisible) return;
             contentVisible = shouldShow;
-            section.classList.toggle("experience-content-visible", shouldShow);
+            setContentVisible(shouldShow);
             window.clearTimeout(orbitReadyTimer);
             setOrbitInteractive(false);
             if (shouldShow) {
@@ -73,7 +75,6 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
             window.clearTimeout(orbitReadyTimer);
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
-            section.classList.remove("experience-content-visible");
             setOrbitInteractive(false);
         };
     }, []);
@@ -149,14 +150,24 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
     };
 
     return (
-        <section ref={sectionRef} id="experience" className="experience-container" aria-labelledby="experience-title">
+        <section
+            ref={sectionRef}
+            id="experience"
+            className={`experience-container${contentVisible ? " experience-content-visible" : ""}${orbitReady ? " experience-orbit-ready" : ""}`}
+            aria-labelledby="experience-title"
+        >
             <div className="experience-copy">
                 <header className="experience-header">
                     <div className="experience-header-content">
                         <h2 id="experience-title" className="experience-title">
                             {experienceType === "experience" ? "Experience" : "Education"}
                         </h2>
-                        <div className="experience-type-toggle" role="group" aria-label="Timeline type">
+                        <div
+                            className="experience-type-toggle"
+                            data-active-type={experienceType}
+                            role="group"
+                            aria-label="Timeline type"
+                        >
                             {(["experience", "education"] as const).map((type) => (
                                 <button
                                     className={`experience-type-button${experienceType === type ? " experience-type-button-active" : ""}`}
