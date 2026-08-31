@@ -24,6 +24,7 @@ type ExperienceProps = {
 export function Experience({ onActiveEventChange }: ExperienceProps) {
     const sectionRef = useRef<HTMLElement>(null);
     const orbitScrollRef = useRef<HTMLDivElement>(null);
+    const orbitInteractiveRef = useRef(false);
     const orbitTargetIndexRef = useRef(0);
     const activateEventRef = useRef<(index: number) => void>(() => undefined);
     const selectEventRef = useRef<(index: number) => void>(() => undefined);
@@ -43,13 +44,25 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         const section = sectionRef.current;
         const restingContainer = section?.parentElement;
         if (!section || !restingContainer) return;
+        let contentVisible = false;
+        let orbitReadyTimer: number | undefined;
+        const setOrbitInteractive = (interactive: boolean) => {
+            orbitInteractiveRef.current = interactive;
+            section.classList.toggle("experience-orbit-ready", interactive);
+        };
         const updateContentVisibility = () => {
             const start = restingContainer.getBoundingClientRect().top + window.scrollY;
             const end = start + restingContainer.offsetHeight - window.innerHeight;
-            section.classList.toggle(
-                "experience-content-visible",
-                window.scrollY >= start && window.scrollY < end,
-            );
+            const shouldShow = window.scrollY >= start && window.scrollY < end;
+            if (shouldShow === contentVisible) return;
+            contentVisible = shouldShow;
+            section.classList.toggle("experience-content-visible", shouldShow);
+            window.clearTimeout(orbitReadyTimer);
+            setOrbitInteractive(false);
+            if (shouldShow) {
+                const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500;
+                orbitReadyTimer = window.setTimeout(() => setOrbitInteractive(contentVisible), delay);
+            }
         };
 
         const animationFrame = window.requestAnimationFrame(updateContentVisibility);
@@ -57,9 +70,11 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         window.addEventListener("resize", updateContentVisibility);
         return () => {
             window.cancelAnimationFrame(animationFrame);
+            window.clearTimeout(orbitReadyTimer);
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
             section.classList.remove("experience-content-visible");
+            setOrbitInteractive(false);
         };
     }, []);
 
@@ -82,6 +97,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
     activateEventRef.current = activateEvent;
 
     const selectEvent = (index: number, behavior?: ScrollBehavior) => {
+        if (!orbitInteractiveRef.current) return;
         const event = activeEvents[index];
         if (!event) return;
         orbitTargetIndexRef.current = index;
@@ -97,6 +113,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         const scrollArea = orbitScrollRef.current;
         if (!scrollArea) return;
         const handleWheel = (event: WheelEvent) => {
+            if (!orbitInteractiveRef.current) return;
             if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
             const direction = event.deltaY < 0 ? -1 : 1;
             const deltaScale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? scrollArea.clientHeight : 1;
@@ -113,6 +130,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
             selectEventRef.current(orbitTargetIndexRef.current + direction);
         };
         const syncTargetIndex = () => {
+            if (!orbitInteractiveRef.current) return;
             const nextIndex = Math.round(scrollArea.scrollTop / orbitScrollStep);
             orbitTargetIndexRef.current = nextIndex;
             activateEventRef.current(nextIndex);
@@ -187,6 +205,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                     className="experience-orbit-scroll"
                     onScroll={handleOrbitScroll}
                     onKeyDown={(event) => {
+                        if (!orbitInteractiveRef.current) return;
                         if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
                         event.preventDefault();
                         const direction = event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 1;

@@ -943,6 +943,7 @@ button {
 
 .experience-orbit {
     position: absolute;
+    z-index: 1;
     top: 70%;
     left: var(--experience-orbit-center-x);
     width: var(--experience-orbit-size);
@@ -955,9 +956,12 @@ button {
     inset: 0;
     overflow: hidden auto;
     border-radius: 50%;
+    pointer-events: none;
     scrollbar-width: none;
     scroll-snap-type: y mandatory;
 }
+
+.experience-orbit-ready .experience-orbit-scroll { pointer-events: auto; }
 
 .experience-orbit-scroll::-webkit-scrollbar { display: none; }
 
@@ -971,6 +975,15 @@ button {
     top: 0;
     width: 100%;
     height: var(--experience-orbit-size);
+    visibility: hidden;
+    transform: scale(0);
+    transition: transform 500ms ease, visibility 0s linear 500ms;
+}
+
+.experience-content-visible .experience-orbit-stage {
+    visibility: visible;
+    transform: scale(1);
+    transition-delay: 0s;
 }
 
 .experience-orbit-ring {
@@ -1060,7 +1073,8 @@ button {
     .experience-highlight-marker::after { animation: none; }
 
     .experience-header-content,
-    .experience-text {
+    .experience-text,
+    .experience-orbit-stage {
         clip-path: inset(0);
         transform: none;
         transition: none;
