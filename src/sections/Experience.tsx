@@ -22,6 +22,7 @@ type ExperienceProps = {
 };
 
 export function Experience({ onActiveEventChange }: ExperienceProps) {
+    const sectionRef = useRef<HTMLElement>(null);
     const orbitScrollRef = useRef<HTMLDivElement>(null);
     const orbitTargetIndexRef = useRef(0);
     const activateEventRef = useRef<(index: number) => void>(() => undefined);
@@ -37,6 +38,30 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         (event) => event.id === activeEventIds[experienceType],
     ) ?? activeEvents[0];
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
+
+    useEffect(() => {
+        const section = sectionRef.current;
+        const restingContainer = section?.parentElement;
+        if (!section || !restingContainer) return;
+        const updateContentVisibility = () => {
+            const start = restingContainer.getBoundingClientRect().top + window.scrollY;
+            const end = start + restingContainer.offsetHeight - window.innerHeight;
+            section.classList.toggle(
+                "experience-content-visible",
+                window.scrollY >= start && window.scrollY < end,
+            );
+        };
+
+        const animationFrame = window.requestAnimationFrame(updateContentVisibility);
+        window.addEventListener("scroll", updateContentVisibility, { passive: true });
+        window.addEventListener("resize", updateContentVisibility);
+        return () => {
+            window.cancelAnimationFrame(animationFrame);
+            window.removeEventListener("scroll", updateContentVisibility);
+            window.removeEventListener("resize", updateContentVisibility);
+            section.classList.remove("experience-content-visible");
+        };
+    }, []);
 
     useEffect(() => {
         const activeIndex = activeEvents.findIndex(
@@ -106,27 +131,29 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
     };
 
     return (
-        <section id="experience" className="experience-container" aria-labelledby="experience-title">
+        <section ref={sectionRef} id="experience" className="experience-container" aria-labelledby="experience-title">
             <div className="experience-copy">
                 <header className="experience-header">
-                    <h2 id="experience-title" className="experience-title">
-                        {experienceType === "experience" ? "Experience" : "Education"}
-                    </h2>
-                    <div className="experience-type-toggle" role="group" aria-label="Timeline type">
-                        {(["experience", "education"] as const).map((type) => (
-                            <button
-                                className={`experience-type-button${experienceType === type ? " experience-type-button-active" : ""}`}
-                                type="button"
-                                aria-pressed={experienceType === type}
-                                onClick={() => {
-                                    setExperienceType(type);
-                                    onActiveEventChange(eventImagePath(type, activeEventIds[type]));
-                                }}
-                                key={type}
-                            >
-                                {type[0].toUpperCase() + type.slice(1)}
-                            </button>
-                        ))}
+                    <div className="experience-header-content">
+                        <h2 id="experience-title" className="experience-title">
+                            {experienceType === "experience" ? "Experience" : "Education"}
+                        </h2>
+                        <div className="experience-type-toggle" role="group" aria-label="Timeline type">
+                            {(["experience", "education"] as const).map((type) => (
+                                <button
+                                    className={`experience-type-button${experienceType === type ? " experience-type-button-active" : ""}`}
+                                    type="button"
+                                    aria-pressed={experienceType === type}
+                                    onClick={() => {
+                                        setExperienceType(type);
+                                        onActiveEventChange(eventImagePath(type, activeEventIds[type]));
+                                    }}
+                                    key={type}
+                                >
+                                    {type[0].toUpperCase() + type.slice(1)}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </header>
                 <div className="experience-content-region">

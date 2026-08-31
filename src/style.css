@@ -763,6 +763,34 @@ button {
     content: "";
 }
 
+.experience-header {
+    clip-path: inset(0 0 -1rem);
+}
+
+.experience-header-content,
+.experience-text {
+    visibility: hidden;
+    transition: visibility 0s linear 500ms;
+}
+
+.experience-header-content {
+    transform: translateY(-110%);
+    transition: transform 500ms ease, visibility 0s linear 500ms;
+}
+
+.experience-text {
+    clip-path: inset(50% 0);
+    transition: clip-path 500ms ease, visibility 0s linear 500ms;
+}
+
+.experience-content-visible :is(.experience-header-content, .experience-text) {
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.experience-content-visible .experience-header-content { transform: translateY(0); }
+.experience-content-visible .experience-text { clip-path: inset(0); }
+
 .experience-content-region {
     display: flex;
     min-height: 0;
@@ -1030,6 +1058,13 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
     .experience-highlight-marker::after { animation: none; }
+
+    .experience-header-content,
+    .experience-text {
+        clip-path: inset(0);
+        transform: none;
+        transition: none;
+    }
 }
 
 /* projects */
