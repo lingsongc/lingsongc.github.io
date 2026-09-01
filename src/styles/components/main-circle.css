@@ -20,6 +20,37 @@
     background-color: var(--colour-image-blank);
 }
 
+.main-circle-experience-orbit-front {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    visibility: hidden;
+    transition: visibility 0s linear 500ms;
+}
+
+.main-circle-experience-orbit-front-path {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 175%;
+    height: auto;
+    overflow: visible;
+    transform: translate(-50%, -50%) rotate(-24deg) scale(0);
+    transition: transform 500ms ease;
+}
+
+main:has(.experience-content-visible) .main-circle-experience-orbit-front {
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+main:has(.experience-content-visible) .main-circle-experience-orbit-front-path {
+    transform: translate(-50%, -50%) rotate(-24deg) scale(1);
+    transition-delay: 0s;
+}
+
 .main-circle-image {
     position: absolute;
     inset: 0;
@@ -63,4 +94,11 @@
     line-height: 1.5;
     text-align: center;
     opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .main-circle-experience-orbit-front,
+    .main-circle-experience-orbit-front-path {
+        transition: none;
+    }
 }

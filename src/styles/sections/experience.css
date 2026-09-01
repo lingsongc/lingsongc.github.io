@@ -4,7 +4,6 @@
     --experience-section-padding-inline: clamp(1.5rem, 6vw, 6rem);
     --experience-circle-size: min(46.5vw, 69vh);
     --experience-rail-gap: clamp(1rem, 2vw, 2rem);
-    --experience-ring-rail-gap: clamp(0.5rem, 1vw, 1rem);
     --experience-orbit-center-x: calc(100% - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
     --experience-content-boundary-x: calc(100cqw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2 - var(--experience-orbit-size) / 2);
     --experience-orbit-size: min(75vw, 108vh);
@@ -14,7 +13,6 @@
     --experience-header-space: clamp(7.5rem, 14vh, 9.5rem);
     --experience-event-text-size: var(--text-body);
     --experience-content-width: calc(var(--experience-content-boundary-x) - var(--experience-section-padding-inline) - var(--experience-content-gap));
-    --experience-ring-cutout: max(0px, calc((var(--experience-orbit-size) - var(--experience-planet-size) - var(--experience-circle-size)) / 2 - var(--experience-rail-gap) + var(--experience-ring-rail-gap)));
 
     position: relative;
     grid-template-columns: minmax(0, var(--experience-content-width)) minmax(0, 1fr);
@@ -42,6 +40,7 @@
 }
 
 .experience-header {
+    width: max-content;
     clip-path: inset(0 0 -1rem);
 }
 
@@ -253,6 +252,7 @@
 
 .experience-orbit-scroll {
     position: absolute;
+    z-index: 1;
     inset: 0;
     overflow: hidden auto;
     border-radius: 50%;
@@ -288,8 +288,29 @@
 
 .experience-orbit-ring {
     position: absolute;
-    inset: calc(var(--experience-planet-size) / 2 + var(--experience-planet-clearance));
-    clip-path: inset(0 var(--experience-ring-cutout) 0 0);
+    z-index: 0;
+    top: 50%;
+    left: 50%;
+    width: calc(var(--experience-circle-size) * 1.75);
+    height: auto;
+    overflow: visible;
+    visibility: hidden;
+    transform: translate(-50%, -50%) rotate(-24deg) scale(0);
+    transition: transform 500ms ease, visibility 0s linear 500ms;
+    pointer-events: none;
+}
+
+.experience-content-visible .experience-orbit-ring {
+    visibility: visible;
+    transform: translate(-50%, -50%) rotate(-24deg) scale(1);
+    transition-delay: 0s;
+}
+
+.experience-orbit-path {
+    fill: none;
+    stroke: var(--colour-line);
+    stroke-width: var(--orbit-ring-width);
+    vector-effect: non-scaling-stroke;
 }
 
 .experience-event-orbit-list {
@@ -374,6 +395,8 @@
 
     .experience-type-toggle::before,
     .experience-type-button { transition: none; }
+
+    .experience-orbit-ring { transition: none; }
 
     .experience-header-content,
     .experience-text,

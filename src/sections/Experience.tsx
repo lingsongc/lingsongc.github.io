@@ -211,6 +211,13 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                 </div>
             </div>
             <aside className="experience-orbit" aria-label={`${experienceType} entries`}>
+                <svg
+                    className="experience-orbit-ring"
+                    viewBox="0 0 360 100"
+                    aria-hidden="true"
+                >
+                    <ellipse className="experience-orbit-path" cx="180" cy="50" rx="177" ry="47" />
+                </svg>
                 <div
                     ref={orbitScrollRef}
                     className="experience-orbit-scroll"
@@ -230,7 +237,6 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                         style={{ "--experience-scroll-distance": `${(activeEvents.length - 1) * orbitScrollStep}px` } as CSSProperties}
                     >
                         <div className="experience-orbit-stage">
-                            <span className="orbit-ring experience-orbit-ring" aria-hidden="true" />
                             <ol className="experience-event-orbit-list">
                                 {activeEvents.map((event, index) => {
                                     const angle = orbitFocusAngle - (index - orbitPosition) * orbitAngleStep;

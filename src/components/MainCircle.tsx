@@ -34,6 +34,11 @@ export function MainCircle({ experienceImage, activeProject }: MainCircleProps) 
                 <img className="main-circle-image main-circle-image-project" src={`/projects/${activeProject.id}.png`} alt="" />
                 <p className="main-circle-project-description">{activeProject.summary}</p>
             </div>
+            <div className="main-circle-experience-orbit-front" aria-hidden="true">
+                <svg className="main-circle-experience-orbit-front-path" viewBox="0 0 360 100">
+                    <path className="experience-orbit-path" d="M 3 50 A 177 47 0 0 0 357 50" />
+                </svg>
+            </div>
             <div className="contact-blob-layer" aria-hidden="true">
                 <span className="contact-blob-center" />
                 <span className="contact-satellite contact-satellite-github" data-contact-link="github" />
