@@ -7,12 +7,6 @@
     --experience-orbit-center-x: calc(100% - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
     --experience-content-boundary-x: calc(100cqw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2 - var(--experience-orbit-size) / 2);
     --experience-orbit-size: min(75vw, 108vh);
-    --experience-planet-size: clamp(4.375rem, 6.25vw, 5.625rem);
-    --experience-ellipse-width: calc(var(--experience-circle-size) * 1.75);
-    --experience-ellipse-height: calc(var(--experience-ellipse-width) / 3.6);
-    --experience-ellipse-rotation: -24deg;
-    --experience-ellipse-focus-x: calc(var(--experience-ellipse-width) * -0.282);
-    --experience-ellipse-focus-y: calc(var(--experience-ellipse-height) * 0.385);
     --experience-content-gap: clamp(1rem, 2vw, 2rem);
     --experience-header-space: clamp(7.5rem, 14vh, 9.5rem);
     --experience-event-text-size: var(--text-body);
@@ -274,28 +268,12 @@
     height: calc(100% + var(--experience-scroll-distance));
 }
 
-.experience-orbit-stage {
-    position: sticky;
-    top: 0;
-    width: 100%;
-    height: var(--experience-orbit-size);
-    visibility: hidden;
-    transform: scale(0);
-    transition: transform 500ms ease, visibility 0s linear 500ms;
-}
-
-.experience-content-visible .experience-orbit-stage {
-    visibility: visible;
-    transform: scale(1);
-    transition-delay: 0s;
-}
-
 .experience-orbit-ring {
     position: absolute;
     z-index: 0;
     top: 50%;
     left: 50%;
-    width: var(--experience-ellipse-width);
+    width: var(--experience-ellipse-render-width);
     height: auto;
     overflow: visible;
     visibility: hidden;
@@ -332,28 +310,24 @@
     z-index: 3;
     top: 50%;
     left: 50%;
-    width: 175%;
-    aspect-ratio: 3.6;
+    width: var(--experience-ellipse-render-width);
+    aspect-ratio: var(--experience-ellipse-aspect-ratio);
     visibility: hidden;
-    transform: translate(-50%, -50%) rotate(-24deg) scale(0);
+    transform: translate(-50%, -50%) rotate(var(--experience-ellipse-rotation)) scale(0);
     transition: transform 500ms ease, visibility 0s linear 500ms;
     pointer-events: none;
 }
 
-main:has(.experience-content-visible) .experience-orbit-planets {
+.experience-orbit-planets-visible {
     visibility: visible;
-    transform: translate(-50%, -50%) rotate(-24deg) scale(1);
+    transform: translate(-50%, -50%) rotate(var(--experience-ellipse-rotation)) scale(1);
     transition-delay: 0s;
 }
 
 .experience-event-orbit-item,
 .experience-orbit-focus-marker {
     position: absolute;
-    transform: translate(-50%, -50%) rotate(24deg);
-}
-
-.experience-event-orbit-item {
-    transition: opacity 120ms ease;
+    transform: translate(-50%, -50%) rotate(var(--experience-ellipse-counter-rotation));
 }
 
 .experience-event-orbit-item-hidden {
@@ -377,7 +351,7 @@ main:has(.experience-content-visible) .experience-orbit-planets {
     pointer-events: none;
 }
 
-main:has(.experience-orbit-ready) .experience-event-button { pointer-events: auto; }
+.experience-orbit-planets-ready .experience-event-button { pointer-events: auto; }
 
 .experience-event-image {
     display: block;
@@ -388,14 +362,14 @@ main:has(.experience-orbit-ready) .experience-event-button { pointer-events: aut
 }
 
 .experience-orbit-focus-marker {
+    --experience-focus-gap: 4px;
+
     z-index: 1;
     box-sizing: border-box;
-    width: var(--experience-planet-size);
+    width: calc(var(--experience-planet-size) + var(--experience-focus-gap) + var(--experience-focus-gap) + var(--orbit-ring-width) + var(--orbit-ring-width));
+    border: var(--orbit-ring-width) solid var(--colour-accent);
     border-radius: 50%;
     aspect-ratio: 1;
-    box-shadow:
-        0 0 0 var(--orbit-ring-width) var(--colour-background),
-        0 0 0 calc(var(--orbit-ring-width) * 2) var(--colour-accent);
     pointer-events: none;
 }
 
@@ -427,8 +401,7 @@ main:has(.experience-orbit-ready) .experience-event-button { pointer-events: aut
     .experience-orbit-planets { transition: none; }
 
     .experience-header-content,
-    .experience-text,
-    .experience-orbit-stage {
+    .experience-text {
         clip-path: inset(0);
         transform: none;
         transition: none;

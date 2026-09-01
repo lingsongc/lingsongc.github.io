@@ -12,6 +12,19 @@ function documentTop(element: HTMLElement) {
 
 export const sectionTransitionTimelineDefaults = { duration: 1, ease: "none" };
 
+export function sectionRestingBounds(restingContainer: HTMLElement) {
+    const start = documentTop(restingContainer);
+    return {
+        start,
+        end: start + restingContainer.offsetHeight - window.innerHeight,
+    };
+}
+
+export function alignMountedSectionAnchor(restingContainer: HTMLElement) {
+    if (!restingContainer.id || window.location.hash !== `#${restingContainer.id}`) return;
+    window.scrollTo({ top: documentTop(restingContainer) });
+}
+
 export function sectionTransitionScroll(incomingSection: HTMLElement) {
     return {
         trigger: incomingSection,

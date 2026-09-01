@@ -1,19 +1,34 @@
 import { useRef } from "react";
 import type { Project } from "../data/projects";
+import {
+    experienceOrbitFrontPath,
+    experienceOrbitLayerStyles,
+    experienceOrbitViewBox,
+} from "../motion/experienceOrbitGeometry";
 import { useMainCircleScene } from "../motion/useMainCircleScene";
 
 type MainCircleProps = {
     experienceImage: string;
+    experienceVisible: boolean;
+    onExperienceOrbitHostChange: (element: HTMLDivElement | null) => void;
     activeProject: Project;
 };
 
-export function MainCircle({ experienceImage, activeProject }: MainCircleProps) {
+export function MainCircle({
+    experienceImage,
+    experienceVisible,
+    onExperienceOrbitHostChange,
+    activeProject,
+}: MainCircleProps) {
     const circleRef = useRef<HTMLDivElement>(null);
 
     useMainCircleScene(circleRef);
 
     return (
-        <div ref={circleRef} className="main-circle-container">
+        <div
+            ref={circleRef}
+            className={`main-circle-container${experienceVisible ? " main-circle-experience-visible" : ""}`}
+        >
             <svg width="0" height="0" aria-hidden="true">
                 <defs>
                     <filter id="contact-goo" x="-50%" y="-50%" width="200%" height="200%" colorInterpolationFilters="sRGB">
@@ -35,10 +50,11 @@ export function MainCircle({ experienceImage, activeProject }: MainCircleProps) 
                 <p className="main-circle-project-description">{activeProject.summary}</p>
             </div>
             <div className="main-circle-experience-orbit-front" aria-hidden="true">
-                <svg className="main-circle-experience-orbit-front-path" viewBox="0 0 360 100">
-                    <path className="experience-orbit-path" d="M 3 50 A 177 47 0 0 0 357 50" />
+                <svg className="main-circle-experience-orbit-front-path" viewBox={experienceOrbitViewBox} style={experienceOrbitLayerStyles}>
+                    <path className="main-circle-experience-orbit-stroke" d={experienceOrbitFrontPath} />
                 </svg>
             </div>
+            <div ref={onExperienceOrbitHostChange} className="main-circle-experience-orbit-host" />
             <div className="contact-blob-layer" aria-hidden="true">
                 <span className="contact-blob-center" />
                 <span className="contact-satellite contact-satellite-github" data-contact-link="github" />

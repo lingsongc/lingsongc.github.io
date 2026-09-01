@@ -12,6 +12,8 @@ import { projects } from "./data/projects";
 
 export default function App() {
     const [experienceImage, setExperienceImage] = useState("/experience/picolove.jpg");
+    const [experienceOrbitHost, setExperienceOrbitHost] = useState<HTMLElement | null>(null);
+    const [experienceVisible, setExperienceVisible] = useState(false);
     const [activeProject, setActiveProject] = useState(projects[0]);
 
     return (
@@ -19,11 +21,20 @@ export default function App() {
             <BackgroundGrid />
             <Navigation />
             <main>
-                <MainCircle experienceImage={experienceImage} activeProject={activeProject} />
+                <MainCircle
+                    experienceImage={experienceImage}
+                    experienceVisible={experienceVisible}
+                    onExperienceOrbitHostChange={setExperienceOrbitHost}
+                    activeProject={activeProject}
+                />
                 <Home />
                 <div className="section-static-container"><About /></div>
-                <div className="section-static-container">
-                    <Experience onActiveEventChange={setExperienceImage} />
+                <div id="experience" className="section-static-container">
+                    <Experience
+                        orbitLayerTarget={experienceOrbitHost}
+                        onActiveEventChange={setExperienceImage}
+                        onVisibilityChange={setExperienceVisible}
+                    />
                 </div>
                 <div className="section-static-container">
                     <Projects activeProjectId={activeProject.id} onProjectSelect={setActiveProject} />

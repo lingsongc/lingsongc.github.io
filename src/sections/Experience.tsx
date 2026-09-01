@@ -1,8 +1,12 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useRef, useState } from "react";
 import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
 import { education } from "../data/education";
 import { experiences } from "../data/experiences";
+import {
+    alignMountedSectionAnchor,
+    sectionRestingBounds,
+} from "../motion/sectionTransitionBounds";
+import { ExperienceOrbit } from "./ExperienceOrbit";
 
 type ExperienceType = "experience" | "education";
 
@@ -14,26 +18,17 @@ const educationEvents = education.map(({ id, institution, qualification, ...even
 }));
 const eventsByType = { experience: experienceEvents, education: educationEvents };
 const eventImagePath = (type: ExperienceType, id: string) => `/${type}/${id}.jpg`;
-const orbitScrollStep = 112;
-const orbitAngleStep = 36;
-const orbitFocusAngle = 125;
-
 type ExperienceProps = {
+    orbitLayerTarget: HTMLElement | null;
     onActiveEventChange: (image: string) => void;
+    onVisibilityChange: (visible: boolean) => void;
 };
 
-export function Experience({ onActiveEventChange }: ExperienceProps) {
+export function Experience({ orbitLayerTarget, onActiveEventChange, onVisibilityChange }: ExperienceProps) {
     const sectionRef = useRef<HTMLElement>(null);
-    const orbitScrollRef = useRef<HTMLDivElement>(null);
-    const orbitInteractiveRef = useRef(false);
-    const orbitTargetIndexRef = useRef(0);
-    const activateEventRef = useRef<(index: number) => void>(() => undefined);
-    const selectEventRef = useRef<(index: number) => void>(() => undefined);
     const [contentVisible, setContentVisible] = useState(false);
     const [orbitReady, setOrbitReady] = useState(false);
-    const [planetLayerTarget, setPlanetLayerTarget] = useState<HTMLElement | null>(null);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
-    const [orbitPosition, setOrbitPosition] = useState(0);
     const [activeEventIds, setActiveEventIds] = useState({
         experience: experienceEvents[0].id,
         education: educationEvents[0].id,
@@ -45,61 +40,39 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
 
     useEffect(() => {
-        setPlanetLayerTarget(document.querySelector<HTMLElement>(".main-circle-container"));
-    }, []);
-
-    useEffect(() => {
         const section = sectionRef.current;
         const restingContainer = section?.parentElement;
         if (!section || !restingContainer) return;
         let contentVisible = false;
-        let orbitReadyTimer: number | undefined;
-        const setOrbitInteractive = (interactive: boolean) => {
-            orbitInteractiveRef.current = interactive;
-            setOrbitReady(interactive);
-        };
         const updateContentVisibility = () => {
-            const start = restingContainer.getBoundingClientRect().top + window.scrollY;
-            const end = start + restingContainer.offsetHeight - window.innerHeight;
+            const { start, end } = sectionRestingBounds(restingContainer);
             const shouldShow = window.scrollY >= start && window.scrollY <= end;
             if (shouldShow === contentVisible) return;
             contentVisible = shouldShow;
             setContentVisible(shouldShow);
-            window.clearTimeout(orbitReadyTimer);
-            setOrbitInteractive(false);
-            if (shouldShow) {
-                const delay = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 500;
-                orbitReadyTimer = window.setTimeout(() => setOrbitInteractive(contentVisible), delay);
+            onVisibilityChange(shouldShow);
+            setOrbitReady(false);
+            if (shouldShow && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+                setOrbitReady(true);
             }
         };
 
+        let alignmentFrame: number | undefined;
         const animationFrame = window.requestAnimationFrame(() => {
-            if (window.location.hash === "#experience") {
-                const start = restingContainer.getBoundingClientRect().top + window.scrollY;
-                window.scrollTo({ top: start });
-            }
-            updateContentVisibility();
+            alignmentFrame = window.requestAnimationFrame(() => {
+                alignMountedSectionAnchor(restingContainer);
+                updateContentVisibility();
+            });
         });
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
         return () => {
             window.cancelAnimationFrame(animationFrame);
-            window.clearTimeout(orbitReadyTimer);
+            window.cancelAnimationFrame(alignmentFrame ?? 0);
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
-            setOrbitInteractive(false);
         };
     }, []);
-
-    useEffect(() => {
-        const activeIndex = activeEvents.findIndex(
-            (event) => event.id === activeEventIds[experienceType],
-        );
-        const nextPosition = Math.max(0, activeIndex);
-        orbitTargetIndexRef.current = nextPosition;
-        orbitScrollRef.current?.scrollTo({ top: nextPosition * orbitScrollStep });
-        setOrbitPosition(nextPosition);
-    }, [experienceType]);
 
     const activateEvent = (index: number) => {
         const event = activeEvents[index];
@@ -107,102 +80,10 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         setActiveEventIds((current) => ({ ...current, [experienceType]: event.id }));
         onActiveEventChange(eventImagePath(experienceType, event.id));
     };
-    activateEventRef.current = activateEvent;
-
-    const selectEvent = (index: number, behavior?: ScrollBehavior) => {
-        if (!orbitInteractiveRef.current) return;
-        const event = activeEvents[index];
-        if (!event) return;
-        orbitTargetIndexRef.current = index;
-        activateEvent(index);
-        const scrollBehavior = behavior ?? (window.matchMedia("(prefers-reduced-motion: reduce)").matches
-            ? "auto"
-            : "smooth");
-        orbitScrollRef.current?.scrollTo({ top: index * orbitScrollStep, behavior: scrollBehavior });
-    };
-    selectEventRef.current = selectEvent;
-
-    useEffect(() => {
-        const scrollArea = orbitScrollRef.current;
-        if (!scrollArea) return;
-        const handleWheel = (event: WheelEvent) => {
-            if (!orbitInteractiveRef.current) return;
-            if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-            const direction = event.deltaY < 0 ? -1 : 1;
-            const deltaScale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? scrollArea.clientHeight : 1;
-            const normalizedDelta = event.deltaY * deltaScale;
-            const atBoundary = direction < 0
-                ? orbitTargetIndexRef.current === 0
-                : orbitTargetIndexRef.current === activeEvents.length - 1;
-            if (atBoundary) {
-                event.preventDefault();
-                window.scrollBy({ top: normalizedDelta });
-                return;
-            }
-            event.preventDefault();
-            selectEventRef.current(orbitTargetIndexRef.current + direction);
-        };
-        const syncTargetIndex = () => {
-            if (!orbitInteractiveRef.current) return;
-            const nextIndex = Math.round(scrollArea.scrollTop / orbitScrollStep);
-            orbitTargetIndexRef.current = nextIndex;
-            activateEventRef.current(nextIndex);
-        };
-        scrollArea.addEventListener("wheel", handleWheel, { passive: false });
-        scrollArea.addEventListener("scrollend", syncTargetIndex);
-        return () => {
-            scrollArea.removeEventListener("wheel", handleWheel);
-            scrollArea.removeEventListener("scrollend", syncTargetIndex);
-        };
-    }, [activeEvents.length]);
-
-    const handleOrbitScroll = () => {
-        const nextPosition = (orbitScrollRef.current?.scrollTop ?? 0) / orbitScrollStep;
-        setOrbitPosition(nextPosition);
-    };
-
-    const planetLayer = (
-        <div className="experience-orbit-planets">
-            <ol className="experience-event-orbit-list" aria-label={`${experienceType} entries`}>
-                {activeEvents.map((event, index) => {
-                    const angle = orbitFocusAngle - (index - orbitPosition) * orbitAngleStep;
-                    const angleRadians = angle * Math.PI / 180;
-                    const visible = angle >= 53 && angle <= 185;
-                    return (
-                        <li
-                            className={`experience-event-orbit-item${visible ? "" : " experience-event-orbit-item-hidden"}`}
-                            style={{
-                                left: `${50 + Math.cos(angleRadians) * 49.1667}%`,
-                                top: `${50 + Math.sin(angleRadians) * 47}%`,
-                            }}
-                            key={event.id}
-                        >
-                            <button
-                                className="experience-event-button"
-                                type="button"
-                                aria-label={event.title}
-                                aria-pressed={activeEvent.id === event.id}
-                                tabIndex={visible ? 0 : -1}
-                                onClick={() => selectEvent(index)}
-                            >
-                                <img className="experience-event-image" src={eventImagePath(experienceType, event.id)} alt="" />
-                            </button>
-                        </li>
-                    );
-                })}
-            </ol>
-            <span
-                className="experience-orbit-focus-marker"
-                style={{ left: "21.7992%", top: "88.5001%" }}
-                aria-hidden="true"
-            />
-        </div>
-    );
 
     return (
-        <><section
+        <section
             ref={sectionRef}
-            id="experience"
             className={`experience-container${contentVisible ? " experience-content-visible" : ""}${orbitReady ? " experience-orbit-ready" : ""}`}
             aria-labelledby="experience-title"
         >
@@ -224,6 +105,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                                     type="button"
                                     aria-pressed={experienceType === type}
                                     onClick={() => {
+                                        if (type === experienceType) return;
                                         setExperienceType(type);
                                         onActiveEventChange(eventImagePath(type, activeEventIds[type]));
                                     }}
@@ -260,46 +142,17 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                     </article>
                 </div>
             </div>
-            <aside className="experience-orbit" aria-label={`${experienceType} entries`}>
-                <svg
-                    className="experience-orbit-ring"
-                    viewBox="0 0 360 100"
-                    aria-hidden="true"
-                >
-                    <ellipse className="experience-orbit-path" cx="180" cy="50" rx="177" ry="47" />
-                </svg>
-                <div
-                    ref={orbitScrollRef}
-                    className="experience-orbit-scroll"
-                    onScroll={handleOrbitScroll}
-                    onKeyDown={(event) => {
-                        if (!orbitInteractiveRef.current) return;
-                        if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
-                        const direction = event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 1;
-                        const nextIndex = Math.round(orbitPosition) + direction;
-                        if (nextIndex < 0 || nextIndex >= activeEvents.length) return;
-                        event.preventDefault();
-                        selectEvent(nextIndex);
-                    }}
-                    tabIndex={0}
-                    aria-label={`Scroll through ${experienceType} entries`}
-                >
-                    <div
-                        className="experience-orbit-track"
-                        style={{ "--experience-scroll-distance": `${(activeEvents.length - 1) * orbitScrollStep}px` } as CSSProperties}
-                    >
-                        <div className="experience-orbit-stage" aria-hidden="true" />
-                        {activeEvents.map((event, index) => (
-                            <span
-                                className="experience-orbit-snap-point"
-                                style={{ top: index * orbitScrollStep }}
-                                aria-hidden="true"
-                                key={event.id}
-                            />
-                        ))}
-                    </div>
-                </div>
-            </aside>
-        </section>{planetLayerTarget && createPortal(planetLayer, planetLayerTarget)}</>
+            <ExperienceOrbit
+                activeEntryId={activeEvent.id}
+                contentVisible={contentVisible}
+                entries={activeEvents}
+                imagePath={(id) => eventImagePath(experienceType, id)}
+                interactive={orbitReady}
+                label={experienceType}
+                layerTarget={orbitLayerTarget}
+                onEntrySelect={activateEvent}
+                onReady={() => setOrbitReady(true)}
+            />
+        </section>
     );
 }
