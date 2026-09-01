@@ -12,7 +12,7 @@
     --experience-planet-clearance: calc(var(--orbit-ring-width) + var(--orbit-ring-width) + 1px);
     --experience-content-gap: clamp(1rem, 2vw, 2rem);
     --experience-header-space: clamp(7.5rem, 14vh, 9.5rem);
-    --experience-event-text-size: clamp(1rem, min(1.25vw, 2.1vh), 1.25rem);
+    --experience-event-text-size: var(--text-body);
     --experience-content-width: calc(var(--experience-content-boundary-x) - var(--experience-section-padding-inline) - var(--experience-content-gap));
     --experience-ring-cutout: max(0px, calc((var(--experience-orbit-size) - var(--experience-planet-size) - var(--experience-circle-size)) / 2 - var(--experience-rail-gap) + var(--experience-ring-rail-gap)));
 

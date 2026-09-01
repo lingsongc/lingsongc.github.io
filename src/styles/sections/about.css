@@ -58,10 +58,6 @@
     gap: 1rem;
 }
 
-.about-description p {
-    line-height: 1.75;
-}
-
 .about-statistics {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -87,8 +83,10 @@
 }
 
 .about-statistic-detail {
-    color: var(--colour-text-muted);
-    font-size: var(--text-small);
+    color: var(--colour-text);
+    font-size: var(--text-body);
+    font-weight: 500;
+    line-height: 1.5;
 }
 
 @media (max-width: 48rem) {

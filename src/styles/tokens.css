@@ -18,7 +18,7 @@
     --text-page-title: clamp(2.75rem, 8vw, 7rem);
     --text-section-title: clamp(2rem, 5vw, 4rem);
     --text-subtitle: clamp(1.25rem, 2.5vw, 2rem);
-    --text-body: 1rem;
+    --text-body: clamp(1rem, min(1.25vw, 2.1vh), 1.25rem);
     --text-small: 0.875rem;
 
     --home-circle-size: clamp(8rem, 28vw, 22rem);
