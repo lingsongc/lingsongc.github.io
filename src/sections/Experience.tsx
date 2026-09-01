@@ -61,7 +61,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         const updateContentVisibility = () => {
             const start = restingContainer.getBoundingClientRect().top + window.scrollY;
             const end = start + restingContainer.offsetHeight - window.innerHeight;
-            const shouldShow = window.scrollY >= start && window.scrollY < end;
+            const shouldShow = window.scrollY >= start && window.scrollY <= end;
             if (shouldShow === contentVisible) return;
             contentVisible = shouldShow;
             setContentVisible(shouldShow);
@@ -73,7 +73,13 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
             }
         };
 
-        const animationFrame = window.requestAnimationFrame(updateContentVisibility);
+        const animationFrame = window.requestAnimationFrame(() => {
+            if (window.location.hash === "#experience") {
+                const start = restingContainer.getBoundingClientRect().top + window.scrollY;
+                window.scrollTo({ top: start });
+            }
+            updateContentVisibility();
+        });
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
         return () => {
@@ -269,9 +275,11 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                     onKeyDown={(event) => {
                         if (!orbitInteractiveRef.current) return;
                         if (!["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
-                        event.preventDefault();
                         const direction = event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 1;
-                        selectEvent(Math.round(orbitPosition) + direction);
+                        const nextIndex = Math.round(orbitPosition) + direction;
+                        if (nextIndex < 0 || nextIndex >= activeEvents.length) return;
+                        event.preventDefault();
+                        selectEvent(nextIndex);
                     }}
                     tabIndex={0}
                     aria-label={`Scroll through ${experienceType} entries`}
