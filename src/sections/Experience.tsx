@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
 import { education } from "../data/education";
 import { experiences } from "../data/experiences";
@@ -15,7 +16,7 @@ const eventsByType = { experience: experienceEvents, education: educationEvents 
 const eventImagePath = (type: ExperienceType, id: string) => `/${type}/${id}.jpg`;
 const orbitScrollStep = 112;
 const orbitAngleStep = 36;
-const orbitFocusAngle = -36;
+const orbitFocusAngle = 125;
 
 type ExperienceProps = {
     onActiveEventChange: (image: string) => void;
@@ -30,6 +31,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
     const selectEventRef = useRef<(index: number) => void>(() => undefined);
     const [contentVisible, setContentVisible] = useState(false);
     const [orbitReady, setOrbitReady] = useState(false);
+    const [planetLayerTarget, setPlanetLayerTarget] = useState<HTMLElement | null>(null);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
     const [orbitPosition, setOrbitPosition] = useState(0);
     const [activeEventIds, setActiveEventIds] = useState({
@@ -41,6 +43,10 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         (event) => event.id === activeEventIds[experienceType],
     ) ?? activeEvents[0];
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
+
+    useEffect(() => {
+        setPlanetLayerTarget(document.querySelector<HTMLElement>(".main-circle-container"));
+    }, []);
 
     useEffect(() => {
         const section = sectionRef.current;
@@ -149,8 +155,46 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
         setOrbitPosition(nextPosition);
     };
 
+    const planetLayer = (
+        <div className="experience-orbit-planets">
+            <ol className="experience-event-orbit-list" aria-label={`${experienceType} entries`}>
+                {activeEvents.map((event, index) => {
+                    const angle = orbitFocusAngle - (index - orbitPosition) * orbitAngleStep;
+                    const angleRadians = angle * Math.PI / 180;
+                    const visible = angle >= 53 && angle <= 185;
+                    return (
+                        <li
+                            className={`experience-event-orbit-item${visible ? "" : " experience-event-orbit-item-hidden"}`}
+                            style={{
+                                left: `${50 + Math.cos(angleRadians) * 49.1667}%`,
+                                top: `${50 + Math.sin(angleRadians) * 47}%`,
+                            }}
+                            key={event.id}
+                        >
+                            <button
+                                className="experience-event-button"
+                                type="button"
+                                aria-label={event.title}
+                                aria-pressed={activeEvent.id === event.id}
+                                tabIndex={visible ? 0 : -1}
+                                onClick={() => selectEvent(index)}
+                            >
+                                <img className="experience-event-image" src={eventImagePath(experienceType, event.id)} alt="" />
+                            </button>
+                        </li>
+                    );
+                })}
+            </ol>
+            <span
+                className="experience-orbit-focus-marker"
+                style={{ left: "21.7992%", top: "88.5001%" }}
+                aria-hidden="true"
+            />
+        </div>
+    );
+
     return (
-        <section
+        <><section
             ref={sectionRef}
             id="experience"
             className={`experience-container${contentVisible ? " experience-content-visible" : ""}${orbitReady ? " experience-orbit-ready" : ""}`}
@@ -236,43 +280,7 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                         className="experience-orbit-track"
                         style={{ "--experience-scroll-distance": `${(activeEvents.length - 1) * orbitScrollStep}px` } as CSSProperties}
                     >
-                        <div className="experience-orbit-stage">
-                            <ol className="experience-event-orbit-list">
-                                {activeEvents.map((event, index) => {
-                                    const angle = orbitFocusAngle - (index - orbitPosition) * orbitAngleStep;
-                                    const visible = angle >= -160 && angle <= 45;
-                                    return (
-                                        <li
-                                            className={`experience-event-orbit-item${visible ? "" : " experience-event-orbit-item-hidden"}`}
-                                            style={{
-                                                "--experience-event-angle": `${angle}deg`,
-                                                "--experience-event-angle-inverse": `${-angle}deg`,
-                                            } as CSSProperties}
-                                            key={event.id}
-                                        >
-                                            <button
-                                                className="experience-event-button"
-                                                type="button"
-                                                aria-label={event.title}
-                                                aria-pressed={activeEvent.id === event.id}
-                                                tabIndex={visible ? 0 : -1}
-                                                onClick={() => selectEvent(index)}
-                                            >
-                                                <img className="experience-event-image" src={eventImagePath(experienceType, event.id)} alt="" />
-                                            </button>
-                                        </li>
-                                    );
-                                })}
-                            </ol>
-                            <span
-                                className="experience-orbit-focus-marker"
-                                style={{
-                                    "--experience-event-angle": `${orbitFocusAngle}deg`,
-                                    "--experience-event-angle-inverse": `${-orbitFocusAngle}deg`,
-                                } as CSSProperties}
-                                aria-hidden="true"
-                            />
-                        </div>
+                        <div className="experience-orbit-stage" aria-hidden="true" />
                         {activeEvents.map((event, index) => (
                             <span
                                 className="experience-orbit-snap-point"
@@ -284,6 +292,6 @@ export function Experience({ onActiveEventChange }: ExperienceProps) {
                     </div>
                 </div>
             </aside>
-        </section>
+        </section>{planetLayerTarget && createPortal(planetLayer, planetLayerTarget)}</>
     );
 }
