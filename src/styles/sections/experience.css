@@ -251,9 +251,13 @@
 .experience-orbit-scroll {
     position: absolute;
     z-index: 1;
-    inset: 0;
+    top: 50%;
+    left: 50%;
+    width: var(--experience-circle-size);
+    height: var(--experience-circle-size);
     overflow: hidden auto;
     border-radius: 50%;
+    transform: translate(-50%, -50%);
     pointer-events: none;
     scrollbar-width: none;
     scroll-snap-type: y mandatory;
