@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { aboutDetails } from "../data/about";
+import { sectionRestingBounds } from "../motion/sectionTransitionBounds";
 
 export function About() {
     const sectionRef = useRef<HTMLElement>(null);
@@ -9,10 +10,8 @@ export function About() {
         const section = sectionRef.current;
         const restingContainer = section?.parentElement;
         if (!section || !restingContainer) return;
-        const restingStart = () => restingContainer.getBoundingClientRect().top + window.scrollY;
         const updateContentVisibility = () => {
-            const start = restingStart();
-            const end = start + restingContainer.offsetHeight - window.innerHeight;
+            const { start, end } = sectionRestingBounds(restingContainer);
             section.classList.toggle(
                 "about-content-visible",
                 window.scrollY >= start && window.scrollY < end,

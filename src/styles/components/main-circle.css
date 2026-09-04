@@ -20,6 +20,52 @@
     background-color: var(--colour-image-blank);
 }
 
+.main-circle-experience-orbit-front {
+    position: absolute;
+    z-index: 2;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    visibility: hidden;
+    transition: visibility 0s linear 500ms;
+}
+
+.main-circle-experience-orbit-front-path {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--experience-ellipse-render-width);
+    height: auto;
+    overflow: visible;
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--experience-ellipse-rotation)) scale(0);
+    transition: opacity 500ms ease, transform 500ms ease;
+}
+
+.main-circle-experience-orbit-stroke {
+    fill: none;
+    stroke: var(--colour-line);
+    stroke-width: var(--orbit-ring-width);
+    vector-effect: non-scaling-stroke;
+}
+
+.main-circle-experience-visible .main-circle-experience-orbit-front {
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.main-circle-experience-visible .main-circle-experience-orbit-front-path {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--experience-ellipse-rotation)) scale(1);
+    transition-delay: 0s;
+}
+
+.main-circle-experience-orbit-host {
+    position: absolute;
+    z-index: 3;
+    inset: 0;
+}
+
 .main-circle-image {
     position: absolute;
     inset: 0;
@@ -63,4 +109,11 @@
     line-height: 1.5;
     text-align: center;
     opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .main-circle-experience-orbit-front,
+    .main-circle-experience-orbit-front-path {
+        transition: none;
+    }
 }
