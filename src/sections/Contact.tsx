@@ -1,12 +1,15 @@
-import { useRef } from "react";
+import { useRef, type RefObject } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-export function Contact() {
-    const sectionRef = useRef<HTMLElement>(null);
+type ContactProps = {
+    sectionRef: RefObject<HTMLElement | null>;
+};
+
+export function Contact({ sectionRef }: ContactProps) {
     const orbitRef = useRef<HTMLDivElement>(null);
     const blobLayerRef = useRef<HTMLDivElement>(null);
     const linkLayerRef = useRef<HTMLElement>(null);

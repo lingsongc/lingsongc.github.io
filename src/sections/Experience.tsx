@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
 import { education } from "../data/education";
 import { experiences } from "../data/experiences";
@@ -25,10 +25,11 @@ const eventImage = (type: ExperienceType, id: string): ImageDescriptor => ({
     objectPosition: "center",
 });
 type ExperienceProps = {
+    orbitRef: RefObject<HTMLElement | null>;
     onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
-export function Experience({ onMainCircleImageChange }: ExperienceProps) {
+export function Experience({ orbitRef, onMainCircleImageChange }: ExperienceProps) {
     const sectionRef = useRef<HTMLElement>(null);
     const imageVisibleRef = useRef(false);
     const activeImageRef = useRef<ImageDescriptor | null>(null);
@@ -157,6 +158,7 @@ export function Experience({ onMainCircleImageChange }: ExperienceProps) {
                 imagePath={(id) => eventImagePath(experienceType, id)}
                 interactive={orbitReady}
                 label={experienceType}
+                orbitRef={orbitRef}
                 onEntrySelect={activateEvent}
                 onReady={() => setOrbitReady(true)}
             />

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../data/projects";
@@ -12,6 +12,7 @@ type ProjectPlanetStyle = CSSProperties & {
 };
 
 type ProjectsProps = {
+    sectionRef: RefObject<HTMLElement | null>;
     onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
@@ -46,8 +47,7 @@ function fitAngleToViewport(angle: number, radius: number, planetRadius: number,
     return normalizedAngle;
 }
 
-export function Projects({ onMainCircleImageChange }: ProjectsProps) {
-    const containerRef = useRef<HTMLElement>(null);
+export function Projects({ sectionRef, onMainCircleImageChange }: ProjectsProps) {
     const imageVisibleRef = useRef(false);
     const activeProjectRef = useRef(projects[0]);
     const [transitionState, setTransitionState] = useState<"idle" | "visible" | "exiting">("idle");
@@ -56,7 +56,7 @@ export function Projects({ onMainCircleImageChange }: ProjectsProps) {
     activeProjectRef.current = activeProject;
 
     useEffect(() => {
-        const section = containerRef.current;
+        const section = sectionRef.current;
         const restingContainer = section?.parentElement;
         if (!section || !restingContainer) return;
 
@@ -81,7 +81,7 @@ export function Projects({ onMainCircleImageChange }: ProjectsProps) {
     }, [onMainCircleImageChange]);
 
     useLayoutEffect(() => {
-        const container = containerRef.current;
+        const container = sectionRef.current;
         if (!container) return;
 
         const positionPlanets = () => {
@@ -110,7 +110,7 @@ export function Projects({ onMainCircleImageChange }: ProjectsProps) {
 
     return (
         <section
-            ref={containerRef}
+            ref={sectionRef}
             id="projects"
             className={`project-container project-content-${transitionState}`}
             aria-labelledby="project-title"

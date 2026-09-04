@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, type RefObject } from "react";
 import { aboutDetails } from "../data/about";
 import { sectionRestingBounds } from "../motion/sectionTransitionBounds";
 import type { ImageDescriptor } from "../types/images";
@@ -11,11 +11,11 @@ const aboutImage: ImageDescriptor = {
 };
 
 type AboutProps = {
+    sectionRef: RefObject<HTMLElement | null>;
     onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
-export function About({ onMainCircleImageChange }: AboutProps) {
-    const sectionRef = useRef<HTMLElement>(null);
+export function About({ sectionRef, onMainCircleImageChange }: AboutProps) {
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
 
     useEffect(() => {

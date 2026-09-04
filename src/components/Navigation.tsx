@@ -1,9 +1,13 @@
-import { useEffect, useRef, useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent, type RefObject } from "react";
 import { sections } from "../motion/sceneStates";
 import { useActiveSection } from "../motion/useActiveSection";
 import { useScrollScene } from "../motion/useScrollScene";
 
-export function Navigation() {
+type NavigationProps = {
+    railRef: RefObject<HTMLDivElement | null>;
+};
+
+export function Navigation({ railRef }: NavigationProps) {
     const currentYear = new Date().getFullYear();
     const navigationRef = useRef<HTMLElement>(null);
     const copyrightRef = useRef<HTMLElement>(null);
@@ -25,7 +29,7 @@ export function Navigation() {
 
     return (
         <>
-            <div className="navigation-rail">
+            <div ref={railRef} className="navigation-rail">
                 <span className="navigation-rail-slot" aria-hidden="true" />
                 <small ref={copyrightRef} className="navigation-copyright">
                     Copyright © {currentYear} Chen Ling Song. All Rights Reserved.

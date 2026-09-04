@@ -1,8 +1,13 @@
 import { skills } from "../data/skills";
+import type { RefObject } from "react";
 
-export function Skills() {
+type SkillsProps = {
+    sectionRef: RefObject<HTMLElement | null>;
+};
+
+export function Skills({ sectionRef }: SkillsProps) {
     return (
-        <section id="skills" className="skill-container" aria-labelledby="skill-title">
+        <section ref={sectionRef} id="skills" className="skill-container" aria-labelledby="skill-title">
             <h2 id="skill-title" className="skill-title">Skills</h2>
             <ul className="skill-list">
                 {skills.map((skill) => (

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { IconMouse } from "@tabler/icons-react";
 import {
@@ -20,6 +20,7 @@ type ExperienceOrbitProps = {
     imagePath: (id: string) => string;
     interactive: boolean;
     label: string;
+    orbitRef: RefObject<HTMLElement | null>;
     onEntrySelect: (index: number) => void;
     onReady: () => void;
 };
@@ -31,6 +32,7 @@ export function ExperienceOrbit({
     imagePath,
     interactive,
     label,
+    orbitRef,
     onEntrySelect,
     onReady,
 }: ExperienceOrbitProps) {
@@ -117,7 +119,7 @@ export function ExperienceOrbit({
 
     return (
         <>
-            <aside className="experience-orbit" aria-label={`${label} entries`}>
+            <aside ref={orbitRef} className="experience-orbit" aria-label={`${label} entries`}>
                 <svg className="experience-orbit-ring" viewBox={experienceOrbitViewBox} style={experienceOrbitSectionStyles} aria-hidden="true">
                     <ellipse className="experience-orbit-path" cx={experienceOrbitGeometry.viewBoxWidth / 2} cy={experienceOrbitGeometry.viewBoxHeight / 2} rx={experienceOrbitGeometry.radiusX} ry={experienceOrbitGeometry.radiusY} />
                 </svg>
