@@ -5,7 +5,7 @@ import { experiences } from "../data/experiences";
 import {
     alignMountedSectionAnchor,
     sectionRestingBounds,
-} from "../motion/sectionTransitionBounds";
+} from "../motion/sectionRestingBounds";
 import type { ImageDescriptor } from "../types/images";
 import { ExperienceOrbit } from "./ExperienceOrbit";
 

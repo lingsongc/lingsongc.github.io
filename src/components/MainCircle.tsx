@@ -1,5 +1,5 @@
 import type { RefObject } from "react";
-import { useMainCircleScene } from "../motion/useMainCircleScene";
+import { useMainCircleTransition } from "../motion/useMainCircleTransition";
 import type { ImageDescriptor } from "../types/images";
 import type { MainCircleTransition } from "../types/mainCircle";
 
@@ -10,7 +10,7 @@ type MainCircleProps = {
 };
 
 export function MainCircle({ circleRef, image, transitions }: MainCircleProps) {
-    useMainCircleScene(circleRef, transitions);
+    useMainCircleTransition(circleRef, transitions);
 
     return (
         <div ref={circleRef} className="main-circle-container">

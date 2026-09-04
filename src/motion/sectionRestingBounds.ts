@@ -1,4 +1,4 @@
-function documentTop(element: HTMLElement) {
+export function elementDocumentTop(element: HTMLElement) {
     let top = 0;
     let current: HTMLElement | null = element;
 
@@ -10,10 +10,8 @@ function documentTop(element: HTMLElement) {
     return top;
 }
 
-export const sectionTransitionTimelineDefaults = { duration: 1, ease: "none" };
-
 export function sectionRestingBounds(restingContainer: HTMLElement) {
-    const start = documentTop(restingContainer);
+    const start = elementDocumentTop(restingContainer);
     return {
         start,
         end: start + restingContainer.offsetHeight - window.innerHeight,
@@ -22,15 +20,5 @@ export function sectionRestingBounds(restingContainer: HTMLElement) {
 
 export function alignMountedSectionAnchor(restingContainer: HTMLElement) {
     if (!restingContainer.id || window.location.hash !== `#${restingContainer.id}`) return;
-    window.scrollTo({ top: documentTop(restingContainer) });
-}
-
-export function sectionTransitionScroll(incomingSection: HTMLElement) {
-    return {
-        trigger: incomingSection,
-        start: () => documentTop(incomingSection) - window.innerHeight,
-        end: () => documentTop(incomingSection),
-        scrub: true,
-        invalidateOnRefresh: true,
-    };
+    window.scrollTo({ top: elementDocumentTop(restingContainer) });
 }

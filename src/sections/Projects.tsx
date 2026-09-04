@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type 
 import { createPortal } from "react-dom";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../data/projects";
-import { sectionRestingBounds } from "../motion/sectionTransitionBounds";
+import { sectionRestingBounds } from "../motion/sectionRestingBounds";
 import type { ImageDescriptor } from "../types/images";
 
 const ringCount = 3;

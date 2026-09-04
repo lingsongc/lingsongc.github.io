@@ -3,14 +3,23 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { RefObject } from "react";
 import type { MainCircleTransition } from "../types/mainCircle";
-import {
-    sectionTransitionScroll,
-    sectionTransitionTimelineDefaults,
-} from "./sectionTransitionBounds";
+import { elementDocumentTop } from "./sectionRestingBounds";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-export function useMainCircleScene(
+const mainCircleTimelineDefaults = { duration: 1, ease: "none" };
+
+function mainCircleTransitionScroll(incomingSection: HTMLElement) {
+    return {
+        trigger: incomingSection,
+        start: () => elementDocumentTop(incomingSection) - window.innerHeight,
+        end: () => elementDocumentTop(incomingSection),
+        scrub: true,
+        invalidateOnRefresh: true,
+    };
+}
+
+export function useMainCircleTransition(
     circleRef: RefObject<HTMLDivElement | null>,
     transitions: readonly MainCircleTransition[],
 ) {
@@ -26,9 +35,9 @@ export function useMainCircleScene(
                 if (!targetElement) return;
 
                 timelines.push(gsap.timeline({
-                    defaults: sectionTransitionTimelineDefaults,
+                    defaults: mainCircleTimelineDefaults,
                     scrollTrigger: {
-                        ...sectionTransitionScroll(targetElement),
+                        ...mainCircleTransitionScroll(targetElement),
                         onUpdate: (self) => {
                             if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
                         },

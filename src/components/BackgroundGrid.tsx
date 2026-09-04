@@ -1,5 +1,5 @@
 import { useEffect, useId, useRef, type RefObject } from "react";
-import { createWarpedGridPaths } from "../motion/gridGeometry";
+import { createWarpedGridPaths } from "./backgroundGridGeometry";
 
 const GRID_SPACING = 48;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";

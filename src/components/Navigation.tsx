@@ -1,6 +1,6 @@
 import { useEffect, useState, type MouseEvent, type RefObject } from "react";
-import { sections } from "../motion/sceneStates";
-import { useActiveSection } from "../motion/useActiveSection";
+import { navigationSections } from "../data/navigation";
+import { useNavigationActiveSection } from "./useNavigationActiveSection";
 
 type NavigationProps = {
     copyrightRef: RefObject<HTMLElement | null>;
@@ -10,9 +10,9 @@ type NavigationProps = {
 
 export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationProps) {
     const currentYear = new Date().getFullYear();
-    const activeSection = useActiveSection();
+    const activeSection = useNavigationActiveSection();
     const [touchLabel, setTouchLabel] = useState<string | null>(null);
-    const navigationSections = sections.filter((section) => section.id !== "home");
+    const visibleSections = navigationSections.filter((section) => section.id !== "home");
 
     useEffect(() => setTouchLabel(null), [activeSection]);
 
@@ -33,7 +33,7 @@ export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationP
                     Copyright © {currentYear} Chen Ling Song. All Rights Reserved.
                 </small>
                 <div className="navigation-rail-links" aria-hidden="true">
-                    {navigationSections.map((section) => (
+                    {visibleSections.map((section) => (
                         <span className="navigation-rail-slot" key={section.id} />
                     ))}
                 </div>
@@ -43,7 +43,7 @@ export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationP
                 <ul className="navigation-list">
                     <li className="navigation-item navigation-theme-slot" aria-hidden="true" />
 
-                    {navigationSections.map((section) => (
+                    {visibleSections.map((section) => (
                         <li className="navigation-item" key={section.id}>
                             <a
                                 className={`navigation-link${activeSection === section.id

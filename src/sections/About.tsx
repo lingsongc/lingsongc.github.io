@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from "react";
 import { aboutDetails } from "../data/about";
-import { sectionRestingBounds } from "../motion/sectionTransitionBounds";
+import { sectionRestingBounds } from "../motion/sectionRestingBounds";
 import type { ImageDescriptor } from "../types/images";
 
 const aboutImage: ImageDescriptor = {

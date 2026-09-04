@@ -2,15 +2,15 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useState } from "react";
-import { sections, type SectionId } from "./sceneStates";
+import { navigationSections, type SectionId } from "../data/navigation";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-export function useActiveSection() {
+export function useNavigationActiveSection() {
     const [activeSection, setActiveSection] = useState<SectionId>("home");
 
     useGSAP(() => {
-        const sectionElements = sections.map(({ id }) => ({
+        const sectionElements = navigationSections.map(({ id }) => ({
             id,
             element: document.getElementById(id),
         })).filter((section): section is { id: SectionId; element: HTMLElement } => (

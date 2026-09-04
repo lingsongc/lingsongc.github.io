@@ -9,7 +9,7 @@ import {
     experienceOrbitPointIsVisible,
     experienceOrbitSectionStyles,
     experienceOrbitViewBox,
-} from "../motion/experienceOrbitGeometry";
+} from "./experienceOrbitGeometry";
 
 export type ExperienceOrbitEntry = { id: string; title: string };
 
