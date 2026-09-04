@@ -2,8 +2,8 @@
 
 .project-container {
     --project-circle-size: min(38.4vw, 54.4vh);
-    --project-planet-size: clamp(2.5rem, 6vmin, 5rem);
-    --project-ring-gap: clamp(4rem, 11vw, 10rem);
+    --project-planet-size: clamp(3.75rem, 9vmin, 7.5rem);
+    --project-ring-gap: clamp(6rem, 16.5vw, 15rem);
     --project-ring-step: calc(var(--project-ring-gap) + var(--project-ring-gap));
     --project-ring-one-size: calc(var(--project-circle-size) + var(--project-ring-step));
     --project-ring-two-size: calc(var(--project-circle-size) + var(--project-ring-step) + var(--project-ring-step));

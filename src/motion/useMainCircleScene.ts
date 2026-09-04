@@ -46,6 +46,9 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const experienceCirclePosition = (axis: "left" | "top") => axis === "left"
             ? experienceOrbit.offsetLeft
             : experienceOrbit.offsetTop;
+        const projectCircleSize = () => window.innerWidth <= 768
+            ? window.innerWidth * 0.576
+            : Math.min(window.innerWidth * 0.384, window.innerHeight * 0.544);
         const skillsCircleSize = () => Math.min(window.innerWidth, window.innerHeight) * 0.9;
         const skillsCircleGap = () => (window.innerHeight - skillsCircleSize()) / 2;
         const skillsCircleLeft = () => navigationRail.getBoundingClientRect().left
@@ -141,7 +144,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
                 },
             },
         })
-            .to(circle, { top: "50%", left: "50%" }, 0);
+            .to(circle, { width: projectCircleSize, top: "50%", left: "50%" }, 0);
 
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
