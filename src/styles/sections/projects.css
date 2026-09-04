@@ -87,6 +87,37 @@
     object-fit: cover;
 }
 
+.project-detail-link {
+    position: absolute;
+    z-index: 3;
+    top: calc(50% + var(--project-circle-size) / 2);
+    left: calc(50% + var(--project-circle-size) / 2);
+    display: grid;
+    width: min(clamp(2.75rem, 5vmin, 4rem), calc(var(--project-circle-size) * 0.16));
+    aspect-ratio: 1;
+    place-items: center;
+    border: var(--orbit-ring-width) solid var(--colour-text);
+    border-radius: 50%;
+    background-color: var(--colour-background);
+    color: var(--colour-text);
+    transform: translate(-100%, -100%);
+}
+
+.project-detail-link:hover {
+    background-color: var(--colour-accent);
+}
+
+.project-detail-link:focus-visible {
+    outline: var(--orbit-ring-width) solid var(--colour-accent);
+    outline-offset: var(--orbit-ring-width);
+}
+
+.project-detail-link svg {
+    width: 55%;
+    height: 55%;
+    stroke-width: 2;
+}
+
 .project-name,
 .project-summary {
     position: absolute;

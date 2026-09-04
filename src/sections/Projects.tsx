@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../data/projects";
 
 const ringCount = 3;
@@ -39,6 +40,7 @@ function fitAngleToViewport(angle: number, radius: number, planetRadius: number,
 
 export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
     const containerRef = useRef<HTMLElement>(null);
+    const activeProject = projects.find(({ id }) => id === activeProjectId) ?? projects[0];
 
     useLayoutEffect(() => {
         const container = containerRef.current;
@@ -108,6 +110,13 @@ export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
                     );
                 })}
             </ul>
+            <a
+                className="project-detail-link"
+                href={activeProject.href}
+                aria-label={`View ${activeProject.name} project details`}
+            >
+                <IconArrowUpRight aria-hidden="true" />
+            </a>
         </section>
     );
 }
