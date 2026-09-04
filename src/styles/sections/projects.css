@@ -1,7 +1,11 @@
 /* projects */
 
-.project-container {
+.project-container,
+.project-selected-content {
     --project-circle-size: min(38.4vw, 54.4vh);
+}
+
+.project-container {
     --project-planet-size: clamp(3.75rem, 9vmin, 7.5rem);
     --project-ring-gap: clamp(6rem, 16.5vw, 15rem);
     --project-ring-step: calc(var(--project-ring-gap) + var(--project-ring-gap));
@@ -229,6 +233,40 @@
     object-fit: cover;
 }
 
+.project-selected-content {
+    position: fixed;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    width: var(--project-circle-size);
+    overflow: hidden;
+    border-radius: 50%;
+    aspect-ratio: 1;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    transition: opacity 0s linear 500ms;
+    pointer-events: none;
+}
+
+.project-selected-content-visible {
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+.project-selected-summary {
+    position: absolute;
+    right: 15%;
+    bottom: 15%;
+    left: 15%;
+    padding: clamp(0.5rem, 1.2vmin, 1rem);
+    border-radius: 0.75rem;
+    background-color: rgb(18 8 24 / 78%);
+    color: var(--colour-text);
+    font-size: clamp(0.625rem, 1.8vmin, 1rem);
+    line-height: 1.5;
+    text-align: center;
+}
+
 .project-detail-link {
     position: absolute;
     z-index: 3;
@@ -271,7 +309,8 @@
 }
 
 @media (max-width: 48rem) {
-    .project-container { --project-circle-size: 57.6vw; }
+    .project-container,
+    .project-selected-content { --project-circle-size: 57.6vw; }
 }
 
 @media (prefers-reduced-motion: reduce) {

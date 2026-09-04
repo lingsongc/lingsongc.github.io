@@ -1,10 +1,14 @@
 /* experience and education */
 
-.experience-container {
+.experience-container,
+.experience-orbit-foreground {
     --experience-section-padding-inline: clamp(1.5rem, 6vw, 6rem);
     --experience-circle-size: min(46.5vw, 69vh);
     --experience-rail-gap: clamp(1rem, 2vw, 2rem);
-    --experience-orbit-center-x: calc(100% - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
+    --experience-orbit-center-x: calc(100vw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
+}
+
+.experience-container {
     --experience-content-boundary-x: calc(100cqw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2 - var(--experience-orbit-size) / 2);
     --experience-orbit-size: min(75vw, 108vh);
     --experience-content-gap: clamp(1rem, 2vw, 2rem);
@@ -248,6 +252,50 @@
     transform: translate(-50%, -50%);
 }
 
+.experience-orbit-foreground {
+    position: fixed;
+    z-index: 3;
+    top: 64%;
+    left: var(--experience-orbit-center-x);
+    width: var(--experience-circle-size);
+    border-radius: 50%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.experience-orbit-front {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    visibility: hidden;
+    transition: visibility 0s linear 500ms;
+}
+
+.experience-orbit-front-path {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--experience-ellipse-render-width);
+    height: auto;
+    overflow: visible;
+    opacity: 0;
+    transform: translate(-50%, -50%) rotate(var(--experience-ellipse-rotation)) scale(0);
+    transition: opacity 500ms ease, transform 500ms ease;
+}
+
+.experience-orbit-foreground-visible .experience-orbit-front {
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.experience-orbit-foreground-visible .experience-orbit-front-path {
+    opacity: 1;
+    transform: translate(-50%, -50%) rotate(var(--experience-ellipse-rotation)) scale(1);
+    transition-delay: 0s;
+}
+
 .experience-orbit-scroll {
     position: absolute;
     z-index: 1;
@@ -431,7 +479,8 @@
         --experience-orbit-size: 123vw;
     }
 
-    .experience-orbit { top: 72%; }
+    .experience-orbit,
+    .experience-orbit-foreground { top: 72%; }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -446,6 +495,8 @@
     .experience-type-button { transition: none; }
 
     .experience-orbit-ring,
+    .experience-orbit-front,
+    .experience-orbit-front-path,
     .experience-orbit-planets { transition: none; }
 
     .experience-header-content,

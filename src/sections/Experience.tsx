@@ -6,6 +6,7 @@ import {
     alignMountedSectionAnchor,
     sectionRestingBounds,
 } from "../motion/sectionTransitionBounds";
+import type { ImageDescriptor } from "../types/images";
 import { ExperienceOrbit } from "./ExperienceOrbit";
 
 type ExperienceType = "experience" | "education";
@@ -18,14 +19,19 @@ const educationEvents = education.map(({ id, institution, qualification, ...even
 }));
 const eventsByType = { experience: experienceEvents, education: educationEvents };
 const eventImagePath = (type: ExperienceType, id: string) => `/${type}/${id}.jpg`;
+const eventImage = (type: ExperienceType, id: string): ImageDescriptor => ({
+    src: eventImagePath(type, id),
+    alt: "",
+    objectPosition: "center",
+});
 type ExperienceProps = {
-    orbitLayerTarget: HTMLElement | null;
-    onActiveEventChange: (image: string) => void;
-    onVisibilityChange: (visible: boolean) => void;
+    onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
-export function Experience({ orbitLayerTarget, onActiveEventChange, onVisibilityChange }: ExperienceProps) {
+export function Experience({ onMainCircleImageChange }: ExperienceProps) {
     const sectionRef = useRef<HTMLElement>(null);
+    const imageVisibleRef = useRef(false);
+    const activeImageRef = useRef<ImageDescriptor | null>(null);
     const [contentVisible, setContentVisible] = useState(false);
     const [orbitReady, setOrbitReady] = useState(false);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
@@ -37,6 +43,7 @@ export function Experience({ orbitLayerTarget, onActiveEventChange, onVisibility
     const activeEvent = activeEvents.find(
         (event) => event.id === activeEventIds[experienceType],
     ) ?? activeEvents[0];
+    activeImageRef.current = eventImage(experienceType, activeEvent.id);
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
 
     useEffect(() => {
@@ -49,8 +56,9 @@ export function Experience({ orbitLayerTarget, onActiveEventChange, onVisibility
             const shouldShow = window.scrollY >= start && window.scrollY <= end;
             if (shouldShow === contentVisible) return;
             contentVisible = shouldShow;
+            imageVisibleRef.current = shouldShow;
             setContentVisible(shouldShow);
-            onVisibilityChange(shouldShow);
+            onMainCircleImageChange(shouldShow ? activeImageRef.current : null);
             setOrbitReady(false);
             if (shouldShow && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
                 setOrbitReady(true);
@@ -72,13 +80,13 @@ export function Experience({ orbitLayerTarget, onActiveEventChange, onVisibility
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
-    }, []);
+    }, [onMainCircleImageChange]);
 
     const activateEvent = (index: number) => {
         const event = activeEvents[index];
         if (!event || event.id === activeEvent.id) return;
         setActiveEventIds((current) => ({ ...current, [experienceType]: event.id }));
-        onActiveEventChange(eventImagePath(experienceType, event.id));
+        if (imageVisibleRef.current) onMainCircleImageChange(eventImage(experienceType, event.id));
     };
 
     return (
@@ -107,7 +115,7 @@ export function Experience({ orbitLayerTarget, onActiveEventChange, onVisibility
                                     onClick={() => {
                                         if (type === experienceType) return;
                                         setExperienceType(type);
-                                        onActiveEventChange(eventImagePath(type, activeEventIds[type]));
+                                        if (imageVisibleRef.current) onMainCircleImageChange(eventImage(type, activeEventIds[type]));
                                     }}
                                     key={type}
                                 >
@@ -149,7 +157,6 @@ export function Experience({ orbitLayerTarget, onActiveEventChange, onVisibility
                 imagePath={(id) => eventImagePath(experienceType, id)}
                 interactive={orbitReady}
                 label={experienceType}
-                layerTarget={orbitLayerTarget}
                 onEntrySelect={activateEvent}
                 onReady={() => setOrbitReady(true)}
             />

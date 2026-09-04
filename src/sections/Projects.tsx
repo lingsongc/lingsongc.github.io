@@ -1,7 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
+import { createPortal } from "react-dom";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../data/projects";
 import { sectionRestingBounds } from "../motion/sectionTransitionBounds";
+import type { ImageDescriptor } from "../types/images";
 
 const ringCount = 3;
 type ProjectPlanetStyle = CSSProperties & {
@@ -10,9 +12,14 @@ type ProjectPlanetStyle = CSSProperties & {
 };
 
 type ProjectsProps = {
-    activeProjectId: string;
-    onProjectSelect: (project: Project) => void;
+    onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
+
+const projectImage = (project: Project): ImageDescriptor => ({
+    src: `/projects/${project.id}.png`,
+    alt: "",
+    objectPosition: "center",
+});
 
 function projectAngle(id: string, index: number, projectCount: number) {
     const separation = 360 / projectCount;
@@ -39,10 +46,14 @@ function fitAngleToViewport(angle: number, radius: number, planetRadius: number,
     return normalizedAngle;
 }
 
-export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
+export function Projects({ onMainCircleImageChange }: ProjectsProps) {
     const containerRef = useRef<HTMLElement>(null);
+    const imageVisibleRef = useRef(false);
+    const activeProjectRef = useRef(projects[0]);
     const [transitionState, setTransitionState] = useState<"idle" | "visible" | "exiting">("idle");
+    const [activeProjectId, setActiveProjectId] = useState(projects[0].id);
     const activeProject = projects.find(({ id }) => id === activeProjectId) ?? projects[0];
+    activeProjectRef.current = activeProject;
 
     useEffect(() => {
         const section = containerRef.current;
@@ -55,7 +66,9 @@ export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
             const shouldShow = window.scrollY >= start && window.scrollY <= end;
             if (shouldShow === contentVisible) return;
             contentVisible = shouldShow;
+            imageVisibleRef.current = shouldShow;
             setTransitionState(shouldShow ? "visible" : "exiting");
+            onMainCircleImageChange(shouldShow ? projectImage(activeProjectRef.current) : null);
         };
 
         updateContentVisibility();
@@ -65,7 +78,7 @@ export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
-    }, []);
+    }, [onMainCircleImageChange]);
 
     useLayoutEffect(() => {
         const container = containerRef.current;
@@ -130,7 +143,10 @@ export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
                                 className="project-link"
                                 type="button"
                                 aria-pressed={activeProjectId === project.id}
-                                onClick={() => onProjectSelect(project)}
+                                onClick={() => {
+                                    setActiveProjectId(project.id);
+                                    if (imageVisibleRef.current) onMainCircleImageChange(projectImage(project));
+                                }}
                             >
                                 <img className="project-image" src={`/projects/${project.id}.png`} alt="" />
                                 <h3 className="project-name">{project.name}</h3>
@@ -140,6 +156,12 @@ export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
                     );
                 })}
             </ul>
+            {createPortal(
+                <div className={`project-selected-content project-selected-content-${transitionState}`} aria-live="polite">
+                    <p className="project-selected-summary">{activeProject.summary}</p>
+                </div>,
+                document.body,
+            )}
             <a
                 className="project-detail-link"
                 href={activeProject.href}

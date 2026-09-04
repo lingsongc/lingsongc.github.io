@@ -1,12 +1,38 @@
+import { useEffect, useRef } from "react";
 import { homeDetails } from "../data/about";
+import type { ImageDescriptor } from "../types/images";
 
-export function Home() {
+const homeImage: ImageDescriptor = {
+    src: "/about/profile.jpeg",
+    alt: "",
+    objectPosition: "center 55%",
+};
+
+type HomeProps = {
+    onMainCircleImageChange: (image: ImageDescriptor | null) => void;
+};
+
+export function Home({ onMainCircleImageChange }: HomeProps) {
+    const imageVisibleRef = useRef<boolean | null>(null);
     const leftName = homeDetails.name.isWestern
         ? homeDetails.name.firstName
         : homeDetails.name.lastName;
     const rightName = homeDetails.name.isWestern
         ? homeDetails.name.lastName
         : homeDetails.name.firstName;
+
+    useEffect(() => {
+        const updateImage = () => {
+            const shouldShow = window.scrollY === 0;
+            if (shouldShow === imageVisibleRef.current) return;
+            imageVisibleRef.current = shouldShow;
+            onMainCircleImageChange(shouldShow ? homeImage : null);
+        };
+
+        window.addEventListener("scroll", updateImage, { passive: true });
+        updateImage();
+        return () => window.removeEventListener("scroll", updateImage);
+    }, [onMainCircleImageChange]);
 
     return (
         <section id="home" className="home-container" aria-labelledby="home-title">

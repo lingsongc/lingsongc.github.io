@@ -1,8 +1,20 @@
 import { useEffect, useRef } from "react";
 import { aboutDetails } from "../data/about";
 import { sectionRestingBounds } from "../motion/sectionTransitionBounds";
+import type { ImageDescriptor } from "../types/images";
 
-export function About() {
+const aboutImage: ImageDescriptor = {
+    src: "/about/profile-2.jpg",
+    alt: "",
+    objectPosition: "center",
+    transform: "translate(21%, -20%) scale(1.15)",
+};
+
+type AboutProps = {
+    onMainCircleImageChange: (image: ImageDescriptor | null) => void;
+};
+
+export function About({ onMainCircleImageChange }: AboutProps) {
     const sectionRef = useRef<HTMLElement>(null);
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
 
@@ -10,12 +22,17 @@ export function About() {
         const section = sectionRef.current;
         const restingContainer = section?.parentElement;
         if (!section || !restingContainer) return;
+        let imageVisible = false;
         const updateContentVisibility = () => {
             const { start, end } = sectionRestingBounds(restingContainer);
+            const shouldShow = window.scrollY >= start && window.scrollY < end;
             section.classList.toggle(
                 "about-content-visible",
-                window.scrollY >= start && window.scrollY < end,
+                shouldShow,
             );
+            if (shouldShow === imageVisible) return;
+            imageVisible = shouldShow;
+            onMainCircleImageChange(shouldShow ? aboutImage : null);
         };
 
         const animationFrame = window.requestAnimationFrame(updateContentVisibility);
@@ -29,7 +46,7 @@ export function About() {
             window.removeEventListener("resize", updateContentVisibility);
             section.classList.remove("about-content-visible");
         };
-    }, []);
+    }, [onMainCircleImageChange]);
 
     return (
         <section ref={sectionRef} id="about" className="about-container" aria-labelledby="about-title">

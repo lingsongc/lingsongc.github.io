@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { IconMouse } from "@tabler/icons-react";
 import {
     experienceOrbitGeometry,
+    experienceOrbitFrontPath,
     experienceOrbitLayerStyles,
     experienceOrbitPoint,
     experienceOrbitPointIsVisible,
@@ -19,7 +20,6 @@ type ExperienceOrbitProps = {
     imagePath: (id: string) => string;
     interactive: boolean;
     label: string;
-    layerTarget: HTMLElement | null;
     onEntrySelect: (index: number) => void;
     onReady: () => void;
 };
@@ -31,7 +31,6 @@ export function ExperienceOrbit({
     imagePath,
     interactive,
     label,
-    layerTarget,
     onEntrySelect,
     onReady,
 }: ExperienceOrbitProps) {
@@ -148,8 +147,13 @@ export function ExperienceOrbit({
                     </div>
                 </div>
             </aside>
-            {layerTarget && createPortal(
-                <>
+            {createPortal(
+                <div className={`experience-orbit-foreground${contentVisible ? " experience-orbit-foreground-visible" : ""}`}>
+                    <div className="experience-orbit-front" aria-hidden="true">
+                        <svg className="experience-orbit-front-path" viewBox={experienceOrbitViewBox} style={experienceOrbitLayerStyles}>
+                            <path className="experience-orbit-path" d={experienceOrbitFrontPath} />
+                        </svg>
+                    </div>
                     {planetLayer}
                     <span
                         className={`experience-orbit-scroll-indicator${interactive && (selectorHovered || selectorFocused) ? " experience-orbit-scroll-indicator-visible" : ""}`}
@@ -157,8 +161,8 @@ export function ExperienceOrbit({
                     >
                         <IconMouse stroke={1.5} />
                     </span>
-                </>,
-                layerTarget,
+                </div>,
+                document.body,
             )}
         </>
     );

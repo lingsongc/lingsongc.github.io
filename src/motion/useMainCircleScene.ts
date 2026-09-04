@@ -14,14 +14,6 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const circle = circleRef.current;
         if (!circle) return;
 
-        const homeImage = circle.querySelector<HTMLElement>(".main-circle-image-home");
-        const aboutImage = circle.querySelector<HTMLElement>(".main-circle-image-about");
-        const experienceImage = circle.querySelector<HTMLElement>(".main-circle-image-experience");
-        const projectImage = circle.querySelector<HTMLElement>(".main-circle-image-project");
-        const projectDescription = circle.querySelector<HTMLElement>(".main-circle-project-description");
-        const contactBlobLayer = circle.querySelector<HTMLElement>(".contact-blob-layer");
-        const contactLinkLayer = circle.querySelector<HTMLElement>(".contact-link-layer");
-        const contactSatellites = circle.querySelectorAll<HTMLElement>(".contact-satellite, .contact-link");
         const experienceOrbit = document.querySelector<HTMLElement>(".experience-orbit");
         const navigationRail = document.querySelector<HTMLElement>(".navigation-rail");
         const aboutSection = document.getElementById("about");
@@ -29,9 +21,7 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
         const projectsSection = document.getElementById("projects");
         const skillsSection = document.getElementById("skills");
         const contactSection = document.getElementById("contact");
-        if (!homeImage || !aboutImage || !experienceImage || !projectImage || !projectDescription
-            || !contactBlobLayer || !contactLinkLayer || !contactSatellites.length
-            || !experienceOrbit || !navigationRail || !aboutSection || !experienceSection
+        if (!experienceOrbit || !navigationRail || !aboutSection || !experienceSection
             || !projectsSection || !skillsSection || !contactSection) return;
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -55,57 +45,6 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             - skillsCircleGap()
             - skillsCircleSize() / 2;
         const contactCircleSize = () => Math.min(window.innerWidth, window.innerHeight) * 0.56;
-        const contactOffsets: Record<string, [number, number]> = {
-            github: [-0.78, 0.26],
-            instagram: [-0.62, -0.58],
-            linkedin: [0.78, -0.28],
-        };
-        const contactDiameterRatios: Record<string, number> = {
-            github: 0.36,
-            instagram: 0.28,
-            linkedin: 0.31,
-        };
-        const contactOffset = (element: HTMLElement, axis: 0 | 1) => (
-            contactOffsets[element.dataset.contactLink ?? ""]?.[axis] ?? 0
-        ) * contactCircleSize();
-        const contactInitialOffset = (element: HTMLElement, axis: 0 | 1) => {
-            const id = element.dataset.contactLink ?? "";
-            const direction = contactOffsets[id] ?? [0, 0];
-            const directionLength = Math.hypot(...direction) || 1;
-            const insetRadius = 0.5 - (contactDiameterRatios[id] ?? 0) / 2 - 0.02;
-            return direction[axis] / directionLength * insetRadius * contactCircleSize();
-        };
-        const imageLayers = [
-            [homeImage],
-            [aboutImage],
-            [experienceImage],
-            [projectImage, projectDescription],
-        ];
-        let visibleImageLayer: number | null = null;
-        const updateImageLayer = () => {
-            const nextLayer = aboutSection.getBoundingClientRect().top >= window.innerHeight ? 0
-                : aboutSection.getBoundingClientRect().top <= 0
-                    && experienceSection.getBoundingClientRect().top >= window.innerHeight ? 1
-                : experienceSection.getBoundingClientRect().top <= 0
-                    && projectsSection.getBoundingClientRect().top >= window.innerHeight ? 2
-                : projectsSection.getBoundingClientRect().top <= 0
-                    && skillsSection.getBoundingClientRect().top >= window.innerHeight ? 3
-                : -1;
-
-            if (nextLayer === visibleImageLayer) return;
-            gsap.set(imageLayers.flat(), { opacity: 0 });
-            if (nextLayer >= 0) gsap.set(imageLayers[nextLayer], { opacity: 1 });
-            visibleImageLayer = nextLayer;
-        };
-
-        ScrollTrigger.create({
-            start: 0,
-            end: "max",
-            onUpdate: updateImageLayer,
-            onRefresh: updateImageLayer,
-        });
-        updateImageLayer();
-
         gsap.timeline({
             defaults: sectionTransitionTimelineDefaults,
             scrollTrigger: {
@@ -167,32 +106,5 @@ export function useMainCircleScene(circleRef: RefObject<HTMLDivElement | null>) 
             },
         }).to(circle, { width: contactCircleSize, top: "50%", left: "50%" }, 0);
 
-        gsap.set([contactBlobLayer, contactLinkLayer], { autoAlpha: 0 });
-        gsap.set(contactSatellites, {
-            xPercent: -50,
-            yPercent: -50,
-            x: (_, element: HTMLElement) => contactInitialOffset(element, 0),
-            y: (_, element: HTMLElement) => contactInitialOffset(element, 1),
-            scale: 1,
-        });
-        const contactSplit = gsap.timeline({ paused: true })
-            .to(contactBlobLayer, { autoAlpha: 1, duration: 0.06 }, 0)
-            .to(contactSatellites, {
-                x: (_, element: HTMLElement) => contactOffset(element, 0),
-                y: (_, element: HTMLElement) => contactOffset(element, 1),
-                duration: 0.5,
-                ease: "power2.inOut",
-            }, 0)
-            .to(contactLinkLayer, { autoAlpha: 1, duration: 0.12 }, 0.38);
-
-        ScrollTrigger.create({
-            trigger: contactSection,
-            start: "top 1px",
-            onEnter: () => reducedMotion ? contactSplit.progress(1) : contactSplit.play(),
-            onLeaveBack: () => reducedMotion ? contactSplit.progress(0) : contactSplit.reverse(),
-            onRefresh: (self) => {
-                if (self.isActive) contactSplit.progress(reducedMotion ? 1 : contactSplit.progress()).play();
-            },
-        });
     }, []);
 }

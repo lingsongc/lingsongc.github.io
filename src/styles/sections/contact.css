@@ -1,12 +1,25 @@
 /* contact */
 
 .contact-container {
+    position: relative;
     place-items: center;
+}
+
+.contact-orbit {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    width: min(56vw, 56vh);
+    border-radius: 50%;
+    aspect-ratio: 1;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
 }
 
 .contact-content {
     position: relative;
-    z-index: 3;
+    z-index: 4;
     display: grid;
     max-width: min(24rem, 70vw);
     justify-items: center;
@@ -42,6 +55,10 @@
     position: absolute;
     border-radius: 50%;
     background-color: var(--colour-image-blank);
+}
+
+.contact-satellite {
+    z-index: 1;
 }
 
 .contact-blob-center { inset: 0; }
