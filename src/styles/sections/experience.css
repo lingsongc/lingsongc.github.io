@@ -267,6 +267,41 @@
 
 .experience-orbit-scroll::-webkit-scrollbar { display: none; }
 
+.experience-orbit-scroll-indicator {
+    position: absolute;
+    z-index: 4;
+    bottom: clamp(1rem, 5%, 1.75rem);
+    left: 50%;
+    display: grid;
+    width: clamp(2.5rem, 3.2vw, 3rem);
+    border-radius: 50%;
+    aspect-ratio: 1;
+    place-items: center;
+    background-color: rgb(18 8 24 / 88%);
+    color: var(--colour-text);
+    opacity: 0;
+    transform: translateX(-50%);
+    transition: opacity 150ms ease;
+    pointer-events: none;
+}
+
+.experience-orbit-scroll-indicator svg {
+    display: block;
+    width: 60%;
+    height: auto;
+}
+
+.experience-orbit-scroll-indicator-visible {
+    opacity: 1;
+    animation: experience-orbit-scroll-indicator 1.6s ease-in-out infinite;
+}
+
+@keyframes experience-orbit-scroll-indicator {
+    0%,
+    100% { transform: translate(-50%, -0.2rem); }
+    50% { transform: translate(-50%, 0.2rem); }
+}
+
 .experience-orbit-track {
     position: relative;
     height: calc(100% + var(--experience-scroll-distance));
@@ -397,6 +432,11 @@
 
 @media (prefers-reduced-motion: reduce) {
     .experience-highlight-marker::after { animation: none; }
+
+    .experience-orbit-scroll-indicator-visible {
+        animation: none;
+        transform: translateX(-50%);
+    }
 
     .experience-type-toggle::before,
     .experience-type-button { transition: none; }

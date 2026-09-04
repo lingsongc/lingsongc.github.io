@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
+import { IconMouse } from "@tabler/icons-react";
 import {
     experienceOrbitGeometry,
     experienceOrbitLayerStyles,
@@ -40,6 +41,8 @@ export function ExperienceOrbit({
     const activateRef = useRef(onEntrySelect);
     const selectRef = useRef<(index: number) => void>(() => undefined);
     const [position, setPosition] = useState(0);
+    const [selectorFocused, setSelectorFocused] = useState(false);
+    const [selectorHovered, setSelectorHovered] = useState(false);
     interactiveRef.current = interactive;
     activateRef.current = onEntrySelect;
 
@@ -123,6 +126,10 @@ export function ExperienceOrbit({
                     ref={scrollRef}
                     className="experience-orbit-scroll"
                     onScroll={() => setPosition((scrollRef.current?.scrollTop ?? 0) / experienceOrbitGeometry.scrollStep)}
+                    onMouseEnter={() => setSelectorHovered(true)}
+                    onMouseLeave={() => setSelectorHovered(false)}
+                    onFocus={() => setSelectorFocused(true)}
+                    onBlur={() => setSelectorFocused(false)}
                     onKeyDown={(event) => {
                         if (!interactiveRef.current || !["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) return;
                         const direction = event.key === "ArrowUp" || event.key === "ArrowLeft" ? -1 : 1;
@@ -141,7 +148,18 @@ export function ExperienceOrbit({
                     </div>
                 </div>
             </aside>
-            {layerTarget && createPortal(planetLayer, layerTarget)}
+            {layerTarget && createPortal(
+                <>
+                    {planetLayer}
+                    <span
+                        className={`experience-orbit-scroll-indicator${interactive && (selectorHovered || selectorFocused) ? " experience-orbit-scroll-indicator-visible" : ""}`}
+                        aria-hidden="true"
+                    >
+                        <IconMouse stroke={1.5} />
+                    </span>
+                </>,
+                layerTarget,
+            )}
         </>
     );
 }
