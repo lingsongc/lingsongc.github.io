@@ -23,15 +23,43 @@
 }
 
 .project-ring {
+    --project-stage-one-size: var(--project-ring-one-size);
+    --project-stage-two-size: var(--project-ring-one-size);
+    --project-final-size: var(--project-ring-one-size);
+
     position: absolute;
     top: 50%;
     left: 50%;
+    border: 0;
     transform: translate(-50%, -50%);
 }
 
 .project-ring-one { width: var(--project-ring-one-size); }
-.project-ring-two { width: var(--project-ring-two-size); }
-.project-ring-three { width: var(--project-ring-three-size); }
+.project-ring-two {
+    --project-stage-two-size: var(--project-ring-two-size);
+    --project-final-size: var(--project-ring-two-size);
+
+    width: var(--project-ring-two-size);
+}
+.project-ring-three {
+    --project-stage-two-size: var(--project-ring-two-size);
+    --project-final-size: var(--project-ring-three-size);
+
+    width: var(--project-ring-three-size);
+}
+
+.project-ring::before {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    border: var(--orbit-ring-width) solid var(--colour-line);
+    border-radius: 50%;
+    aspect-ratio: 1;
+    content: "";
+    opacity: 0;
+    transform: translate(-50%, -50%);
+}
 
 .project-list {
     position: absolute;
@@ -44,17 +72,131 @@
 
 .project-item {
     --project-orbit-size: var(--project-ring-one-size);
+    --project-stage-one-size: var(--project-ring-one-size);
+    --project-stage-two-size: var(--project-ring-one-size);
+    --project-final-size: var(--project-ring-one-size);
 
     position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%) rotate(var(--project-angle))
+    visibility: hidden;
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0) rotate(var(--project-angle))
         translateY(calc(var(--project-orbit-size) / -2)) rotate(var(--project-angle-inverse));
     pointer-events: auto;
 }
 
-.project-item-ring-2 { --project-orbit-size: var(--project-ring-two-size); }
-.project-item-ring-3 { --project-orbit-size: var(--project-ring-three-size); }
+.project-item-ring-2 {
+    --project-orbit-size: var(--project-ring-two-size);
+    --project-stage-two-size: var(--project-ring-two-size);
+    --project-final-size: var(--project-ring-two-size);
+}
+.project-item-ring-3 {
+    --project-orbit-size: var(--project-ring-three-size);
+    --project-stage-two-size: var(--project-ring-two-size);
+    --project-final-size: var(--project-ring-three-size);
+}
+
+.project-content-visible .project-ring::before,
+.project-content-visible .project-item {
+    animation: project-orbit-enter 500ms ease both;
+}
+
+.project-content-exiting .project-ring::before,
+.project-content-exiting .project-item {
+    animation: project-orbit-exit 500ms ease both;
+}
+
+.project-content-visible .project-item { animation-name: project-planet-enter; }
+.project-content-exiting .project-item { animation-name: project-planet-exit; }
+
+@keyframes project-orbit-enter {
+    0% {
+        visibility: hidden;
+        width: 0;
+        opacity: 0;
+    }
+
+    0.01% { visibility: visible; }
+    25% { opacity: 1; }
+    33.333% { width: var(--project-stage-one-size); }
+    66.667% { width: var(--project-stage-two-size); }
+    100% {
+        visibility: visible;
+        width: var(--project-final-size);
+        opacity: 1;
+    }
+}
+
+@keyframes project-planet-enter {
+    0% {
+        visibility: hidden;
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--project-angle))
+            translateY(0) rotate(var(--project-angle-inverse)) scale(0);
+    }
+
+    0.01% { visibility: visible; }
+    25% { opacity: 1; }
+    33.333% {
+        transform: translate(-50%, -50%) rotate(var(--project-angle))
+            translateY(calc(var(--project-stage-one-size) / -2)) rotate(var(--project-angle-inverse)) scale(1);
+    }
+    66.667% {
+        transform: translate(-50%, -50%) rotate(var(--project-angle))
+            translateY(calc(var(--project-stage-two-size) / -2)) rotate(var(--project-angle-inverse)) scale(1);
+    }
+    100% {
+        visibility: visible;
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--project-angle))
+            translateY(calc(var(--project-final-size) / -2)) rotate(var(--project-angle-inverse)) scale(1);
+    }
+}
+
+@keyframes project-orbit-exit {
+    0% {
+        visibility: visible;
+        width: var(--project-final-size);
+        opacity: 1;
+    }
+
+    33.333% { width: var(--project-stage-two-size); }
+    66.667% { width: var(--project-stage-one-size); }
+    75% { opacity: 1; }
+    99.99% { visibility: visible; }
+    100% {
+        visibility: hidden;
+        width: 0;
+        opacity: 0;
+    }
+}
+
+@keyframes project-planet-exit {
+    0% {
+        visibility: visible;
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--project-angle))
+            translateY(calc(var(--project-final-size) / -2)) rotate(var(--project-angle-inverse)) scale(1);
+    }
+
+    33.333% {
+        transform: translate(-50%, -50%) rotate(var(--project-angle))
+            translateY(calc(var(--project-stage-two-size) / -2)) rotate(var(--project-angle-inverse)) scale(1);
+    }
+    66.667% {
+        transform: translate(-50%, -50%) rotate(var(--project-angle))
+            translateY(calc(var(--project-stage-one-size) / -2)) rotate(var(--project-angle-inverse)) scale(1);
+    }
+    75% { opacity: 1; }
+    99.99% { visibility: visible; }
+    100% {
+        visibility: hidden;
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(var(--project-angle))
+            translateY(0) rotate(var(--project-angle-inverse)) scale(0);
+    }
+}
 
 .project-link {
     display: grid;
@@ -130,4 +272,11 @@
 
 @media (max-width: 48rem) {
     .project-container { --project-circle-size: 57.6vw; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .project-content-visible .project-ring::before,
+    .project-content-visible .project-item,
+    .project-content-exiting .project-ring::before,
+    .project-content-exiting .project-item { animation-duration: 0.01ms; }
 }

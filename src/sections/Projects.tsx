@@ -1,6 +1,7 @@
-import { useLayoutEffect, useRef, type CSSProperties } from "react";
+import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../data/projects";
+import { sectionRestingBounds } from "../motion/sectionTransitionBounds";
 
 const ringCount = 3;
 type ProjectPlanetStyle = CSSProperties & {
@@ -40,7 +41,31 @@ function fitAngleToViewport(angle: number, radius: number, planetRadius: number,
 
 export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
     const containerRef = useRef<HTMLElement>(null);
+    const [transitionState, setTransitionState] = useState<"idle" | "visible" | "exiting">("idle");
     const activeProject = projects.find(({ id }) => id === activeProjectId) ?? projects[0];
+
+    useEffect(() => {
+        const section = containerRef.current;
+        const restingContainer = section?.parentElement;
+        if (!section || !restingContainer) return;
+
+        let contentVisible = false;
+        const updateContentVisibility = () => {
+            const { start, end } = sectionRestingBounds(restingContainer);
+            const shouldShow = window.scrollY >= start && window.scrollY <= end;
+            if (shouldShow === contentVisible) return;
+            contentVisible = shouldShow;
+            setTransitionState(shouldShow ? "visible" : "exiting");
+        };
+
+        updateContentVisibility();
+        window.addEventListener("scroll", updateContentVisibility, { passive: true });
+        window.addEventListener("resize", updateContentVisibility);
+        return () => {
+            window.removeEventListener("scroll", updateContentVisibility);
+            window.removeEventListener("resize", updateContentVisibility);
+        };
+    }, []);
 
     useLayoutEffect(() => {
         const container = containerRef.current;
@@ -71,7 +96,12 @@ export function Projects({ activeProjectId, onProjectSelect }: ProjectsProps) {
     }, []);
 
     return (
-        <section ref={containerRef} id="projects" className="project-container" aria-labelledby="project-title">
+        <section
+            ref={containerRef}
+            id="projects"
+            className={`project-container project-content-${transitionState}`}
+            aria-labelledby="project-title"
+        >
             <div className="project-rings" aria-hidden="true">
                 <span className="orbit-ring project-ring project-ring-one" />
                 <span className="orbit-ring project-ring project-ring-two" />
