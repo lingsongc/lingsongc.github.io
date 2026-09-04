@@ -8,6 +8,7 @@ import { Experience } from "./sections/Experience";
 import { Home } from "./sections/Home";
 import { Projects } from "./sections/Projects";
 import { Skills } from "./sections/Skills";
+import { useNavigationTransition } from "./motion/useNavigationTransition";
 import type { ImageDescriptor } from "./types/images";
 import type { MainCircleTransition } from "./types/mainCircle";
 
@@ -18,12 +19,15 @@ type MainCircleImageState = {
 
 export default function App() {
     const mainCircleRef = useRef<HTMLDivElement>(null);
+    const homeNavigationRingRef = useRef<HTMLDivElement>(null);
     const aboutSectionRef = useRef<HTMLElement>(null);
     const experienceSectionRef = useRef<HTMLDivElement>(null);
     const experienceOrbitRef = useRef<HTMLElement>(null);
     const projectsSectionRef = useRef<HTMLElement>(null);
     const skillsSectionRef = useRef<HTMLElement>(null);
     const contactSectionRef = useRef<HTMLElement>(null);
+    const navigationRef = useRef<HTMLElement>(null);
+    const navigationCopyrightRef = useRef<HTMLElement>(null);
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const [mainCircleImage, setMainCircleImage] = useState<MainCircleImageState>({ owner: null, image: null });
     const publishMainCircleImage = useCallback((owner: Exclude<MainCircleImageState["owner"], null>, image: ImageDescriptor | null) => {
@@ -92,13 +96,23 @@ export default function App() {
         ];
     }, []);
 
+    useNavigationTransition({
+        navigationRef,
+        copyrightRef: navigationCopyrightRef,
+        homeRingRef: homeNavigationRingRef,
+    });
+
     return (
         <>
             <BackgroundGrid warpTargetRef={mainCircleRef} />
-            <Navigation railRef={navigationRailRef} />
+            <Navigation
+                copyrightRef={navigationCopyrightRef}
+                navigationRef={navigationRef}
+                railRef={navigationRailRef}
+            />
             <main>
                 <MainCircle circleRef={mainCircleRef} image={mainCircleImage.image} transitions={mainCircleTransitions} />
-                <Home onMainCircleImageChange={publishHomeImage} />
+                <Home navigationRingRef={homeNavigationRingRef} onMainCircleImageChange={publishHomeImage} />
                 <div className="section-static-container">
                     <About sectionRef={aboutSectionRef} onMainCircleImageChange={publishAboutImage} />
                 </div>

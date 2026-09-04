@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { homeDetails } from "../data/about";
 import type { ImageDescriptor } from "../types/images";
 
@@ -9,10 +9,11 @@ const homeImage: ImageDescriptor = {
 };
 
 type HomeProps = {
+    navigationRingRef: RefObject<HTMLDivElement | null>;
     onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
-export function Home({ onMainCircleImageChange }: HomeProps) {
+export function Home({ navigationRingRef, onMainCircleImageChange }: HomeProps) {
     const imageVisibleRef = useRef<boolean | null>(null);
     const leftName = homeDetails.name.isWestern
         ? homeDetails.name.firstName
@@ -36,7 +37,7 @@ export function Home({ onMainCircleImageChange }: HomeProps) {
 
     return (
         <section id="home" className="home-container" aria-labelledby="home-title">
-            <div className="orbit-ring home-navigation-ring" aria-hidden="true">
+            <div ref={navigationRingRef} className="orbit-ring home-navigation-ring" aria-hidden="true">
                 {Array.from({ length: 6 }, (_, index) => (
                     <span className="home-navigation-exit-marker" key={index} />
                 ))}

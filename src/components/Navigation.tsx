@@ -1,21 +1,19 @@
-import { useEffect, useRef, useState, type MouseEvent, type RefObject } from "react";
+import { useEffect, useState, type MouseEvent, type RefObject } from "react";
 import { sections } from "../motion/sceneStates";
 import { useActiveSection } from "../motion/useActiveSection";
-import { useScrollScene } from "../motion/useScrollScene";
 
 type NavigationProps = {
+    copyrightRef: RefObject<HTMLElement | null>;
+    navigationRef: RefObject<HTMLElement | null>;
     railRef: RefObject<HTMLDivElement | null>;
 };
 
-export function Navigation({ railRef }: NavigationProps) {
+export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationProps) {
     const currentYear = new Date().getFullYear();
-    const navigationRef = useRef<HTMLElement>(null);
-    const copyrightRef = useRef<HTMLElement>(null);
     const activeSection = useActiveSection();
     const [touchLabel, setTouchLabel] = useState<string | null>(null);
     const navigationSections = sections.filter((section) => section.id !== "home");
 
-    useScrollScene({ navigationRef, copyrightRef });
     useEffect(() => setTouchLabel(null), [activeSection]);
 
     const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {

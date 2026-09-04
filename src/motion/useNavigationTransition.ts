@@ -5,16 +5,17 @@ import type { RefObject } from "react";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-type ScrollSceneRefs = {
+type NavigationTransitionRefs = {
     navigationRef: RefObject<HTMLElement | null>;
     copyrightRef: RefObject<HTMLElement | null>;
+    homeRingRef: RefObject<HTMLElement | null>;
 };
 
-export function useScrollScene({ navigationRef, copyrightRef }: ScrollSceneRefs) {
+export function useNavigationTransition({ navigationRef, copyrightRef, homeRingRef }: NavigationTransitionRefs) {
     useGSAP(() => {
         const navigation = navigationRef.current;
         const copyright = copyrightRef.current;
-        const homeRing = document.querySelector<HTMLElement>(".home-navigation-ring");
+        const homeRing = homeRingRef.current;
         if (!navigation || !homeRing) return;
 
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -99,5 +100,5 @@ export function useScrollScene({ navigationRef, copyrightRef }: ScrollSceneRefs)
             homeRing.classList.remove("home-navigation-ring-exiting");
             copyright?.classList.remove("navigation-copyright-visible", "navigation-copyright-exiting");
         };
-    }, []);
+    }, [copyrightRef, homeRingRef, navigationRef]);
 }
