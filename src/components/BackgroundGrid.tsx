@@ -1,18 +1,23 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useId, useRef, type RefObject } from "react";
 import { createWarpedGridPaths } from "../motion/gridGeometry";
 
 const GRID_SPACING = 48;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
-export function BackgroundGrid() {
+type BackgroundGridProps = {
+    warpTargetRef?: RefObject<HTMLElement | null>;
+};
+
+export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
     const linesRef = useRef<SVGGElement>(null);
     const fadeCircleRef = useRef<SVGCircleElement>(null);
+    const filterId = useId();
+    const maskId = useId();
 
     useEffect(() => {
         const lines = linesRef.current;
         const fadeCircle = fadeCircleRef.current;
-        const mainCircle = document.querySelector<HTMLElement>(".main-circle-container");
-        if (!lines || !fadeCircle || !mainCircle) return;
+        if (!lines || !fadeCircle) return;
 
         const pathElements: SVGPathElement[] = [];
         let animationFrame = 0;
@@ -20,13 +25,19 @@ export function BackgroundGrid() {
 
         const render = () => {
             if (!document.hidden) {
-                const rect = mainCircle.getBoundingClientRect();
-                const circle = {
-                    x: rect.left + rect.width / 2,
-                    y: rect.top + rect.height / 2,
-                    radius: Math.min(rect.width, rect.height) / 2,
-                };
-                const signature = `${innerWidth}:${innerHeight}:${circle.x.toFixed(1)}:${circle.y.toFixed(1)}:${circle.radius.toFixed(1)}`;
+                const warpTarget = warpTargetRef?.current;
+                const rect = warpTarget?.getBoundingClientRect();
+                const circle = rect
+                    ? {
+                        x: rect.left + rect.width / 2,
+                        y: rect.top + rect.height / 2,
+                        radius: Math.min(rect.width, rect.height) / 2,
+                    }
+                    : null;
+                const circleSignature = circle
+                    ? `${circle.x.toFixed(1)}:${circle.y.toFixed(1)}:${circle.radius.toFixed(1)}`
+                    : "static";
+                const signature = `${innerWidth}:${innerHeight}:${circleSignature}`;
 
                 if (signature !== lastSignature) {
                     lastSignature = signature;
@@ -40,9 +51,13 @@ export function BackgroundGrid() {
                     while (pathElements.length > pathData.length) pathElements.pop()?.remove();
                     pathData.forEach((data, index) => pathElements[index].setAttribute("d", data));
 
-                    fadeCircle.setAttribute("cx", circle.x.toString());
-                    fadeCircle.setAttribute("cy", circle.y.toString());
-                    fadeCircle.setAttribute("r", (circle.radius + 24).toString());
+                    if (circle) {
+                        fadeCircle.setAttribute("cx", circle.x.toString());
+                        fadeCircle.setAttribute("cy", circle.y.toString());
+                        fadeCircle.setAttribute("r", (circle.radius + 24).toString());
+                    } else {
+                        fadeCircle.setAttribute("r", "0");
+                    }
                 }
             }
 
@@ -51,20 +66,20 @@ export function BackgroundGrid() {
 
         animationFrame = requestAnimationFrame(render);
         return () => cancelAnimationFrame(animationFrame);
-    }, []);
+    }, [warpTargetRef]);
 
     return (
         <svg className="background-grid" aria-hidden="true">
             <defs>
-                <filter id="background-grid-blur" x="-30%" y="-30%" width="160%" height="160%">
+                <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
                     <feGaussianBlur stdDeviation="32" />
                 </filter>
-                <mask id="background-grid-mask" maskUnits="userSpaceOnUse">
+                <mask id={maskId} maskUnits="userSpaceOnUse">
                     <rect width="100%" height="100%" fill="white" />
-                    <circle ref={fadeCircleRef} fill="black" filter="url(#background-grid-blur)" />
+                    <circle ref={fadeCircleRef} fill="black" filter={`url(#${filterId})`} />
                 </mask>
             </defs>
-            <g ref={linesRef} className="background-grid-lines" mask="url(#background-grid-mask)" />
+            <g ref={linesRef} className="background-grid-lines" mask={`url(#${maskId})`} />
         </svg>
     );
 }

@@ -8,7 +8,9 @@ const SAMPLE_STEP = 24;
 const WARP_FALLOFF = 200;
 const WARP_STRENGTH = 52;
 
-function warpPoint(x: number, y: number, circle: GridCircle) {
+function warpPoint(x: number, y: number, circle: GridCircle | null) {
+    if (!circle) return [x, y];
+
     const offsetX = x - circle.x;
     const offsetY = y - circle.y;
     const distance = Math.hypot(offsetX, offsetY);
@@ -23,7 +25,7 @@ function warpPoint(x: number, y: number, circle: GridCircle) {
     ];
 }
 
-function createLinePath(position: number, length: number, vertical: boolean, circle: GridCircle) {
+function createLinePath(position: number, length: number, vertical: boolean, circle: GridCircle | null) {
     const points: string[] = [];
 
     for (let offset = -SAMPLE_STEP; offset <= length + SAMPLE_STEP; offset += SAMPLE_STEP) {
@@ -37,7 +39,7 @@ function createLinePath(position: number, length: number, vertical: boolean, cir
 export function createWarpedGridPaths(
     width: number,
     height: number,
-    circle: GridCircle,
+    circle: GridCircle | null,
     phase: number,
     spacing = 48,
 ) {

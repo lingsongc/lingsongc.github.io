@@ -17,6 +17,7 @@ type MainCircleImageState = {
 };
 
 export default function App() {
+    const mainCircleRef = useRef<HTMLDivElement>(null);
     const aboutSectionRef = useRef<HTMLElement>(null);
     const experienceSectionRef = useRef<HTMLDivElement>(null);
     const experienceOrbitRef = useRef<HTMLElement>(null);
@@ -93,10 +94,10 @@ export default function App() {
 
     return (
         <>
-            <BackgroundGrid />
+            <BackgroundGrid warpTargetRef={mainCircleRef} />
             <Navigation railRef={navigationRailRef} />
             <main>
-                <MainCircle image={mainCircleImage.image} transitions={mainCircleTransitions} />
+                <MainCircle circleRef={mainCircleRef} image={mainCircleImage.image} transitions={mainCircleTransitions} />
                 <Home onMainCircleImageChange={publishHomeImage} />
                 <div className="section-static-container">
                     <About sectionRef={aboutSectionRef} onMainCircleImageChange={publishAboutImage} />

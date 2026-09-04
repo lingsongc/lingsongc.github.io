@@ -1,16 +1,15 @@
-import { useRef } from "react";
+import type { RefObject } from "react";
 import { useMainCircleScene } from "../motion/useMainCircleScene";
 import type { ImageDescriptor } from "../types/images";
 import type { MainCircleTransition } from "../types/mainCircle";
 
 type MainCircleProps = {
+    circleRef: RefObject<HTMLDivElement | null>;
     image: ImageDescriptor | null;
     transitions: readonly MainCircleTransition[];
 };
 
-export function MainCircle({ image, transitions }: MainCircleProps) {
-    const circleRef = useRef<HTMLDivElement>(null);
-
+export function MainCircle({ circleRef, image, transitions }: MainCircleProps) {
     useMainCircleScene(circleRef, transitions);
 
     return (
