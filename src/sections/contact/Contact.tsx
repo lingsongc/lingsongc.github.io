@@ -2,6 +2,7 @@ import { useRef, type RefObject } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { alignMountedSectionAnchor } from "../../motion/sectionRestingBounds";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -9,10 +10,38 @@ type ContactProps = {
     sectionRef: RefObject<HTMLElement | null>;
 };
 
+const contactProfiles = [
+    {
+        id: "github",
+        label: "GitHub",
+        href: "https://github.com/lingsongc",
+        offset: [-0.78, 0.26],
+        diameterRatio: 0.36,
+    },
+    {
+        id: "instagram",
+        label: "Instagram",
+        href: "https://www.instagram.com/lingsongc/",
+        offset: [-0.62, -0.58],
+        diameterRatio: 0.28,
+    },
+    {
+        id: "linkedin",
+        label: "LinkedIn",
+        href: "https://www.linkedin.com/in/lingsongc/",
+        offset: [0.78, -0.28],
+        diameterRatio: 0.31,
+    },
+] as const;
+
+const contactProfilesById = new Map(contactProfiles.map((profile) => [profile.id, profile]));
+
 export function Contact({ sectionRef }: ContactProps) {
     const orbitRef = useRef<HTMLDivElement>(null);
     const blobLayerRef = useRef<HTMLDivElement>(null);
     const linkLayerRef = useRef<HTMLElement>(null);
+    const satelliteRefs = useRef<Array<HTMLSpanElement | null>>([]);
+    const linkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
 
     useGSAP(() => {
         const section = sectionRef.current;
@@ -21,31 +50,24 @@ export function Contact({ sectionRef }: ContactProps) {
         const linkLayer = linkLayerRef.current;
         if (!section || !orbit || !blobLayer || !linkLayer) return;
 
-        const satellites = orbit.querySelectorAll<HTMLElement>(".contact-satellite, .contact-link");
+        const splitElements = [...satelliteRefs.current, ...linkRefs.current]
+            .filter((element): element is HTMLElement => element !== null);
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const offsets: Record<string, [number, number]> = {
-            github: [-0.78, 0.26],
-            instagram: [-0.62, -0.58],
-            linkedin: [0.78, -0.28],
-        };
-        const diameterRatios: Record<string, number> = {
-            github: 0.36,
-            instagram: 0.28,
-            linkedin: 0.31,
-        };
-        const contactOffset = (element: HTMLElement, axis: 0 | 1) => (
-            offsets[element.dataset.contactLink ?? ""]?.[axis] ?? 0
-        ) * orbit.offsetWidth;
+        const contactProfile = (element: HTMLElement) => (
+            contactProfilesById.get(element.dataset.contactLink as typeof contactProfiles[number]["id"])
+        );
+        const contactOffset = (element: HTMLElement, axis: 0 | 1) =>
+            (contactProfile(element)?.offset[axis] ?? 0) * orbit.offsetWidth;
         const contactInitialOffset = (element: HTMLElement, axis: 0 | 1) => {
-            const id = element.dataset.contactLink ?? "";
-            const direction = offsets[id] ?? [0, 0];
+            const profile = contactProfile(element);
+            const direction = profile?.offset ?? [0, 0];
             const directionLength = Math.hypot(...direction) || 1;
-            const insetRadius = 0.5 - (diameterRatios[id] ?? 0) / 2 - 0.02;
+            const insetRadius = 0.5 - (profile?.diameterRatio ?? 0) / 2 - 0.02;
             return direction[axis] / directionLength * insetRadius * orbit.offsetWidth;
         };
 
         gsap.set([blobLayer, linkLayer], { autoAlpha: 0 });
-        gsap.set(satellites, {
+        gsap.set(splitElements, {
             xPercent: -50,
             yPercent: -50,
             x: (_, element: HTMLElement) => contactInitialOffset(element, 0),
@@ -54,7 +76,7 @@ export function Contact({ sectionRef }: ContactProps) {
         });
         const splitTimeline = gsap.timeline({ paused: true })
             .to(blobLayer, { autoAlpha: 1, duration: 0.06 }, 0)
-            .to(satellites, {
+            .to(splitElements, {
                 x: (_, element: HTMLElement) => contactOffset(element, 0),
                 y: (_, element: HTMLElement) => contactOffset(element, 1),
                 duration: 0.5,
@@ -62,7 +84,7 @@ export function Contact({ sectionRef }: ContactProps) {
             }, 0)
             .to(linkLayer, { autoAlpha: 1, duration: 0.12 }, 0.38);
 
-        ScrollTrigger.create({
+        const splitTrigger = ScrollTrigger.create({
             trigger: section,
             start: "top 1px",
             invalidateOnRefresh: true,
@@ -72,6 +94,24 @@ export function Contact({ sectionRef }: ContactProps) {
                 if (self.isActive) splitTimeline.progress(reducedMotion ? 1 : splitTimeline.progress()).play();
             },
         });
+
+        let initializationFrame: number | undefined;
+        const setupFrame = window.requestAnimationFrame(() => {
+            initializationFrame = window.requestAnimationFrame(() => {
+                alignMountedSectionAnchor(section);
+                splitTrigger.refresh();
+                if (splitTrigger.isActive || section.getBoundingClientRect().top <= 1) {
+                    splitTimeline.progress(1);
+                }
+            });
+        });
+
+        return () => {
+            window.cancelAnimationFrame(setupFrame);
+            window.cancelAnimationFrame(initializationFrame ?? 0);
+            splitTrigger.kill();
+            splitTimeline.kill();
+        };
     }, { scope: sectionRef });
 
     return (
@@ -92,14 +132,29 @@ export function Contact({ sectionRef }: ContactProps) {
                 </svg>
                 <div ref={blobLayerRef} className="contact-blob-layer" aria-hidden="true">
                     <span className="contact-blob-center" />
-                    <span className="contact-satellite contact-satellite-github" data-contact-link="github" />
-                    <span className="contact-satellite contact-satellite-instagram" data-contact-link="instagram" />
-                    <span className="contact-satellite contact-satellite-linkedin" data-contact-link="linkedin" />
+                    {contactProfiles.map((profile, index) => (
+                        <span
+                            ref={(element) => { satelliteRefs.current[index] = element; }}
+                            className={`contact-satellite contact-satellite-${profile.id}`}
+                            data-contact-link={profile.id}
+                            style={{ width: `${profile.diameterRatio * 100}%` }}
+                            key={profile.id}
+                        />
+                    ))}
                 </div>
                 <nav ref={linkLayerRef} className="contact-link-layer" aria-label="Social profiles">
-                    <a className="contact-link contact-link-github" data-contact-link="github" href="https://github.com/lingsongc">GitHub</a>
-                    <a className="contact-link contact-link-instagram" data-contact-link="instagram" href="https://www.instagram.com/lingsongc/">Instagram</a>
-                    <a className="contact-link contact-link-linkedin" data-contact-link="linkedin" href="https://www.linkedin.com/in/lingsongc/">LinkedIn</a>
+                    {contactProfiles.map((profile, index) => (
+                        <a
+                            ref={(element) => { linkRefs.current[index] = element; }}
+                            className={`contact-link contact-link-${profile.id}`}
+                            data-contact-link={profile.id}
+                            href={profile.href}
+                            style={{ width: `${profile.diameterRatio * 100}%` }}
+                            key={profile.id}
+                        >
+                            {profile.label}
+                        </a>
+                    ))}
                 </nav>
             </div>
             <div className="contact-content">

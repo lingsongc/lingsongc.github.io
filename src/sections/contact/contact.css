@@ -71,15 +71,6 @@
     transform: translate(-50%, -50%);
 }
 
-.contact-satellite-github,
-.contact-link-github { width: 36%; }
-
-.contact-satellite-instagram,
-.contact-link-instagram { width: 28%; }
-
-.contact-satellite-linkedin,
-.contact-link-linkedin { width: 31%; }
-
 .contact-link {
     position: absolute;
     display: grid;
