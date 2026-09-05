@@ -20,7 +20,7 @@ type MainCircleImageState = {
 export default function App() {
     const mainCircleRef = useRef<HTMLDivElement>(null);
     const homeSectionRef = useRef<HTMLElement>(null);
-    const aboutSectionRef = useRef<HTMLElement>(null);
+    const aboutRestingContainerRef = useRef<HTMLDivElement>(null);
     const experienceSectionRef = useRef<HTMLDivElement>(null);
     const experienceOrbitRef = useRef<HTMLElement>(null);
     const projectsSectionRef = useRef<HTMLElement>(null);
@@ -54,7 +54,7 @@ export default function App() {
 
         return [
             {
-                target: aboutSectionRef,
+                target: aboutRestingContainerRef,
                 geometry: {
                     width: aboutCircleSize,
                     left: () => aboutCircleSize() * (window.innerWidth <= 768 ? -0.2 : -0.1),
@@ -113,8 +113,11 @@ export default function App() {
             <main>
                 <MainCircle circleRef={mainCircleRef} image={mainCircleImage.image} transitions={mainCircleTransitions} />
                 <Home sectionRef={homeSectionRef} onMainCircleImageChange={publishHomeImage} />
-                <div className="section-static-container">
-                    <About sectionRef={aboutSectionRef} onMainCircleImageChange={publishAboutImage} />
+                <div ref={aboutRestingContainerRef} className="section-static-container">
+                    <About
+                        restingContainerRef={aboutRestingContainerRef}
+                        onMainCircleImageChange={publishAboutImage}
+                    />
                 </div>
                 <div ref={experienceSectionRef} id="experience" className="section-static-container">
                     <Experience orbitRef={experienceOrbitRef} onMainCircleImageChange={publishExperienceImage} />

@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from "react";
+import { useEffect, useState, type RefObject } from "react";
 import { aboutDetails } from "../../data/about";
 import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor } from "../../types/images";
@@ -11,27 +11,25 @@ const aboutImage: ImageDescriptor = {
 };
 
 type AboutProps = {
-    sectionRef: RefObject<HTMLElement | null>;
+    restingContainerRef: RefObject<HTMLDivElement | null>;
     onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
-export function About({ sectionRef, onMainCircleImageChange }: AboutProps) {
+export function About({ restingContainerRef, onMainCircleImageChange }: AboutProps) {
+    const [contentVisible, setContentVisible] = useState(false);
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
 
     useEffect(() => {
-        const section = sectionRef.current;
-        const restingContainer = section?.parentElement;
-        if (!section || !restingContainer) return;
-        let imageVisible = false;
+        const restingContainer = restingContainerRef.current;
+        if (!restingContainer) return;
+        let currentVisibility = false;
+
         const updateContentVisibility = () => {
             const { start, end } = sectionRestingBounds(restingContainer);
             const shouldShow = window.scrollY >= start && window.scrollY < end;
-            section.classList.toggle(
-                "about-content-visible",
-                shouldShow,
-            );
-            if (shouldShow === imageVisible) return;
-            imageVisible = shouldShow;
+            if (shouldShow === currentVisibility) return;
+            currentVisibility = shouldShow;
+            setContentVisible(shouldShow);
             onMainCircleImageChange(shouldShow ? aboutImage : null);
         };
 
@@ -44,12 +42,15 @@ export function About({ sectionRef, onMainCircleImageChange }: AboutProps) {
             window.cancelAnimationFrame(animationFrame);
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
-            section.classList.remove("about-content-visible");
         };
-    }, [onMainCircleImageChange]);
+    }, [onMainCircleImageChange, restingContainerRef]);
 
     return (
-        <section ref={sectionRef} id="about" className="about-container" aria-labelledby="about-title">
+        <section
+            id="about"
+            className={`about-container${contentVisible ? " about-content-visible" : ""}`}
+            aria-labelledby="about-title"
+        >
             <div className="about-text">
                 <h2 id="about-title" className="about-title">About Me</h2>
                 <div className="about-description">
