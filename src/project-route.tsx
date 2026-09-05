@@ -1,22 +1,23 @@
-import { StrictMode, type ReactNode } from "react";
+import { StrictMode, type ComponentType } from "react";
 import { createRoot } from "react-dom/client";
 import { ModuloPage } from "./pages/ModuloPage";
 import { PneuReliefPage } from "./pages/PneuReliefPage";
 import "./styles/index.css";
-import "./styles/pages/project-detail.css";
 
-const projectPages: Record<string, ReactNode> = {
-    modulo: <ModuloPage />,
-    pneurelief: <PneuReliefPage />,
+const projectPages: Record<string, ComponentType> = {
+    modulo: ModuloPage,
+    pneurelief: PneuReliefPage,
 };
 
 const rootElement = document.getElementById("root");
-const projectPage = projectPages[document.body.dataset.projectId ?? ""];
+const ProjectPage = projectPages[document.body.dataset.projectId ?? ""];
 
-if (!rootElement || !projectPage) {
+if (!rootElement || !ProjectPage) {
     throw new Error("Project page could not be initialized.");
 }
 
 createRoot(rootElement).render(
-    <StrictMode>{projectPage}</StrictMode>,
+    <StrictMode>
+        <ProjectPage />
+    </StrictMode>,
 );
