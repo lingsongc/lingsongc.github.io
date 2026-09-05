@@ -1,18 +1,16 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../../data/projects";
-import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
+import {
+    alignMountedSectionAnchor,
+    sectionRestingBounds,
+} from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor } from "../../types/images";
-
-const ringCount = 3;
-type ProjectPlanetStyle = CSSProperties & {
-    "--project-angle": string;
-    "--project-angle-inverse": string;
-};
+import { ProjectOrbit } from "./ProjectOrbit";
 
 type ProjectsProps = {
-    sectionRef: RefObject<HTMLElement | null>;
+    restingContainerRef: RefObject<HTMLDivElement | null>;
     onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
@@ -22,32 +20,7 @@ const projectImage = (project: Project): ImageDescriptor => ({
     objectPosition: "center",
 });
 
-function projectAngle(id: string, index: number, projectCount: number) {
-    const separation = 360 / projectCount;
-    const jitterLimit = Math.min(18, separation * 0.2);
-    const hash = Array.from(id).reduce(
-        (value, character) => (value * 31 + character.charCodeAt(0)) % 1000,
-        0,
-    );
-    const jitter = (hash / 999 * 2 - 1) * jitterLimit;
-    return 90 + index * separation + jitter;
-}
-
-function fitAngleToViewport(angle: number, radius: number, planetRadius: number, viewportHeight: number) {
-    const verticalLimit = Math.max(0, viewportHeight / 2 - planetRadius - 1);
-    const safeOffset = Math.acos(Math.min(1, verticalLimit / radius)) * 180 / Math.PI;
-    const normalizedAngle = (angle % 360 + 360) % 360;
-
-    if (normalizedAngle < safeOffset) return safeOffset;
-    if (normalizedAngle > 360 - safeOffset) return 360 - safeOffset;
-    if (normalizedAngle > 180 - safeOffset && normalizedAngle < 180 + safeOffset) {
-        return normalizedAngle < 180 ? 180 - safeOffset : 180 + safeOffset;
-    }
-
-    return normalizedAngle;
-}
-
-export function Projects({ sectionRef, onMainCircleImageChange }: ProjectsProps) {
+export function Projects({ restingContainerRef, onMainCircleImageChange }: ProjectsProps) {
     const imageVisibleRef = useRef(false);
     const activeProjectRef = useRef(projects[0]);
     const [transitionState, setTransitionState] = useState<"idle" | "visible" | "exiting">("idle");
@@ -56,9 +29,8 @@ export function Projects({ sectionRef, onMainCircleImageChange }: ProjectsProps)
     activeProjectRef.current = activeProject;
 
     useEffect(() => {
-        const section = sectionRef.current;
-        const restingContainer = section?.parentElement;
-        if (!section || !restingContainer) return;
+        const restingContainer = restingContainerRef.current;
+        if (!restingContainer) return;
 
         let contentVisible = false;
         const updateContentVisibility = () => {
@@ -71,91 +43,40 @@ export function Projects({ sectionRef, onMainCircleImageChange }: ProjectsProps)
             onMainCircleImageChange(shouldShow ? projectImage(activeProjectRef.current) : null);
         };
 
-        updateContentVisibility();
+        let alignmentFrame: number | undefined;
+        const animationFrame = window.requestAnimationFrame(() => {
+            alignmentFrame = window.requestAnimationFrame(() => {
+                alignMountedSectionAnchor(restingContainer);
+                updateContentVisibility();
+            });
+        });
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
         return () => {
+            window.cancelAnimationFrame(animationFrame);
+            window.cancelAnimationFrame(alignmentFrame ?? 0);
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
-    }, [onMainCircleImageChange]);
+    }, [onMainCircleImageChange, restingContainerRef]);
 
-    useLayoutEffect(() => {
-        const container = sectionRef.current;
-        if (!container) return;
-
-        const positionPlanets = () => {
-            const rings = Array.from(container.querySelectorAll<HTMLElement>(".project-ring"));
-            container.querySelectorAll<HTMLElement>(".project-item").forEach((planet) => {
-                const ring = rings[Number(planet.dataset.projectRing)];
-                const link = planet.querySelector<HTMLElement>(".project-link");
-                if (!ring || !link) return;
-
-                const angle = fitAngleToViewport(
-                    Number(planet.dataset.projectAngle),
-                    ring.offsetWidth / 2,
-                    link.offsetWidth / 2,
-                    window.innerHeight,
-                );
-                planet.style.setProperty("--project-angle", `${angle}deg`);
-                planet.style.setProperty("--project-angle-inverse", `${-angle}deg`);
-            });
-        };
-
-        const resizeObserver = new ResizeObserver(positionPlanets);
-        resizeObserver.observe(container);
-        positionPlanets();
-        return () => resizeObserver.disconnect();
-    }, []);
+    const selectProject = (project: Project) => {
+        setActiveProjectId(project.id);
+        if (imageVisibleRef.current) onMainCircleImageChange(projectImage(project));
+    };
 
     return (
         <section
-            ref={sectionRef}
-            id="projects"
-            className={`project-container project-content-${transitionState}`}
+            className="project-container"
             aria-labelledby="project-title"
         >
-            <div className="project-rings" aria-hidden="true">
-                <span className="orbit-ring project-ring project-ring-one" />
-                <span className="orbit-ring project-ring project-ring-two" />
-                <span className="orbit-ring project-ring project-ring-three" />
-            </div>
             <h2 id="project-title" className="project-title">Projects</h2>
-            <ul className="project-list">
-                {projects.map((project, index) => {
-                    const placementIndex = index % ringCount;
-                    const ringIndex = placementIndex;
-                    const angle = projectAngle(project.id, index, projects.length);
-                    const style: ProjectPlanetStyle = {
-                        "--project-angle": `${angle}deg`,
-                        "--project-angle-inverse": `${-angle}deg`,
-                    };
-
-                    return (
-                        <li
-                            className={`project-item project-item-ring-${ringIndex + 1}`}
-                            key={project.id}
-                            style={style}
-                            data-project-angle={angle}
-                            data-project-ring={ringIndex}
-                        >
-                            <button
-                                className="project-link"
-                                type="button"
-                                aria-pressed={activeProjectId === project.id}
-                                onClick={() => {
-                                    setActiveProjectId(project.id);
-                                    if (imageVisibleRef.current) onMainCircleImageChange(projectImage(project));
-                                }}
-                            >
-                                <img className="project-image" src={`/projects/${project.id}.png`} alt="" />
-                                <h3 className="project-name">{project.name}</h3>
-                                <p className="project-summary">{project.summary}</p>
-                            </button>
-                        </li>
-                    );
-                })}
-            </ul>
+            <ProjectOrbit
+                activeProjectId={activeProjectId}
+                projects={projects}
+                transitionState={transitionState}
+                onProjectSelect={selectProject}
+            />
             {createPortal(
                 <div className={`project-selected-content project-selected-content-${transitionState}`} aria-live="polite">
                     <p className="project-selected-summary">{activeProject.summary}</p>

@@ -16,6 +16,11 @@
     position: relative;
 }
 
+.project-orbit {
+    position: absolute;
+    inset: 0;
+}
+
 .project-title {
     position: absolute;
     z-index: 1;
