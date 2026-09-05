@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState, type RefObject } from "react";
 import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
-import { education } from "../data/education";
-import { experiences } from "../data/experiences";
+import { education } from "../../data/education";
+import { experiences } from "../../data/experiences";
 import {
     alignMountedSectionAnchor,
     sectionRestingBounds,
-} from "../motion/sectionRestingBounds";
-import type { ImageDescriptor } from "../types/images";
+} from "../../motion/sectionRestingBounds";
+import type { ImageDescriptor } from "../../types/images";
 import { ExperienceOrbit } from "./ExperienceOrbit";
 
 type ExperienceType = "experience" | "education";

@@ -1,7 +1,7 @@
 import type { RefObject } from "react";
-import { useMainCircleTransition } from "../motion/useMainCircleTransition";
-import type { ImageDescriptor } from "../types/images";
-import type { MainCircleTransition } from "../types/mainCircle";
+import { useMainCircleTransition } from "../../motion/useMainCircleTransition";
+import type { ImageDescriptor } from "../../types/images";
+import type { MainCircleTransition } from "../../types/mainCircle";
 
 type MainCircleProps = {
     circleRef: RefObject<HTMLDivElement | null>;

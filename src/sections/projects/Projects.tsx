@@ -1,9 +1,9 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { IconArrowUpRight } from "@tabler/icons-react";
-import { projects, type Project } from "../data/projects";
-import { sectionRestingBounds } from "../motion/sectionRestingBounds";
-import type { ImageDescriptor } from "../types/images";
+import { projects, type Project } from "../../data/projects";
+import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
+import type { ImageDescriptor } from "../../types/images";
 
 const ringCount = 3;
 type ProjectPlanetStyle = CSSProperties & {

@@ -1,4 +1,4 @@
-import { skills } from "../data/skills";
+import { skills } from "../../data/skills";
 import type { RefObject } from "react";
 
 type SkillsProps = {

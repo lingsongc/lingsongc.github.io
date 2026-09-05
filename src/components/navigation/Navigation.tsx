@@ -1,5 +1,5 @@
 import { useEffect, useState, type MouseEvent, type RefObject } from "react";
-import { navigationSections } from "../data/navigation";
+import { navigationSections } from "./navigationSections";
 import { useNavigationActiveSection } from "./useNavigationActiveSection";
 
 type NavigationProps = {

@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from "react";
-import { homeDetails } from "../data/about";
-import type { ImageDescriptor } from "../types/images";
+import { homeDetails } from "../../data/about";
+import type { ImageDescriptor } from "../../types/images";
 
 const homeImage: ImageDescriptor = {
     src: "/about/profile.jpeg",

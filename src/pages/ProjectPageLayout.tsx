@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { IconArrowLeft } from "@tabler/icons-react";
-import { BackgroundGrid } from "../components/BackgroundGrid";
+import { BackgroundGrid } from "../components/background-grid/BackgroundGrid";
 import type { Project } from "../data/projects";
 
 type ProjectPageLayoutProps = {

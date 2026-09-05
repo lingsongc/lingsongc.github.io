@@ -2,7 +2,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useState } from "react";
-import { navigationSections, type SectionId } from "../data/navigation";
+import { navigationSections, type SectionId } from "./navigationSections";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
