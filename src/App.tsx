@@ -21,7 +21,7 @@ export default function App() {
     const mainCircleRef = useRef<HTMLDivElement>(null);
     const homeSectionRef = useRef<HTMLElement>(null);
     const aboutRestingContainerRef = useRef<HTMLDivElement>(null);
-    const experienceSectionRef = useRef<HTMLDivElement>(null);
+    const experienceRestingContainerRef = useRef<HTMLDivElement>(null);
     const experienceOrbitRef = useRef<HTMLElement>(null);
     const projectsSectionRef = useRef<HTMLElement>(null);
     const skillsSectionRef = useRef<HTMLElement>(null);
@@ -61,7 +61,7 @@ export default function App() {
                 },
             },
             {
-                target: experienceSectionRef,
+                target: experienceRestingContainerRef,
                 geometry: {
                     width: experienceCircleSize,
                     top: () => experienceOrbitRef.current?.offsetTop ?? window.innerHeight / 2,
@@ -119,8 +119,12 @@ export default function App() {
                         onMainCircleImageChange={publishAboutImage}
                     />
                 </div>
-                <div ref={experienceSectionRef} id="experience" className="section-static-container">
-                    <Experience orbitRef={experienceOrbitRef} onMainCircleImageChange={publishExperienceImage} />
+                <div ref={experienceRestingContainerRef} id="experience" className="section-static-container">
+                    <Experience
+                        restingContainerRef={experienceRestingContainerRef}
+                        orbitRef={experienceOrbitRef}
+                        onMainCircleImageChange={publishExperienceImage}
+                    />
                 </div>
                 <div className="section-static-container">
                     <Projects sectionRef={projectsSectionRef} onMainCircleImageChange={publishProjectImage} />

@@ -25,12 +25,12 @@ const eventImage = (type: ExperienceType, id: string): ImageDescriptor => ({
     objectPosition: "center",
 });
 type ExperienceProps = {
+    restingContainerRef: RefObject<HTMLDivElement | null>;
     orbitRef: RefObject<HTMLElement | null>;
     onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
-export function Experience({ orbitRef, onMainCircleImageChange }: ExperienceProps) {
-    const sectionRef = useRef<HTMLElement>(null);
+export function Experience({ restingContainerRef, orbitRef, onMainCircleImageChange }: ExperienceProps) {
     const imageVisibleRef = useRef(false);
     const activeImageRef = useRef<ImageDescriptor | null>(null);
     const [contentVisible, setContentVisible] = useState(false);
@@ -48,9 +48,8 @@ export function Experience({ orbitRef, onMainCircleImageChange }: ExperienceProp
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
 
     useEffect(() => {
-        const section = sectionRef.current;
-        const restingContainer = section?.parentElement;
-        if (!section || !restingContainer) return;
+        const restingContainer = restingContainerRef.current;
+        if (!restingContainer) return;
         let contentVisible = false;
         const updateContentVisibility = () => {
             const { start, end } = sectionRestingBounds(restingContainer);
@@ -81,7 +80,7 @@ export function Experience({ orbitRef, onMainCircleImageChange }: ExperienceProp
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
-    }, [onMainCircleImageChange]);
+    }, [onMainCircleImageChange, restingContainerRef]);
 
     const activateEvent = (index: number) => {
         const event = activeEvents[index];
@@ -92,7 +91,6 @@ export function Experience({ orbitRef, onMainCircleImageChange }: ExperienceProp
 
     return (
         <section
-            ref={sectionRef}
             className={`experience-container${contentVisible ? " experience-content-visible" : ""}${orbitReady ? " experience-orbit-ready" : ""}`}
             aria-labelledby="experience-title"
         >
