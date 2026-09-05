@@ -14,7 +14,7 @@
     transition: transform 500ms ease, opacity 125ms linear;
 }
 
-.home-navigation-ring-exiting {
+.home-exiting .home-navigation-ring {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0);
     transition: transform 500ms ease, opacity 125ms linear 375ms;
@@ -36,7 +36,7 @@
         translateY(calc((var(--home-ring-size) - var(--orbit-ring-width)) / -2));
 }
 
-.home-navigation-ring-exiting .home-navigation-exit-marker { opacity: 1; }
+.home-exiting .home-navigation-exit-marker { opacity: 1; }
 .home-navigation-exit-marker:nth-child(2) { --home-marker-angle: 60deg; }
 .home-navigation-exit-marker:nth-child(3) { --home-marker-angle: 120deg; }
 .home-navigation-exit-marker:nth-child(4) { --home-marker-angle: 180deg; }
@@ -93,11 +93,11 @@
     align-content: space-between;
 }
 
-.home-navigation-ring-exiting ~ .home-text .home-name-left .home-name-value {
+.home-exiting .home-name-left .home-name-value {
     transform: translateX(100%);
 }
 
-.home-navigation-ring-exiting ~ .home-text .home-name-right .home-name-value {
+.home-exiting .home-name-right .home-name-value {
     transform: translateX(-100%);
 }
 
@@ -126,7 +126,7 @@
     pointer-events: none;
 }
 
-.home-navigation-ring-exiting ~ .home-text .home-description-curve {
+.home-exiting .home-description-curve {
     opacity: 0;
     transform: translate(-50%, -50%) scale(0);
     transition: transform 500ms ease, opacity 125ms linear 375ms;

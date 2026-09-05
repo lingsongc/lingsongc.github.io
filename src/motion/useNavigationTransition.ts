@@ -8,15 +8,15 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 type NavigationTransitionRefs = {
     navigationRef: RefObject<HTMLElement | null>;
     copyrightRef: RefObject<HTMLElement | null>;
-    homeRingRef: RefObject<HTMLElement | null>;
+    homeRef: RefObject<HTMLElement | null>;
 };
 
-export function useNavigationTransition({ navigationRef, copyrightRef, homeRingRef }: NavigationTransitionRefs) {
+export function useNavigationTransition({ navigationRef, copyrightRef, homeRef }: NavigationTransitionRefs) {
     useGSAP(() => {
         const navigation = navigationRef.current;
         const copyright = copyrightRef.current;
-        const homeRing = homeRingRef.current;
-        if (!navigation || !homeRing) return;
+        const home = homeRef.current;
+        if (!navigation || !home) return;
 
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         let railExitTimer: number | undefined;
@@ -34,7 +34,7 @@ export function useNavigationTransition({ navigationRef, copyrightRef, homeRingR
             navigation.classList.remove("navigation-docked", "navigation-effects-ready", "navigation-rail-exiting", "navigation-home-entering");
             navigation.classList.add("navigation-home-ready");
             navigation.removeAttribute("inert");
-            homeRing.classList.remove("home-navigation-ring-exiting");
+            home.classList.remove("home-exiting");
             copyright?.classList.remove("navigation-copyright-visible", "navigation-copyright-exiting");
         };
 
@@ -49,7 +49,7 @@ export function useNavigationTransition({ navigationRef, copyrightRef, homeRingR
                 railExitTimer = undefined;
                 navigation.classList.remove("navigation-docked", "navigation-effects-ready", "navigation-rail-exiting");
                 navigation.classList.add("navigation-home-entering");
-                homeRing.classList.remove("home-navigation-ring-exiting");
+                home.classList.remove("home-exiting");
                 copyright?.classList.remove("navigation-copyright-visible", "navigation-copyright-exiting");
 
                 homeEnterTimer = window.setTimeout(() => {
@@ -74,7 +74,7 @@ export function useNavigationTransition({ navigationRef, copyrightRef, homeRingR
             navigation.classList.remove("navigation-home-ready", "navigation-home-entering", "navigation-rail-exiting");
             navigation.classList.add("navigation-docked", "navigation-effects-ready");
             navigation.removeAttribute("inert");
-            homeRing.classList.add("home-navigation-ring-exiting");
+            home.classList.add("home-exiting");
             copyright?.classList.remove("navigation-copyright-exiting");
             copyright?.classList.add("navigation-copyright-visible");
         };
@@ -97,8 +97,8 @@ export function useNavigationTransition({ navigationRef, copyrightRef, homeRingR
                 "navigation-rail-exiting",
             );
             navigation.removeAttribute("inert");
-            homeRing.classList.remove("home-navigation-ring-exiting");
+            home.classList.remove("home-exiting");
             copyright?.classList.remove("navigation-copyright-visible", "navigation-copyright-exiting");
         };
-    }, [copyrightRef, homeRingRef, navigationRef]);
+    }, [copyrightRef, homeRef, navigationRef]);
 }

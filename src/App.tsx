@@ -19,7 +19,7 @@ type MainCircleImageState = {
 
 export default function App() {
     const mainCircleRef = useRef<HTMLDivElement>(null);
-    const homeNavigationRingRef = useRef<HTMLDivElement>(null);
+    const homeSectionRef = useRef<HTMLElement>(null);
     const aboutSectionRef = useRef<HTMLElement>(null);
     const experienceSectionRef = useRef<HTMLDivElement>(null);
     const experienceOrbitRef = useRef<HTMLElement>(null);
@@ -99,7 +99,7 @@ export default function App() {
     useNavigationTransition({
         navigationRef,
         copyrightRef: navigationCopyrightRef,
-        homeRingRef: homeNavigationRingRef,
+        homeRef: homeSectionRef,
     });
 
     return (
@@ -112,7 +112,7 @@ export default function App() {
             />
             <main>
                 <MainCircle circleRef={mainCircleRef} image={mainCircleImage.image} transitions={mainCircleTransitions} />
-                <Home navigationRingRef={homeNavigationRingRef} onMainCircleImageChange={publishHomeImage} />
+                <Home sectionRef={homeSectionRef} onMainCircleImageChange={publishHomeImage} />
                 <div className="section-static-container">
                     <About sectionRef={aboutSectionRef} onMainCircleImageChange={publishAboutImage} />
                 </div>

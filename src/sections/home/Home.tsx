@@ -9,11 +9,11 @@ const homeImage: ImageDescriptor = {
 };
 
 type HomeProps = {
-    navigationRingRef: RefObject<HTMLDivElement | null>;
+    sectionRef: RefObject<HTMLElement | null>;
     onMainCircleImageChange: (image: ImageDescriptor | null) => void;
 };
 
-export function Home({ navigationRingRef, onMainCircleImageChange }: HomeProps) {
+export function Home({ sectionRef, onMainCircleImageChange }: HomeProps) {
     const imageVisibleRef = useRef<boolean | null>(null);
     const leftName = homeDetails.name.isWestern
         ? homeDetails.name.firstName
@@ -36,8 +36,8 @@ export function Home({ navigationRingRef, onMainCircleImageChange }: HomeProps) 
     }, [onMainCircleImageChange]);
 
     return (
-        <section id="home" className="home-container" aria-labelledby="home-title">
-            <div ref={navigationRingRef} className="orbit-ring home-navigation-ring" aria-hidden="true">
+        <section ref={sectionRef} id="home" className="home-container" aria-labelledby="home-title">
+            <div className="orbit-ring home-navigation-ring" aria-hidden="true">
                 {Array.from({ length: 6 }, (_, index) => (
                     <span className="home-navigation-exit-marker" key={index} />
                 ))}
