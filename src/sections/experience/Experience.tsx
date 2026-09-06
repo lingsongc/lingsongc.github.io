@@ -129,16 +129,16 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
                         <h3 className="experience-event-title">{activeEvent.title}</h3>
                         <div className="experience-event-metadata">
                             <p className="experience-metadata-item">
-                                <EventTypeIcon className="experience-metadata-icon" stroke={1.75} aria-hidden="true" />
+                                <EventTypeIcon className="experience-metadata-icon" aria-hidden="true" />
                                 {activeEvent.subtitle}
                             </p>
                             <p className="experience-metadata-item">
-                                <IconCalendar className="experience-metadata-icon" stroke={1.75} aria-hidden="true" />
+                                <IconCalendar className="experience-metadata-icon" aria-hidden="true" />
                                 {activeEvent.startDate} to {activeEvent.endDate}
                             </p>
                         </div>
                         <p className="experience-description">{activeEvent.description}</p>
-                        <ul className="experience-highlights">
+                        <ul className="experience-highlights body-copy">
                             {activeEvent.highlights.map((highlight) => (
                                 <li key={highlight}>
                                     <span className="experience-highlight-marker" aria-hidden="true" />

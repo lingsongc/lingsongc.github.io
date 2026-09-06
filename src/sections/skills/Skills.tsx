@@ -45,16 +45,16 @@ export function Skills({ restingContainerRef }: SkillsProps) {
 
     return (
         <section className="skill-container" aria-labelledby="skill-title">
-            <h2 id="skill-title" className="skill-title">Skills</h2>
-            <div className="skill-groups">
+            <h2 id="skill-title">Skills</h2>
+            <div>
                 {skillGroups.map((group) => {
                     const categoryId = skillCategoryId(group.category);
                     return (
-                        <section className="skill-group" aria-labelledby={categoryId} key={group.category}>
-                            <h3 id={categoryId} className="skill-category">{group.category}</h3>
-                            <ul className="skill-list">
+                        <section aria-labelledby={categoryId} key={group.category}>
+                            <h3 id={categoryId}>{group.category}</h3>
+                            <ul>
                                 {group.skills.map((skill) => (
-                                    <li className="skill-item" key={skill.name}>
+                                    <li key={skill.name}>
                                         {skill.name}
                                     </li>
                                 ))}

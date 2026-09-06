@@ -39,8 +39,10 @@
     position: absolute;
     top: 50%;
     left: 50%;
-    border: 0;
+    border-radius: 50%;
+    aspect-ratio: 1;
     transform: translate(-50%, -50%);
+    pointer-events: none;
 }
 
 .project-ring-one { width: var(--project-ring-one-size); }
@@ -300,17 +302,7 @@
 .project-detail-link svg {
     width: 55%;
     height: 55%;
-    stroke-width: 2;
-}
-
-.project-name,
-.project-summary {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    overflow: hidden;
-    clip-path: inset(50%);
-    white-space: nowrap;
+    stroke-width: var(--icon-stroke-width);
 }
 
 @media (max-width: 48rem) {

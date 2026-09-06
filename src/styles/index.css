@@ -1,7 +1,6 @@
 @import "./tokens.css";
 @import "./base.css";
 @import "../components/background-grid/background-grid.css";
-@import "./elements.css";
 @import "./shared.css";
 @import "../components/main-circle/main-circle.css";
 @import "../components/navigation/navigation.css";

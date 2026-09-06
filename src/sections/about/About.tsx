@@ -52,7 +52,7 @@ export function About({ restingContainerRef, onMainCircleImageChange }: AboutPro
             aria-labelledby="about-title"
         >
             <div className="about-text">
-                <h2 id="about-title" className="about-title">About Me</h2>
+                <h2 id="about-title">About Me</h2>
                 <div className="about-description">
                     {paragraphs.map((paragraph) => (
                         <p key={paragraph}>{paragraph.trim()}</p>
@@ -62,7 +62,7 @@ export function About({ restingContainerRef, onMainCircleImageChange }: AboutPro
                     {aboutDetails.statistics.map((statistic) => (
                         <li className="about-statistic" key={statistic.id}>
                             <strong className="about-statistic-amount">{statistic.amount}</strong>
-                            <span className="about-statistic-detail">{statistic.detail}</span>
+                            <span className="body-copy">{statistic.detail}</span>
                         </li>
                     ))}
                 </ul>

@@ -53,7 +53,7 @@ export function Home({ sectionRef, onMainCircleImageChange }: HomeProps) {
                         </span>
                     </span>
                 </h1>
-                <p className="home-description">{homeDetails.introduction}</p>
+                <p className="visually-hidden">{homeDetails.introduction}</p>
                 <svg className="home-description-curve" viewBox="0 0 100 100" aria-hidden="true">
                     <defs>
                         <path id="home-description-path" d="M 0 50 A 50 50 0 0 0 100 50" />

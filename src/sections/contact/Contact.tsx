@@ -135,7 +135,7 @@ export function Contact({ sectionRef }: ContactProps) {
                     {contactProfiles.map((profile, index) => (
                         <span
                             ref={(element) => { satelliteRefs.current[index] = element; }}
-                            className={`contact-satellite contact-satellite-${profile.id}`}
+                            className="contact-satellite"
                             data-contact-link={profile.id}
                             style={{ width: `${profile.diameterRatio * 100}%` }}
                             key={profile.id}
@@ -146,7 +146,7 @@ export function Contact({ sectionRef }: ContactProps) {
                     {contactProfiles.map((profile, index) => (
                         <a
                             ref={(element) => { linkRefs.current[index] = element; }}
-                            className={`contact-link contact-link-${profile.id}`}
+                            className="contact-link"
                             data-contact-link={profile.id}
                             href={profile.href}
                             style={{ width: `${profile.diameterRatio * 100}%` }}
@@ -158,7 +158,7 @@ export function Contact({ sectionRef }: ContactProps) {
                 </nav>
             </div>
             <div className="contact-content">
-                <h2 id="contact-title" className="contact-title">Contact</h2>
+                <h2 id="contact-title">Contact</h2>
                 <p className="contact-description">Have a project in mind?</p>
                 <a className="contact-action" href="mailto:lingsong.c4@gmail.com">Send me an email</a>
             </div>

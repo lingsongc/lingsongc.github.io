@@ -57,13 +57,6 @@
     line-height: 1;
 }
 
-.about-statistic-detail {
-    color: var(--colour-text);
-    font-size: var(--text-body);
-    font-weight: 500;
-    line-height: 1.5;
-}
-
 @media (max-width: 48rem) {
     .about-container {
         --about-circle-arc: 28.5vw;

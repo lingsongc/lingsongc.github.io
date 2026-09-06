@@ -55,12 +55,12 @@ export function ProjectOrbit({
     }, [projects]);
 
     return (
-        <div ref={orbitRef} className={`project-orbit project-content-${transitionState}`}>
-            <div className="project-rings" aria-hidden="true">
+        <div ref={orbitRef} className={`project-orbit${transitionState === "idle" ? "" : ` project-content-${transitionState}`}`}>
+            <div aria-hidden="true">
                 {Array.from({ length: projectRingCount }, (_, index) => (
                     <span
                         ref={(element) => { ringRefs.current[index] = element; }}
-                        className={`orbit-ring project-ring project-ring-${["one", "two", "three"][index]}`}
+                        className={`project-ring project-ring-${["one", "two", "three"][index]}`}
                         key={index}
                     />
                 ))}
@@ -77,7 +77,7 @@ export function ProjectOrbit({
                     return (
                         <li
                             ref={(element) => { planetRefs.current[index] = element; }}
-                            className={`project-item project-item-ring-${ringIndex + 1}`}
+                            className={`project-item${ringIndex === 0 ? "" : ` project-item-ring-${ringIndex + 1}`}`}
                             key={project.id}
                             style={style}
                         >
@@ -89,8 +89,8 @@ export function ProjectOrbit({
                                 onClick={() => onProjectSelect(project)}
                             >
                                 <img className="project-image" src={`/projects/${project.id}.png`} alt="" />
-                                <h3 className="project-name">{project.name}</h3>
-                                <p className="project-summary">{project.summary}</p>
+                                <h3 className="visually-hidden">{project.name}</h3>
+                                <p className="visually-hidden">{project.summary}</p>
                             </button>
                         </li>
                     );

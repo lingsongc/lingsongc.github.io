@@ -2,7 +2,7 @@
 
 .experience-container,
 .experience-orbit-foreground {
-    --experience-section-padding-inline: clamp(1.5rem, 6vw, 6rem);
+    --experience-section-padding-inline: var(--section-padding-inline);
     --experience-circle-size: min(46.5vw, 69vh);
     --experience-rail-gap: clamp(1rem, 2vw, 2rem);
     --experience-orbit-center-x: calc(100vw - var(--navigation-rail-inset) - var(--navigation-link-size) - var(--experience-rail-gap) - var(--experience-circle-size) / 2);
@@ -13,7 +13,6 @@
     --experience-orbit-size: min(75vw, 108vh);
     --experience-content-gap: clamp(1rem, 2vw, 2rem);
     --experience-header-space: clamp(7.5rem, 14vh, 9.5rem);
-    --experience-event-text-size: var(--text-body);
     --experience-content-width: calc(var(--experience-content-boundary-x) - var(--experience-section-padding-inline) - var(--experience-content-gap));
 
     position: relative;
@@ -118,6 +117,7 @@
     height: 1.5rem;
     flex: 0 0 auto;
     color: var(--colour-accent);
+    stroke-width: var(--icon-stroke-width);
 }
 
 .experience-description {
@@ -130,14 +130,6 @@
     padding: 0;
     color: var(--colour-text);
     list-style: none;
-}
-
-.experience-metadata-item,
-.experience-description,
-.experience-highlights li {
-    font-size: var(--experience-event-text-size);
-    font-weight: 500;
-    line-height: 1.5;
 }
 
 .experience-highlights li {
@@ -337,6 +329,7 @@
     display: block;
     width: 60%;
     height: auto;
+    stroke-width: var(--icon-stroke-width);
 }
 
 .experience-orbit-scroll-indicator-visible {

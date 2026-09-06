@@ -161,7 +161,7 @@ export function ExperienceOrbit({
                         className={`experience-orbit-scroll-indicator${interactive && (selectorHovered || selectorFocused) ? " experience-orbit-scroll-indicator-visible" : ""}`}
                         aria-hidden="true"
                     >
-                        <IconMouse stroke={1.5} />
+                        <IconMouse />
                     </span>
                 </div>,
                 document.body,
