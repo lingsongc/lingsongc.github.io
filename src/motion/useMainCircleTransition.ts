@@ -3,7 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { RefObject } from "react";
 import type { MainCircleTransition } from "../types/mainCircle";
-import { elementDocumentTop } from "./sectionRestingBounds";
+import { elementDocumentTop, sectionIncomingTransitionRange } from "./sectionRestingBounds";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -55,8 +55,14 @@ export function useMainCircleTransition(
 function mainCircleTransitionScroll(incomingSection: HTMLElement) {
     return {
         trigger: incomingSection,
-        start: () => elementDocumentTop(incomingSection) - window.innerHeight,
-        end: () => elementDocumentTop(incomingSection),
+        start: () => sectionIncomingTransitionRange(
+            elementDocumentTop(incomingSection),
+            window.innerHeight,
+        ).start,
+        end: () => sectionIncomingTransitionRange(
+            elementDocumentTop(incomingSection),
+            window.innerHeight,
+        ).end,
         scrub: true,
         invalidateOnRefresh: true,
     };

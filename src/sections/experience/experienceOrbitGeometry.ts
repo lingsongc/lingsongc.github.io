@@ -58,3 +58,19 @@ export function experienceOrbitPointIsVisible(angle: number) {
         + halfStep;
     return angle >= minimum && angle <= maximum;
 }
+
+// Calculates an entry's orbit angle from its index and current scroll position.
+export function experienceOrbitEntryAngle(index: number, position: number) {
+    return experienceOrbitGeometry.focusAngle
+        - (index - position) * experienceOrbitGeometry.angleStep;
+}
+
+// Calculates the selector scroll position for one timeline entry.
+export function experienceOrbitScrollTop(index: number) {
+    return index * experienceOrbitGeometry.scrollStep;
+}
+
+// Calculates the full scroll distance for a timeline collection.
+export function experienceOrbitScrollDistance(entryCount: number) {
+    return Math.max(0, entryCount - 1) * experienceOrbitGeometry.scrollStep;
+}

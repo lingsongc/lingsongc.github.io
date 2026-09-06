@@ -14,10 +14,17 @@ export function elementDocumentTop(element: HTMLElement) {
 // Calculates the scroll range where a section remains at rest.
 export function sectionRestingBounds(restingContainer: HTMLElement) {
     const start = elementDocumentTop(restingContainer);
-    return {
-        start,
-        end: start + restingContainer.offsetHeight - window.innerHeight,
-    };
+    return sectionRestingRange(start, restingContainer.offsetHeight, window.innerHeight);
+}
+
+// Calculates a resting scroll range from measured page dimensions.
+export function sectionRestingRange(start: number, containerHeight: number, viewportHeight: number) {
+    return { start, end: start + containerHeight - viewportHeight };
+}
+
+// Calculates the scroll range used while a section moves into place.
+export function sectionIncomingTransitionRange(sectionTop: number, viewportHeight: number) {
+    return { start: sectionTop - viewportHeight, end: sectionTop };
 }
 
 // Aligns a directly linked section with its resting position.

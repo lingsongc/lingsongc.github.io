@@ -3,10 +3,13 @@ import { createPortal } from "react-dom";
 import { IconMouse } from "@tabler/icons-react";
 import {
     experienceOrbitGeometry,
+    experienceOrbitEntryAngle,
     experienceOrbitFrontPath,
     experienceOrbitLayerStyles,
     experienceOrbitPoint,
     experienceOrbitPointIsVisible,
+    experienceOrbitScrollDistance,
+    experienceOrbitScrollTop,
     experienceOrbitSectionStyles,
     experienceOrbitViewBox,
 } from "./experienceOrbitGeometry";
@@ -54,14 +57,14 @@ export function ExperienceOrbit({
         targetIndexRef.current = index;
         activateRef.current(index);
         const scrollBehavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
-        scrollRef.current?.scrollTo({ top: index * experienceOrbitGeometry.scrollStep, behavior: scrollBehavior });
+        scrollRef.current?.scrollTo({ top: experienceOrbitScrollTop(index), behavior: scrollBehavior });
     };
     selectRef.current = selectEntry;
 
     useEffect(() => {
         const activeIndex = Math.max(0, entries.findIndex((entry) => entry.id === activeEntryId));
         targetIndexRef.current = activeIndex;
-        scrollRef.current?.scrollTo({ top: activeIndex * experienceOrbitGeometry.scrollStep });
+        scrollRef.current?.scrollTo({ top: experienceOrbitScrollTop(activeIndex) });
         setPosition(activeIndex);
     }, [entries]);
 
@@ -107,7 +110,7 @@ export function ExperienceOrbit({
         >
             <ol className="experience-event-orbit-list" aria-label={`${label} entries`}>
                 {entries.map((entry, index) => {
-                    const angle = experienceOrbitGeometry.focusAngle - (index - position) * experienceOrbitGeometry.angleStep;
+                    const angle = experienceOrbitEntryAngle(index, position);
                     const visible = experienceOrbitPointIsVisible(angle);
                     return (
                         <li className={`experience-event-orbit-item${visible ? "" : " experience-event-orbit-item-hidden"}`} style={experienceOrbitPoint(angle)} key={entry.id}>
@@ -147,7 +150,7 @@ export function ExperienceOrbit({
                     tabIndex={interactive ? 0 : -1}
                     aria-label={`Scroll through ${label} entries`}
                 >
-                    <div className="experience-orbit-track" style={{ "--experience-scroll-distance": `${(entries.length - 1) * experienceOrbitGeometry.scrollStep}px` } as CSSProperties}>
+                    <div className="experience-orbit-track" style={{ "--experience-scroll-distance": `${experienceOrbitScrollDistance(entries.length)}px` } as CSSProperties}>
                         {entries.map((entry, index) => (
                             <span className="experience-orbit-snap-point" style={{ top: index * experienceOrbitGeometry.scrollStep }} aria-hidden="true" key={entry.id} />
                         ))}

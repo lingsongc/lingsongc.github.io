@@ -9,6 +9,14 @@ import { Experience } from "./sections/experience/Experience";
 import { Home } from "./sections/home/Home";
 import { Projects } from "./sections/projects/Projects";
 import { Skills } from "./sections/skills/Skills";
+import {
+    aboutCircleSize,
+    contactCircleSize,
+    experienceCircleSize,
+    projectCircleSize,
+    skillsCircleLeft,
+    skillsCircleSize,
+} from "./motion/mainCircleGeometry";
 import { useNavigationTransition } from "./motion/useNavigationTransition";
 import type { ImageDescriptor } from "./types/images";
 import type { MainCircleTransition } from "./types/mainCircle";
@@ -53,39 +61,41 @@ export default function App() {
             {
                 target: aboutRestingContainerRef,
                 geometry: {
-                    width: getAboutCircleSize,
-                    left: () => getAboutCircleSize() * (window.innerWidth <= 768 ? -0.2 : -0.1),
+                    width: () => aboutCircleSize(window.innerWidth, window.innerHeight),
+                    left: () => aboutCircleSize(window.innerWidth, window.innerHeight) * (window.innerWidth <= 768 ? -0.2 : -0.1),
                 },
             },
             {
                 target: experienceRestingContainerRef,
                 geometry: {
-                    width: getExperienceCircleSize,
+                    width: () => experienceCircleSize(window.innerWidth, window.innerHeight),
                     top: () => experienceOrbitRef.current?.offsetTop ?? window.innerHeight / 2,
                     left: () => experienceOrbitRef.current?.offsetLeft ?? window.innerWidth / 2,
                 },
             },
             {
                 target: projectsRestingContainerRef,
-                geometry: { width: getProjectCircleSize, top: "50%", left: "50%" },
+                geometry: {
+                    width: () => projectCircleSize(window.innerWidth, window.innerHeight),
+                    top: "50%",
+                    left: "50%",
+                },
             },
             {
                 target: skillsRestingContainerRef,
                 geometry: {
-                    width: getSkillsCircleSize,
+                    width: () => skillsCircleSize(window.innerWidth, window.innerHeight),
                     top: "50%",
                     left: () => {
-                        const circleSize = getSkillsCircleSize();
-                        const circleGap = (window.innerHeight - circleSize) / 2;
                         const railLeft = navigationRailRef.current?.getBoundingClientRect().left ?? window.innerWidth;
-                        return railLeft - circleGap - circleSize / 2;
+                        return skillsCircleLeft(window.innerWidth, window.innerHeight, railLeft);
                     },
                 },
             },
             {
                 target: contactSectionRef,
                 geometry: {
-                    width: () => Math.min(window.innerWidth, window.innerHeight) * 0.56,
+                    width: () => contactCircleSize(window.innerWidth, window.innerHeight),
                     top: "50%",
                     left: "50%",
                 },
@@ -144,30 +154,4 @@ export default function App() {
             </main>
         </>
     );
-}
-
-// Calculates the About circle size for the current viewport.
-function getAboutCircleSize() {
-    return window.innerWidth <= 768
-        ? window.innerWidth * 0.95
-        : window.innerHeight * 1.6;
-}
-
-// Calculates the Experience circle size for the current viewport.
-function getExperienceCircleSize() {
-    return window.innerWidth <= 768
-        ? window.innerWidth * 0.78
-        : Math.min(window.innerWidth * 0.465, window.innerHeight * 0.69);
-}
-
-// Calculates the Projects circle size for the current viewport.
-function getProjectCircleSize() {
-    return window.innerWidth <= 768
-        ? window.innerWidth * 0.576
-        : Math.min(window.innerWidth * 0.384, window.innerHeight * 0.544);
-}
-
-// Calculates the Skills circle size from the viewport's shorter edge.
-function getSkillsCircleSize() {
-    return Math.min(window.innerWidth, window.innerHeight) * 0.9;
 }

@@ -29,7 +29,7 @@ export function createWarpedGridPaths(
 }
 
 // Pushes one grid point away from the circle with a smooth distance falloff.
-function warpPoint(x: number, y: number, circle: GridCircle | null) {
+export function warpGridPoint(x: number, y: number, circle: GridCircle | null) {
     if (!circle) return [x, y];
 
     const offsetX = x - circle.x;
@@ -51,7 +51,7 @@ function createLinePath(position: number, length: number, vertical: boolean, cir
     const points: string[] = [];
 
     for (let offset = -SAMPLE_STEP; offset <= length + SAMPLE_STEP; offset += SAMPLE_STEP) {
-        const [x, y] = warpPoint(vertical ? position : offset, vertical ? offset : position, circle);
+        const [x, y] = warpGridPoint(vertical ? position : offset, vertical ? offset : position, circle);
         points.push(`${points.length === 0 ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`);
     }
 

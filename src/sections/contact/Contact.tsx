@@ -3,6 +3,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { scheduleMountedSectionAnchorAlignment } from "../../motion/sectionRestingBounds";
+import { contactFinalOffset, contactInitialOffset } from "./contactGeometry";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -60,32 +61,36 @@ export function Contact({ sectionRef }: ContactProps) {
             contactProfilesById.get(element.dataset.contactLink as typeof contactProfiles[number]["id"])
         );
         
-        // Calculates a profile's final offset from the center of the orbit.
-        const contactOffset = (element: HTMLElement, axis: 0 | 1) =>
-            (contactProfile(element)?.offset[axis] ?? 0) * orbit.offsetWidth;
-        
-        // Places each profile fully inside the circle before it moves outward.
-        const contactInitialOffset = (element: HTMLElement, axis: 0 | 1) => {
+        // Calculates a rendered profile's final offset from the orbit center.
+        const profileFinalOffset = (element: HTMLElement, axis: 0 | 1) => {
             const profile = contactProfile(element);
-            const direction = profile?.offset ?? [0, 0];
-            const directionLength = Math.hypot(...direction) || 1;
-            const insetRadius = 0.5 - (profile?.diameterRatio ?? 0) / 2 - 0.02;
-            return direction[axis] / directionLength * insetRadius * orbit.offsetWidth;
+            return contactFinalOffset(profile?.offset ?? [0, 0], orbit.offsetWidth, axis);
+        };
+        
+        // Calculates a rendered profile's starting position inside the circle.
+        const profileInitialOffset = (element: HTMLElement, axis: 0 | 1) => {
+            const profile = contactProfile(element);
+            return contactInitialOffset(
+                profile?.offset ?? [0, 0],
+                profile?.diameterRatio ?? 0,
+                orbit.offsetWidth,
+                axis,
+            );
         };
 
         gsap.set([blobLayer, linkLayer], { autoAlpha: 0 });
         gsap.set(splitElements, {
             xPercent: -50,
             yPercent: -50,
-            x: (_, element: HTMLElement) => contactInitialOffset(element, 0),
-            y: (_, element: HTMLElement) => contactInitialOffset(element, 1),
+            x: (_, element: HTMLElement) => profileInitialOffset(element, 0),
+            y: (_, element: HTMLElement) => profileInitialOffset(element, 1),
             scale: 1,
         });
         const splitTimeline = gsap.timeline({ paused: true })
             .to(blobLayer, { autoAlpha: 1, duration: 0.06 }, 0)
             .to(splitElements, {
-                x: (_, element: HTMLElement) => contactOffset(element, 0),
-                y: (_, element: HTMLElement) => contactOffset(element, 1),
+                x: (_, element: HTMLElement) => profileFinalOffset(element, 0),
+                y: (_, element: HTMLElement) => profileFinalOffset(element, 1),
                 duration: 0.5,
                 ease: "power2.inOut",
             }, 0)
