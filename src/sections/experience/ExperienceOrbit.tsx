@@ -71,6 +71,7 @@ export function ExperienceOrbit({
     useEffect(() => {
         const scrollArea = scrollRef.current;
         if (!scrollArea) return;
+        let scrollEndTimer: number | undefined;
         // Moves between entries, then returns wheel control to the page at either end.
         const handleWheel = (event: WheelEvent) => {
             if (!interactiveRef.current || event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
@@ -88,14 +89,29 @@ export function ExperienceOrbit({
         const syncTargetIndex = () => {
             if (!interactiveRef.current) return;
             const nextIndex = Math.round(scrollArea.scrollTop / experienceOrbitGeometry.scrollStep);
+            if (nextIndex === targetIndexRef.current) return;
             targetIndexRef.current = nextIndex;
             activateRef.current(nextIndex);
         };
+        // Provides the same final selection when a browser does not fire scrollend reliably.
+        const scheduleTargetSync = () => {
+            window.clearTimeout(scrollEndTimer);
+            scrollEndTimer = window.setTimeout(syncTargetIndex, 120);
+        };
+        // Uses the native event when available and prevents the fallback from selecting twice.
+        const handleScrollEnd = () => {
+            window.clearTimeout(scrollEndTimer);
+            scrollEndTimer = undefined;
+            syncTargetIndex();
+        };
         scrollArea.addEventListener("wheel", handleWheel, { passive: false });
-        scrollArea.addEventListener("scrollend", syncTargetIndex);
+        scrollArea.addEventListener("scroll", scheduleTargetSync, { passive: true });
+        scrollArea.addEventListener("scrollend", handleScrollEnd);
         return () => {
+            window.clearTimeout(scrollEndTimer);
             scrollArea.removeEventListener("wheel", handleWheel);
-            scrollArea.removeEventListener("scrollend", syncTargetIndex);
+            scrollArea.removeEventListener("scroll", scheduleTargetSync);
+            scrollArea.removeEventListener("scrollend", handleScrollEnd);
         };
     }, [entries.length]);
 
@@ -152,7 +168,7 @@ export function ExperienceOrbit({
                 >
                     <div className="experience-orbit-track" style={{ "--experience-scroll-distance": `${experienceOrbitScrollDistance(entries.length)}px` } as CSSProperties}>
                         {entries.map((entry, index) => (
-                            <span className="experience-orbit-snap-point" style={{ top: index * experienceOrbitGeometry.scrollStep }} aria-hidden="true" key={entry.id} />
+                            <span className="experience-orbit-snap-point" style={{ top: experienceOrbitScrollTop(index) }} aria-hidden="true" key={entry.id} />
                         ))}
                     </div>
                 </div>

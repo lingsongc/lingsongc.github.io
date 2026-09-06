@@ -52,6 +52,12 @@ describe("experience orbit geometry", () => {
         expect(experienceOrbitScrollDistance(4)).toBe(336);
         expect(experienceOrbitScrollDistance(0)).toBe(0);
     });
+
+    it("ends a collection at its final entry position", () => {
+        const entryCount = 4;
+
+        expect(experienceOrbitScrollDistance(entryCount)).toBe(experienceOrbitScrollTop(entryCount - 1));
+    });
 });
 
 // Converts percentage strings into numbers for geometric comparisons.

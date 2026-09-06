@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+    aboutCircleLeft,
     aboutCircleSize,
     contactCircleSize,
     experienceCircleSize,
@@ -16,6 +17,11 @@ describe("main circle geometry", () => {
 
     it("uses viewport height for the desktop About circle", () => {
         expect(aboutCircleSize(769, 900)).toBe(1440);
+    });
+
+    it("positions the About circle with the responsive offset", () => {
+        expect(aboutCircleLeft(768, 900)).toBeCloseTo(-145.92);
+        expect(aboutCircleLeft(769, 900)).toBe(-144);
     });
 
     it("caps the desktop Experience circle by the smaller limit", () => {

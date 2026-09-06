@@ -5,6 +5,12 @@ export function aboutCircleSize(viewportWidth: number, viewportHeight: number) {
     return viewportWidth <= MOBILE_BREAKPOINT ? viewportWidth * 0.95 : viewportHeight * 1.6;
 }
 
+// Positions the About circle using the offset chosen for the current layout.
+export function aboutCircleLeft(viewportWidth: number, viewportHeight: number) {
+    const offsetRatio = viewportWidth <= MOBILE_BREAKPOINT ? -0.2 : -0.1;
+    return aboutCircleSize(viewportWidth, viewportHeight) * offsetRatio;
+}
+
 // Calculates the Experience circle size for the current viewport.
 export function experienceCircleSize(viewportWidth: number, viewportHeight: number) {
     return viewportWidth <= MOBILE_BREAKPOINT

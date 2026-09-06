@@ -10,6 +10,7 @@ import { Home } from "./sections/home/Home";
 import { Projects } from "./sections/projects/Projects";
 import { Skills } from "./sections/skills/Skills";
 import {
+    aboutCircleLeft,
     aboutCircleSize,
     contactCircleSize,
     experienceCircleSize,
@@ -64,7 +65,7 @@ export default function App() {
                 target: aboutRestingContainerRef,
                 geometry: {
                     width: () => aboutCircleSize(window.innerWidth, window.innerHeight),
-                    left: () => aboutCircleSize(window.innerWidth, window.innerHeight) * (window.innerWidth <= 768 ? -0.2 : -0.1),
+                    left: () => aboutCircleLeft(window.innerWidth, window.innerHeight),
                 },
             },
             {
