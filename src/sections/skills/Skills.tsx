@@ -1,6 +1,6 @@
 import { useEffect, type RefObject } from "react";
 import { skills } from "../../data/skills";
-import { alignMountedSectionAnchor } from "../../motion/sectionRestingBounds";
+import { scheduleMountedSectionAnchorAlignment } from "../../motion/sectionRestingBounds";
 
 type SkillsProps = {
     restingContainerRef: RefObject<HTMLDivElement | null>;
@@ -21,26 +21,12 @@ const skillGroups = skills.reduce<SkillGroup[]>((groups, skill) => {
     return groups;
 }, []);
 
-function skillCategoryId(category: string) {
-    return `skill-${category.toLowerCase().replaceAll(" ", "-")}`;
-}
-
 export function Skills({ restingContainerRef }: SkillsProps) {
     useEffect(() => {
         const restingContainer = restingContainerRef.current;
         if (!restingContainer) return;
 
-        let alignmentFrame: number | undefined;
-        const animationFrame = window.requestAnimationFrame(() => {
-            alignmentFrame = window.requestAnimationFrame(() => {
-                alignMountedSectionAnchor(restingContainer);
-            });
-        });
-
-        return () => {
-            window.cancelAnimationFrame(animationFrame);
-            window.cancelAnimationFrame(alignmentFrame ?? 0);
-        };
+        return scheduleMountedSectionAnchorAlignment(restingContainer);
     }, [restingContainerRef]);
 
     return (
@@ -65,4 +51,8 @@ export function Skills({ restingContainerRef }: SkillsProps) {
             </div>
         </section>
     );
+}
+
+function skillCategoryId(category: string) {
+    return `skill-${category.toLowerCase().replaceAll(" ", "-")}`;
 }

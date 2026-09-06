@@ -2,7 +2,7 @@ import { useRef, type RefObject } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { alignMountedSectionAnchor } from "../../motion/sectionRestingBounds";
+import { scheduleMountedSectionAnchorAlignment } from "../../motion/sectionRestingBounds";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -95,20 +95,15 @@ export function Contact({ sectionRef }: ContactProps) {
             },
         });
 
-        let initializationFrame: number | undefined;
-        const setupFrame = window.requestAnimationFrame(() => {
-            initializationFrame = window.requestAnimationFrame(() => {
-                alignMountedSectionAnchor(section);
-                splitTrigger.refresh();
-                if (splitTrigger.isActive || section.getBoundingClientRect().top <= 1) {
-                    splitTimeline.progress(1);
-                }
-            });
+        const cancelAnchorAlignment = scheduleMountedSectionAnchorAlignment(section, () => {
+            splitTrigger.refresh();
+            if (splitTrigger.isActive || section.getBoundingClientRect().top <= 1) {
+                splitTimeline.progress(1);
+            }
         });
 
         return () => {
-            window.cancelAnimationFrame(setupFrame);
-            window.cancelAnimationFrame(initializationFrame ?? 0);
+            cancelAnchorAlignment();
             splitTrigger.kill();
             splitTimeline.kill();
         };

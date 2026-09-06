@@ -1,7 +1,5 @@
 import type { CSSProperties } from "react";
 
-export const projectRingCount = 3;
-
 export type ProjectPlanetStyle = CSSProperties & {
     "--project-angle": string;
     "--project-angle-inverse": string;

@@ -2,6 +2,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import { BackgroundGrid } from "./components/background-grid/BackgroundGrid";
 import { MainCircle } from "./components/main-circle/MainCircle";
 import { Navigation } from "./components/navigation/Navigation";
+import { SectionRestingContainer } from "./components/section-resting-container/SectionRestingContainer";
 import { About } from "./sections/about/About";
 import { Contact } from "./sections/contact/Contact";
 import { Experience } from "./sections/experience/Experience";
@@ -102,28 +103,28 @@ export default function App() {
             <main>
                 <MainCircle circleRef={mainCircleRef} image={mainCircleImage.image} transitions={mainCircleTransitions} />
                 <Home sectionRef={homeSectionRef} onMainCircleImageChange={publishHomeImage} />
-                <div ref={aboutRestingContainerRef} className="section-static-container">
+                <SectionRestingContainer containerRef={aboutRestingContainerRef} id="about">
                     <About
                         restingContainerRef={aboutRestingContainerRef}
                         onMainCircleImageChange={publishAboutImage}
                     />
-                </div>
-                <div ref={experienceRestingContainerRef} id="experience" className="section-static-container">
+                </SectionRestingContainer>
+                <SectionRestingContainer containerRef={experienceRestingContainerRef} id="experience">
                     <Experience
                         restingContainerRef={experienceRestingContainerRef}
                         orbitRef={experienceOrbitRef}
                         onMainCircleImageChange={publishExperienceImage}
                     />
-                </div>
-                <div ref={projectsRestingContainerRef} id="projects" className="section-static-container">
+                </SectionRestingContainer>
+                <SectionRestingContainer containerRef={projectsRestingContainerRef} id="projects">
                     <Projects
                         restingContainerRef={projectsRestingContainerRef}
                         onMainCircleImageChange={publishProjectImage}
                     />
-                </div>
-                <div ref={skillsRestingContainerRef} id="skills" className="section-static-container">
+                </SectionRestingContainer>
+                <SectionRestingContainer containerRef={skillsRestingContainerRef} id="skills">
                     <Skills restingContainerRef={skillsRestingContainerRef} />
-                </div>
+                </SectionRestingContainer>
                 <Contact sectionRef={contactSectionRef} />
             </main>
         </>

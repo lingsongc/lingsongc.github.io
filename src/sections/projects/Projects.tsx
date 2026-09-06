@@ -3,27 +3,21 @@ import { createPortal } from "react-dom";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../../data/projects";
 import {
-    alignMountedSectionAnchor,
+    scheduleMountedSectionAnchorAlignment,
     sectionRestingBounds,
 } from "../../motion/sectionRestingBounds";
-import type { ImageDescriptor } from "../../types/images";
-import { ProjectOrbit } from "./ProjectOrbit";
+import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
+import { ProjectOrbit, type ProjectOrbitTransitionState } from "./ProjectOrbit";
 
 type ProjectsProps = {
     restingContainerRef: RefObject<HTMLDivElement | null>;
-    onMainCircleImageChange: (image: ImageDescriptor | null) => void;
+    onMainCircleImageChange: MainCircleImagePublisher;
 };
-
-const projectImage = (project: Project): ImageDescriptor => ({
-    src: `/projects/${project.id}.png`,
-    alt: "",
-    objectPosition: "center",
-});
 
 export function Projects({ restingContainerRef, onMainCircleImageChange }: ProjectsProps) {
     const imageVisibleRef = useRef(false);
     const activeProjectRef = useRef(projects[0]);
-    const [transitionState, setTransitionState] = useState<"idle" | "visible" | "exiting">("idle");
+    const [transitionState, setTransitionState] = useState<ProjectOrbitTransitionState>("idle");
     const [activeProjectId, setActiveProjectId] = useState(projects[0].id);
     const activeProject = projects.find(({ id }) => id === activeProjectId) ?? projects[0];
     activeProjectRef.current = activeProject;
@@ -43,18 +37,14 @@ export function Projects({ restingContainerRef, onMainCircleImageChange }: Proje
             onMainCircleImageChange(shouldShow ? projectImage(activeProjectRef.current) : null);
         };
 
-        let alignmentFrame: number | undefined;
-        const animationFrame = window.requestAnimationFrame(() => {
-            alignmentFrame = window.requestAnimationFrame(() => {
-                alignMountedSectionAnchor(restingContainer);
-                updateContentVisibility();
-            });
-        });
+        const cancelAnchorAlignment = scheduleMountedSectionAnchorAlignment(
+            restingContainer,
+            updateContentVisibility,
+        );
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
         return () => {
-            window.cancelAnimationFrame(animationFrame);
-            window.cancelAnimationFrame(alignmentFrame ?? 0);
+            cancelAnchorAlignment();
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
@@ -92,4 +82,12 @@ export function Projects({ restingContainerRef, onMainCircleImageChange }: Proje
             </a>
         </section>
     );
+}
+
+function projectImage(project: Project): ImageDescriptor {
+    return {
+        src: `/projects/${project.id}.png`,
+        alt: "",
+        objectPosition: "center",
+    };
 }

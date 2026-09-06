@@ -6,3 +6,5 @@ export type ImageDescriptor = {
     objectPosition?: CSSProperties["objectPosition"];
     transform?: CSSProperties["transform"];
 };
+
+export type MainCircleImagePublisher = (image: ImageDescriptor | null) => void;

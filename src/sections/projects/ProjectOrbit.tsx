@@ -3,14 +3,17 @@ import type { Project } from "../../data/projects";
 import {
     fitProjectAngleToViewport,
     projectOrbitAngle,
-    projectRingCount,
     type ProjectPlanetStyle,
 } from "./projectOrbitGeometry";
+
+const PROJECT_RING_COUNT = 3;
+
+export type ProjectOrbitTransitionState = "idle" | "visible" | "exiting";
 
 type ProjectOrbitProps = {
     activeProjectId: string;
     projects: readonly Project[];
-    transitionState: "idle" | "visible" | "exiting";
+    transitionState: ProjectOrbitTransitionState;
     onProjectSelect: (project: Project) => void;
 };
 
@@ -31,7 +34,7 @@ export function ProjectOrbit({
 
         const positionPlanets = () => {
             projects.forEach((project, index) => {
-                const ringIndex = index % projectRingCount;
+                const ringIndex = index % PROJECT_RING_COUNT;
                 const ring = ringRefs.current[ringIndex];
                 const planet = planetRefs.current[index];
                 const button = buttonRefs.current[index];
@@ -57,17 +60,18 @@ export function ProjectOrbit({
     return (
         <div ref={orbitRef} className={`project-orbit${transitionState === "idle" ? "" : ` project-content-${transitionState}`}`}>
             <div aria-hidden="true">
-                {Array.from({ length: projectRingCount }, (_, index) => (
+                {Array.from({ length: PROJECT_RING_COUNT }, (_, index) => (
                     <span
                         ref={(element) => { ringRefs.current[index] = element; }}
-                        className={`project-ring project-ring-${["one", "two", "three"][index]}`}
+                        className="project-ring"
+                        data-ring-index={index + 1}
                         key={index}
                     />
                 ))}
             </div>
             <ul className="project-list">
                 {projects.map((project, index) => {
-                    const ringIndex = index % projectRingCount;
+                    const ringIndex = index % PROJECT_RING_COUNT;
                     const angle = projectOrbitAngle(project.id, index, projects.length);
                     const style: ProjectPlanetStyle = {
                         "--project-angle": `${angle}deg`,
@@ -77,7 +81,8 @@ export function ProjectOrbit({
                     return (
                         <li
                             ref={(element) => { planetRefs.current[index] = element; }}
-                            className={`project-item${ringIndex === 0 ? "" : ` project-item-ring-${ringIndex + 1}`}`}
+                            className="project-item"
+                            data-ring-index={ringIndex + 1}
                             key={project.id}
                             style={style}
                         >

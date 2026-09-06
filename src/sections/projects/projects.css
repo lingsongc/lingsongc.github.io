@@ -9,9 +9,9 @@
     --project-planet-size: clamp(3.75rem, 9vmin, 7.5rem);
     --project-ring-gap: clamp(6rem, 16.5vw, 15rem);
     --project-ring-step: calc(var(--project-ring-gap) + var(--project-ring-gap));
-    --project-ring-one-size: calc(var(--project-circle-size) + var(--project-ring-step));
-    --project-ring-two-size: calc(var(--project-circle-size) + var(--project-ring-step) + var(--project-ring-step));
-    --project-ring-three-size: calc(var(--project-circle-size) + var(--project-ring-step) + var(--project-ring-step) + var(--project-ring-step));
+    --project-ring-1-size: calc(var(--project-circle-size) + var(--project-ring-step));
+    --project-ring-2-size: calc(var(--project-circle-size) + var(--project-ring-step) + var(--project-ring-step));
+    --project-ring-3-size: calc(var(--project-circle-size) + var(--project-ring-step) + var(--project-ring-step) + var(--project-ring-step));
 
     position: relative;
 }
@@ -32,9 +32,9 @@
 }
 
 .project-ring {
-    --project-stage-one-size: var(--project-ring-one-size);
-    --project-stage-two-size: var(--project-ring-one-size);
-    --project-final-size: var(--project-ring-one-size);
+    --project-stage-one-size: var(--project-ring-1-size);
+    --project-stage-two-size: var(--project-ring-1-size);
+    --project-final-size: var(--project-ring-1-size);
 
     position: absolute;
     top: 50%;
@@ -45,18 +45,18 @@
     pointer-events: none;
 }
 
-.project-ring-one { width: var(--project-ring-one-size); }
-.project-ring-two {
-    --project-stage-two-size: var(--project-ring-two-size);
-    --project-final-size: var(--project-ring-two-size);
+.project-ring[data-ring-index="1"] { width: var(--project-ring-1-size); }
+.project-ring[data-ring-index="2"] {
+    --project-stage-two-size: var(--project-ring-2-size);
+    --project-final-size: var(--project-ring-2-size);
 
-    width: var(--project-ring-two-size);
+    width: var(--project-ring-2-size);
 }
-.project-ring-three {
-    --project-stage-two-size: var(--project-ring-two-size);
-    --project-final-size: var(--project-ring-three-size);
+.project-ring[data-ring-index="3"] {
+    --project-stage-two-size: var(--project-ring-2-size);
+    --project-final-size: var(--project-ring-3-size);
 
-    width: var(--project-ring-three-size);
+    width: var(--project-ring-3-size);
 }
 
 .project-ring::before {
@@ -82,10 +82,10 @@
 }
 
 .project-item {
-    --project-orbit-size: var(--project-ring-one-size);
-    --project-stage-one-size: var(--project-ring-one-size);
-    --project-stage-two-size: var(--project-ring-one-size);
-    --project-final-size: var(--project-ring-one-size);
+    --project-orbit-size: var(--project-ring-1-size);
+    --project-stage-one-size: var(--project-ring-1-size);
+    --project-stage-two-size: var(--project-ring-1-size);
+    --project-final-size: var(--project-ring-1-size);
 
     position: absolute;
     top: 50%;
@@ -97,15 +97,15 @@
     pointer-events: auto;
 }
 
-.project-item-ring-2 {
-    --project-orbit-size: var(--project-ring-two-size);
-    --project-stage-two-size: var(--project-ring-two-size);
-    --project-final-size: var(--project-ring-two-size);
+.project-item[data-ring-index="2"] {
+    --project-orbit-size: var(--project-ring-2-size);
+    --project-stage-two-size: var(--project-ring-2-size);
+    --project-final-size: var(--project-ring-2-size);
 }
-.project-item-ring-3 {
-    --project-orbit-size: var(--project-ring-three-size);
-    --project-stage-two-size: var(--project-ring-two-size);
-    --project-final-size: var(--project-ring-three-size);
+.project-item[data-ring-index="3"] {
+    --project-orbit-size: var(--project-ring-3-size);
+    --project-stage-two-size: var(--project-ring-2-size);
+    --project-final-size: var(--project-ring-3-size);
 }
 
 .project-content-visible .project-ring::before,

@@ -22,3 +22,21 @@ export function alignMountedSectionAnchor(restingContainer: HTMLElement) {
     if (!restingContainer.id || window.location.hash !== `#${restingContainer.id}`) return;
     window.scrollTo({ top: elementDocumentTop(restingContainer) });
 }
+
+export function scheduleMountedSectionAnchorAlignment(
+    restingContainer: HTMLElement,
+    onAligned?: () => void,
+) {
+    let alignmentFrame: number | undefined;
+    const setupFrame = window.requestAnimationFrame(() => {
+        alignmentFrame = window.requestAnimationFrame(() => {
+            alignMountedSectionAnchor(restingContainer);
+            onAligned?.();
+        });
+    });
+
+    return () => {
+        window.cancelAnimationFrame(setupFrame);
+        window.cancelAnimationFrame(alignmentFrame ?? 0);
+    };
+}

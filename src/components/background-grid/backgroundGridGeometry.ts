@@ -8,6 +8,25 @@ const SAMPLE_STEP = 24;
 const WARP_FALLOFF = 200;
 const WARP_STRENGTH = 52;
 
+export function createWarpedGridPaths(
+    width: number,
+    height: number,
+    circle: GridCircle | null,
+    spacing = 48,
+) {
+    const paths: string[] = [];
+
+    for (let x = -spacing; x <= width + spacing; x += spacing) {
+        paths.push(createLinePath(x, height, true, circle));
+    }
+
+    for (let y = -spacing; y <= height + spacing; y += spacing) {
+        paths.push(createLinePath(y, width, false, circle));
+    }
+
+    return paths;
+}
+
 function warpPoint(x: number, y: number, circle: GridCircle | null) {
     if (!circle) return [x, y];
 
@@ -34,24 +53,4 @@ function createLinePath(position: number, length: number, vertical: boolean, cir
     }
 
     return points.join(" ");
-}
-
-export function createWarpedGridPaths(
-    width: number,
-    height: number,
-    circle: GridCircle | null,
-    phase: number,
-    spacing = 48,
-) {
-    const paths: string[] = [];
-
-    for (let x = phase - spacing; x <= width + spacing; x += spacing) {
-        paths.push(createLinePath(x, height, true, circle));
-    }
-
-    for (let y = phase - spacing; y <= height + spacing; y += spacing) {
-        paths.push(createLinePath(y, width, false, circle));
-    }
-
-    return paths;
 }

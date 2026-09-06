@@ -3,10 +3,10 @@ import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
 import { education } from "../../data/education";
 import { experiences } from "../../data/experiences";
 import {
-    alignMountedSectionAnchor,
+    scheduleMountedSectionAnchorAlignment,
     sectionRestingBounds,
 } from "../../motion/sectionRestingBounds";
-import type { ImageDescriptor } from "../../types/images";
+import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import { ExperienceOrbit } from "./ExperienceOrbit";
 
 type ExperienceType = "experience" | "education";
@@ -18,16 +18,10 @@ const educationEvents = education.map(({ id, institution, qualification, ...even
     id, title: institution, subtitle: qualification, ...event,
 }));
 const eventsByType = { experience: experienceEvents, education: educationEvents };
-const eventImagePath = (type: ExperienceType, id: string) => `/${type}/${id}.jpg`;
-const eventImage = (type: ExperienceType, id: string): ImageDescriptor => ({
-    src: eventImagePath(type, id),
-    alt: "",
-    objectPosition: "center",
-});
 type ExperienceProps = {
     restingContainerRef: RefObject<HTMLDivElement | null>;
     orbitRef: RefObject<HTMLElement | null>;
-    onMainCircleImageChange: (image: ImageDescriptor | null) => void;
+    onMainCircleImageChange: MainCircleImagePublisher;
 };
 
 export function Experience({ restingContainerRef, orbitRef, onMainCircleImageChange }: ExperienceProps) {
@@ -65,18 +59,14 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
             }
         };
 
-        let alignmentFrame: number | undefined;
-        const animationFrame = window.requestAnimationFrame(() => {
-            alignmentFrame = window.requestAnimationFrame(() => {
-                alignMountedSectionAnchor(restingContainer);
-                updateContentVisibility();
-            });
-        });
+        const cancelAnchorAlignment = scheduleMountedSectionAnchorAlignment(
+            restingContainer,
+            updateContentVisibility,
+        );
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
         return () => {
-            window.cancelAnimationFrame(animationFrame);
-            window.cancelAnimationFrame(alignmentFrame ?? 0);
+            cancelAnchorAlignment();
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
@@ -162,4 +152,16 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
             />
         </section>
     );
+}
+
+function eventImagePath(type: ExperienceType, id: string) {
+    return `/${type}/${id}.jpg`;
+}
+
+function eventImage(type: ExperienceType, id: string): ImageDescriptor {
+    return {
+        src: eventImagePath(type, id),
+        alt: "",
+        objectPosition: "center",
+    };
 }

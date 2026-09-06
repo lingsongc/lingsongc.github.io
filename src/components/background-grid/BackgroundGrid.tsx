@@ -41,7 +41,7 @@ export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
 
                 if (signature !== lastSignature) {
                     lastSignature = signature;
-                    const pathData = createWarpedGridPaths(innerWidth, innerHeight, circle, 0, GRID_SPACING);
+                    const pathData = createWarpedGridPaths(innerWidth, innerHeight, circle, GRID_SPACING);
 
                     while (pathElements.length < pathData.length) {
                         const path = document.createElementNS(SVG_NAMESPACE, "path");

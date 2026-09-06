@@ -1,6 +1,6 @@
 import { useEffect, useRef, type RefObject } from "react";
 import { homeDetails } from "../../data/about";
-import type { ImageDescriptor } from "../../types/images";
+import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 
 const homeImage: ImageDescriptor = {
     src: "/about/profile.jpeg",
@@ -10,7 +10,7 @@ const homeImage: ImageDescriptor = {
 
 type HomeProps = {
     sectionRef: RefObject<HTMLElement | null>;
-    onMainCircleImageChange: (image: ImageDescriptor | null) => void;
+    onMainCircleImageChange: MainCircleImagePublisher;
 };
 
 export function Home({ sectionRef, onMainCircleImageChange }: HomeProps) {

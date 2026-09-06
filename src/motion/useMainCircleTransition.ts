@@ -9,16 +9,6 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const mainCircleTimelineDefaults = { duration: 1, ease: "none" };
 
-function mainCircleTransitionScroll(incomingSection: HTMLElement) {
-    return {
-        trigger: incomingSection,
-        start: () => elementDocumentTop(incomingSection) - window.innerHeight,
-        end: () => elementDocumentTop(incomingSection),
-        scrub: true,
-        invalidateOnRefresh: true,
-    };
-}
-
 export function useMainCircleTransition(
     circleRef: RefObject<HTMLDivElement | null>,
     transitions: readonly MainCircleTransition[],
@@ -56,4 +46,14 @@ export function useMainCircleTransition(
             });
         };
     }, [transitions]);
+}
+
+function mainCircleTransitionScroll(incomingSection: HTMLElement) {
+    return {
+        trigger: incomingSection,
+        start: () => elementDocumentTop(incomingSection) - window.innerHeight,
+        end: () => elementDocumentTop(incomingSection),
+        scrub: true,
+        invalidateOnRefresh: true,
+    };
 }

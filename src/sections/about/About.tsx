@@ -1,7 +1,10 @@
 import { useEffect, useState, type RefObject } from "react";
 import { aboutDetails } from "../../data/about";
-import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
-import type { ImageDescriptor } from "../../types/images";
+import {
+    scheduleMountedSectionAnchorAlignment,
+    sectionRestingBounds,
+} from "../../motion/sectionRestingBounds";
+import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 
 const aboutImage: ImageDescriptor = {
     src: "/about/profile-2.jpg",
@@ -12,7 +15,7 @@ const aboutImage: ImageDescriptor = {
 
 type AboutProps = {
     restingContainerRef: RefObject<HTMLDivElement | null>;
-    onMainCircleImageChange: (image: ImageDescriptor | null) => void;
+    onMainCircleImageChange: MainCircleImagePublisher;
 };
 
 export function About({ restingContainerRef, onMainCircleImageChange }: AboutProps) {
@@ -33,13 +36,16 @@ export function About({ restingContainerRef, onMainCircleImageChange }: AboutPro
             onMainCircleImageChange(shouldShow ? aboutImage : null);
         };
 
-        const animationFrame = window.requestAnimationFrame(updateContentVisibility);
+        const cancelAnchorAlignment = scheduleMountedSectionAnchorAlignment(
+            restingContainer,
+            updateContentVisibility,
+        );
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
         updateContentVisibility();
 
         return () => {
-            window.cancelAnimationFrame(animationFrame);
+            cancelAnchorAlignment();
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
@@ -47,7 +53,6 @@ export function About({ restingContainerRef, onMainCircleImageChange }: AboutPro
 
     return (
         <section
-            id="about"
             className={`about-container${contentVisible ? " about-content-visible" : ""}`}
             aria-labelledby="about-title"
         >
