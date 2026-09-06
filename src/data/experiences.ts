@@ -1,3 +1,4 @@
+// Defines the work and service records.
 export type Experience = {
     id: string;
     organisation: string;

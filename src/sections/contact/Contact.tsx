@@ -36,6 +36,7 @@ const contactProfiles = [
 
 const contactProfilesById = new Map(contactProfiles.map((profile) => [profile.id, profile]));
 
+// Renders Contact content and animates its profile links out from the main circle.
 export function Contact({ sectionRef }: ContactProps) {
     const orbitRef = useRef<HTMLDivElement>(null);
     const blobLayerRef = useRef<HTMLDivElement>(null);
@@ -53,11 +54,17 @@ export function Contact({ sectionRef }: ContactProps) {
         const splitElements = [...satelliteRefs.current, ...linkRefs.current]
             .filter((element): element is HTMLElement => element !== null);
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        
+        // Finds the shared profile settings for a rendered link or shape.
         const contactProfile = (element: HTMLElement) => (
             contactProfilesById.get(element.dataset.contactLink as typeof contactProfiles[number]["id"])
         );
+        
+        // Calculates a profile's final offset from the center of the orbit.
         const contactOffset = (element: HTMLElement, axis: 0 | 1) =>
             (contactProfile(element)?.offset[axis] ?? 0) * orbit.offsetWidth;
+        
+        // Places each profile fully inside the circle before it moves outward.
         const contactInitialOffset = (element: HTMLElement, axis: 0 | 1) => {
             const profile = contactProfile(element);
             const direction = profile?.offset ?? [0, 0];

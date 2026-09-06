@@ -2,10 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
 import { education } from "../../data/education";
 import { experiences } from "../../data/experiences";
-import {
-    scheduleMountedSectionAnchorAlignment,
-    sectionRestingBounds,
-} from "../../motion/sectionRestingBounds";
+import { scheduleMountedSectionAnchorAlignment, sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import { ExperienceOrbit } from "./ExperienceOrbit";
 
@@ -24,6 +21,7 @@ type ExperienceProps = {
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
+// Coordinates the shared Experience and Education timeline, content, and image.
 export function Experience({ restingContainerRef, orbitRef, onMainCircleImageChange }: ExperienceProps) {
     const imageVisibleRef = useRef(false);
     const activeImageRef = useRef<ImageDescriptor | null>(null);
@@ -45,6 +43,8 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
         const restingContainer = restingContainerRef.current;
         if (!restingContainer) return;
         let contentVisible = false;
+
+        // Keeps timeline visibility and its main-circle image aligned with scrolling.
         const updateContentVisibility = () => {
             const { start, end } = sectionRestingBounds(restingContainer);
             const shouldShow = window.scrollY >= start && window.scrollY <= end;
@@ -72,6 +72,7 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
         };
     }, [onMainCircleImageChange, restingContainerRef]);
 
+    // Selects a timeline event while preserving each timeline's last selection.
     const activateEvent = (index: number) => {
         const event = activeEvents[index];
         if (!event || event.id === activeEvent.id) return;
@@ -114,6 +115,7 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
                         </div>
                     </div>
                 </header>
+                
                 <div className="experience-content-region">
                     <article className="experience-text">
                         <h3 className="experience-event-title">{activeEvent.title}</h3>
@@ -139,6 +141,7 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
                     </article>
                 </div>
             </div>
+
             <ExperienceOrbit
                 activeEntryId={activeEvent.id}
                 contentVisible={contentVisible}
@@ -154,10 +157,12 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
     );
 }
 
+// Builds the public image path for a timeline entry.
 function eventImagePath(type: ExperienceType, id: string) {
     return `/${type}/${id}.jpg`;
 }
 
+// Creates the image data published to the main circle.
 function eventImage(type: ExperienceType, id: string): ImageDescriptor {
     return {
         src: eventImagePath(type, id),

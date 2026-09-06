@@ -4,6 +4,7 @@ import { ModuloPage } from "./pages/ModuloPage";
 import { PneuReliefPage } from "./pages/PneuReliefPage";
 import "./styles/index.css";
 
+// Starts the project page selected by the current HTML entry.
 const projectPages: Record<string, ComponentType> = {
     modulo: ModuloPage,
     pneurelief: PneuReliefPage,

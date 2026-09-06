@@ -25,6 +25,7 @@ type ExperienceOrbitProps = {
     onReady: () => void;
 };
 
+// Renders and controls the circular selector for timeline entries.
 export function ExperienceOrbit({
     activeEntryId,
     contentVisible,
@@ -47,6 +48,7 @@ export function ExperienceOrbit({
     interactiveRef.current = interactive;
     activateRef.current = onEntrySelect;
 
+    // Activates an entry and scrolls its hidden snap area to the same position.
     const selectEntry = (index: number) => {
         if (!interactiveRef.current || !entries[index]) return;
         targetIndexRef.current = index;
@@ -66,6 +68,7 @@ export function ExperienceOrbit({
     useEffect(() => {
         const scrollArea = scrollRef.current;
         if (!scrollArea) return;
+        // Moves between entries, then returns wheel control to the page at either end.
         const handleWheel = (event: WheelEvent) => {
             if (!interactiveRef.current || event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
             const direction = event.deltaY < 0 ? -1 : 1;
@@ -78,6 +81,7 @@ export function ExperienceOrbit({
             }
             selectRef.current(targetIndexRef.current + direction);
         };
+        // Selects the nearest entry after native scrolling finishes.
         const syncTargetIndex = () => {
             if (!interactiveRef.current) return;
             const nextIndex = Math.round(scrollArea.scrollTop / experienceOrbitGeometry.scrollStep);
@@ -92,6 +96,7 @@ export function ExperienceOrbit({
         };
     }, [entries.length]);
 
+    // Rendering this layer at page level lets planets pass in front of the main circle.
     const planetLayer = (
         <div
             className={`experience-orbit-planets${contentVisible ? " experience-orbit-planets-visible" : ""}${interactive ? " experience-orbit-planets-ready" : ""}`}

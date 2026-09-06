@@ -1,3 +1,4 @@
+// Returns an element's vertical position within the full document.
 export function elementDocumentTop(element: HTMLElement) {
     let top = 0;
     let current: HTMLElement | null = element;
@@ -10,6 +11,7 @@ export function elementDocumentTop(element: HTMLElement) {
     return top;
 }
 
+// Calculates the scroll range where a section remains at rest.
 export function sectionRestingBounds(restingContainer: HTMLElement) {
     const start = elementDocumentTop(restingContainer);
     return {
@@ -18,11 +20,13 @@ export function sectionRestingBounds(restingContainer: HTMLElement) {
     };
 }
 
+// Aligns a directly linked section with its resting position.
 export function alignMountedSectionAnchor(restingContainer: HTMLElement) {
     if (!restingContainer.id || window.location.hash !== `#${restingContainer.id}`) return;
     window.scrollTo({ top: elementDocumentTop(restingContainer) });
 }
 
+// Waits for layout to settle before aligning a directly linked section.
 export function scheduleMountedSectionAnchorAlignment(
     restingContainer: HTMLElement,
     onAligned?: () => void,

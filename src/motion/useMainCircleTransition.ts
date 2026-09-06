@@ -9,6 +9,7 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 const mainCircleTimelineDefaults = { duration: 1, ease: "none" };
 
+// Moves and resizes the main circle as each section enters its resting position.
 export function useMainCircleTransition(
     circleRef: RefObject<HTMLDivElement | null>,
     transitions: readonly MainCircleTransition[],
@@ -19,6 +20,7 @@ export function useMainCircleTransition(
 
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         const timelines: gsap.core.Timeline[] = [];
+        
         const setupFrame = window.requestAnimationFrame(() => {
             transitions.forEach(({ target, geometry }) => {
                 const targetElement = target.current;
@@ -29,6 +31,7 @@ export function useMainCircleTransition(
                     scrollTrigger: {
                         ...mainCircleTransitionScroll(targetElement),
                         onUpdate: (self) => {
+                            // Reduced motion switches between endpoints instead of scrubbing continuously.
                             if (reducedMotion) self.animation?.progress(self.progress < 0.5 ? 0 : 1);
                         },
                     },
@@ -48,6 +51,7 @@ export function useMainCircleTransition(
     }, [transitions]);
 }
 
+// Defines the scroll range for one incoming section handoff.
 function mainCircleTransitionScroll(incomingSection: HTMLElement) {
     return {
         trigger: incomingSection,

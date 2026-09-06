@@ -6,6 +6,7 @@ import { navigationSections, type SectionId } from "./navigationSections";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
+// Tracks the section currently resting near the top of the viewport.
 export function useNavigationActiveSection() {
     const [activeSection, setActiveSection] = useState<SectionId>("home");
 
@@ -17,6 +18,7 @@ export function useNavigationActiveSection() {
             section.element !== null
         ));
 
+        // Selects the last section that has crossed the page's resting line.
         const updateActiveSection = () => {
             const restingLine = 2 * Number.parseFloat(
                 getComputedStyle(document.documentElement).fontSize,
@@ -29,6 +31,7 @@ export function useNavigationActiveSection() {
                 }
             }
 
+            // Ensures the final section becomes active at the bottom of the page.
             if (window.scrollY + window.innerHeight >= document.documentElement.scrollHeight - 1) {
                 currentSection = sectionElements.at(-1)?.id ?? currentSection;
             }

@@ -1,9 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import { aboutDetails } from "../../data/about";
-import {
-    scheduleMountedSectionAnchorAlignment,
-    sectionRestingBounds,
-} from "../../motion/sectionRestingBounds";
+import { scheduleMountedSectionAnchorAlignment, sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 
 const aboutImage: ImageDescriptor = {
@@ -18,6 +15,7 @@ type AboutProps = {
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
+// Reveals the About content and publishes its image during the resting interval.
 export function About({ restingContainerRef, onMainCircleImageChange }: AboutProps) {
     const [contentVisible, setContentVisible] = useState(false);
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
@@ -27,6 +25,7 @@ export function About({ restingContainerRef, onMainCircleImageChange }: AboutPro
         if (!restingContainer) return;
         let currentVisibility = false;
 
+        // Keeps the content and main-circle image in sync with the section bounds.
         const updateContentVisibility = () => {
             const { start, end } = sectionRestingBounds(restingContainer);
             const shouldShow = window.scrollY >= start && window.scrollY < end;

@@ -1,6 +1,7 @@
 import type gsap from "gsap";
 import type { RefObject } from "react";
 
+// Defines the shared geometry and transition contracts for the main circle.
 export type MainCircleGeometryValue = string | number | (() => string | number);
 
 export type MainCircleGeometry = gsap.TweenVars & {

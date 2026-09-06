@@ -17,6 +17,7 @@ type ProjectOrbitProps = {
     onProjectSelect: (project: Project) => void;
 };
 
+// Renders project controls across three rings and keeps them inside the viewport.
 export function ProjectOrbit({
     activeProjectId,
     projects,
@@ -32,6 +33,7 @@ export function ProjectOrbit({
         const orbit = orbitRef.current;
         if (!orbit) return;
 
+        // Recalculates safe planet angles after the orbit changes size.
         const positionPlanets = () => {
             projects.forEach((project, index) => {
                 const ringIndex = index % PROJECT_RING_COUNT;

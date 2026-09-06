@@ -8,6 +8,7 @@ const SAMPLE_STEP = 24;
 const WARP_FALLOFF = 200;
 const WARP_STRENGTH = 52;
 
+// Builds the vertical and horizontal SVG paths for the warped background grid.
 export function createWarpedGridPaths(
     width: number,
     height: number,
@@ -27,6 +28,7 @@ export function createWarpedGridPaths(
     return paths;
 }
 
+// Pushes one grid point away from the circle with a smooth distance falloff.
 function warpPoint(x: number, y: number, circle: GridCircle | null) {
     if (!circle) return [x, y];
 
@@ -44,6 +46,7 @@ function warpPoint(x: number, y: number, circle: GridCircle | null) {
     ];
 }
 
+// Converts sampled points along one grid line into an SVG path.
 function createLinePath(position: number, length: number, vertical: boolean, circle: GridCircle | null) {
     const points: string[] = [];
 

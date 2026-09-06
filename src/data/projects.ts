@@ -1,3 +1,4 @@
+// Defines the projects.
 export type Project = {
     id: string;
     name: string;
@@ -20,6 +21,7 @@ export const projects: Project[] = [
     }
 ];
 
+// Returns the project with the requested ID or reports missing content.
 export function projectById(id: string) {
     const project = projects.find((candidate) => candidate.id === id);
     if (!project) throw new Error(`Project data was not found for ${id}.`);

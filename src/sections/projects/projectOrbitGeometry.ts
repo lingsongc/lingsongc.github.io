@@ -5,6 +5,7 @@ export type ProjectPlanetStyle = CSSProperties & {
     "--project-angle-inverse": string;
 };
 
+// Gives each project a stable angle with a small ID-based variation.
 export function projectOrbitAngle(id: string, index: number, projectCount: number) {
     const separation = 360 / projectCount;
     const jitterLimit = Math.min(18, separation * 0.2);
@@ -16,6 +17,7 @@ export function projectOrbitAngle(id: string, index: number, projectCount: numbe
     return 90 + index * separation + jitter;
 }
 
+// Adjusts an angle when its planet would extend beyond the viewport.
 export function fitProjectAngleToViewport(
     angle: number,
     radius: number,

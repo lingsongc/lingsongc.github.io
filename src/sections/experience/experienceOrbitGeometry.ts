@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 
+// Defines the shared ellipse measurements used by the timeline and its overlay.
 export const experienceOrbitGeometry = {
     viewBoxWidth: 360,
     viewBoxHeight: 100,
@@ -37,6 +38,7 @@ export const experienceOrbitSectionStyles = {
     "--experience-ellipse-render-width": `calc(var(--experience-circle-size) * ${experienceOrbitGeometry.widthScale})`,
 } as CSSProperties;
 
+// Converts an orbit angle into percentage-based screen coordinates.
 export function experienceOrbitPoint(angle: number) {
     const radians = angle * Math.PI / 180;
     return {
@@ -45,6 +47,7 @@ export function experienceOrbitPoint(angle: number) {
     };
 }
 
+// Checks whether an orbit point belongs in the visible selector window.
 export function experienceOrbitPointIsVisible(angle: number) {
     const halfStep = experienceOrbitGeometry.angleStep / 2;
     const minimum = experienceOrbitGeometry.focusAngle

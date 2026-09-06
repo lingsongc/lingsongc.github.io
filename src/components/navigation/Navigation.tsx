@@ -8,6 +8,7 @@ type NavigationProps = {
     railRef: RefObject<HTMLDivElement | null>;
 };
 
+// Renders the persistent section navigation and its matching visual rail.
 export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationProps) {
     const currentYear = new Date().getFullYear();
     const activeSection = useNavigationActiveSection();
@@ -16,6 +17,7 @@ export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationP
 
     useEffect(() => setTouchLabel(null), [activeSection]);
 
+    // Reveals a label on the first touch, then follows the link on the second.
     const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
         const usesTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
@@ -29,9 +31,11 @@ export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationP
         <>
             <div ref={railRef} className="navigation-rail">
                 <span className="navigation-rail-slot" aria-hidden="true" />
+
                 <small ref={copyrightRef} className="navigation-copyright">
                     Copyright © {currentYear} Chen Ling Song. All Rights Reserved.
                 </small>
+                
                 <div className="navigation-rail-links" aria-hidden="true">
                     {visibleSections.map((section) => (
                         <span className="navigation-rail-slot" key={section.id} />

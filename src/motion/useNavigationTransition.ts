@@ -11,17 +11,20 @@ type NavigationTransitionRefs = {
     homeRef: RefObject<HTMLElement | null>;
 };
 
+// Coordinates the Home exit with the delayed navigation rail entrance and return.
 export function useNavigationTransition({ navigationRef, copyrightRef, homeRef }: NavigationTransitionRefs) {
     useGSAP(() => {
         const navigation = navigationRef.current;
         const copyright = copyrightRef.current;
         const home = homeRef.current;
+        
         if (!navigation || !home) return;
 
         const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         let railExitTimer: number | undefined;
         let homeEnterTimer: number | undefined;
 
+        // Cancels an unfinished return sequence before applying a new state.
         const clearReturnTimers = () => {
             window.clearTimeout(railExitTimer);
             window.clearTimeout(homeEnterTimer);
@@ -29,6 +32,7 @@ export function useNavigationTransition({ navigationRef, copyrightRef, homeRef }
             homeEnterTimer = undefined;
         };
 
+        // Restores the navigation controls to their Home positions immediately.
         const showHome = () => {
             clearReturnTimers();
             navigation.classList.remove("navigation-docked", "navigation-effects-ready", "navigation-rail-exiting", "navigation-home-entering");
@@ -38,6 +42,7 @@ export function useNavigationTransition({ navigationRef, copyrightRef, homeRef }
             copyright?.classList.remove("navigation-copyright-visible", "navigation-copyright-exiting");
         };
 
+        // Hides the rail before restoring the Home controls in two timed stages.
         const startHomeReturn = () => {
             if (railExitTimer !== undefined || homeEnterTimer !== undefined) return;
 
@@ -61,6 +66,7 @@ export function useNavigationTransition({ navigationRef, copyrightRef, homeRef }
             }, 250);
         };
 
+        // Chooses the Home or docked navigation state from the current scroll position.
         const updateNavigationPosition = () => {
             const isDocked = window.scrollY > 0;
             if (!isDocked) {

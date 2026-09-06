@@ -8,6 +8,7 @@ type ProjectPageLayoutProps = {
     children: ReactNode;
 };
 
+// Renders the shared reading layout used by every project detail page.
 export function ProjectPageLayout({ project, children }: ProjectPageLayoutProps) {
     return (
         <>

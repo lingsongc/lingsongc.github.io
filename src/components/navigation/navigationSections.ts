@@ -1,3 +1,4 @@
+// Defines the ordered sections shared by navigation rendering and tracking.
 export const navigationSections = [
     { id: "home", label: "Home" },
     { id: "about", label: "About" },

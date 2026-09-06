@@ -1,3 +1,4 @@
+// Defines the education records.
 export type Education = {
     id: string;
     institution: string;

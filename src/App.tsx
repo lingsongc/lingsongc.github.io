@@ -18,6 +18,7 @@ type MainCircleImageState = {
     image: ImageDescriptor | null;
 };
 
+// Composes the portfolio sections and coordinates the persistent main circle.
 export default function App() {
     const mainCircleRef = useRef<HTMLDivElement>(null);
     const homeSectionRef = useRef<HTMLElement>(null);
@@ -31,16 +32,22 @@ export default function App() {
     const navigationCopyrightRef = useRef<HTMLElement>(null);
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const [mainCircleImage, setMainCircleImage] = useState<MainCircleImageState>({ owner: null, image: null });
+    
+    // Prevents one section from clearing an image supplied by another section.
     const publishMainCircleImage = useCallback((owner: Exclude<MainCircleImageState["owner"], null>, image: ImageDescriptor | null) => {
         setMainCircleImage((current) => {
             if (image) return { owner, image };
             return current.owner === owner ? { owner: null, image: null } : current;
         });
     }, []);
+    
+    // Gives each section a simple publisher without exposing the shared owner state.
     const publishHomeImage = useCallback((image: ImageDescriptor | null) => publishMainCircleImage("home", image), [publishMainCircleImage]);
     const publishAboutImage = useCallback((image: ImageDescriptor | null) => publishMainCircleImage("about", image), [publishMainCircleImage]);
     const publishExperienceImage = useCallback((image: ImageDescriptor | null) => publishMainCircleImage("experience", image), [publishMainCircleImage]);
     const publishProjectImage = useCallback((image: ImageDescriptor | null) => publishMainCircleImage("projects", image), [publishMainCircleImage]);
+    
+    // Maps each resting section to the circle geometry it should receive.
     const mainCircleTransitions = useMemo<readonly MainCircleTransition[]>(() => {
         return [
             {
@@ -95,20 +102,25 @@ export default function App() {
     return (
         <>
             <BackgroundGrid warpTargetRef={mainCircleRef} />
+
             <Navigation
                 copyrightRef={navigationCopyrightRef}
                 navigationRef={navigationRef}
                 railRef={navigationRailRef}
             />
+
             <main>
                 <MainCircle circleRef={mainCircleRef} image={mainCircleImage.image} transitions={mainCircleTransitions} />
+                
                 <Home sectionRef={homeSectionRef} onMainCircleImageChange={publishHomeImage} />
+                
                 <SectionRestingContainer containerRef={aboutRestingContainerRef} id="about">
                     <About
                         restingContainerRef={aboutRestingContainerRef}
                         onMainCircleImageChange={publishAboutImage}
                     />
                 </SectionRestingContainer>
+                
                 <SectionRestingContainer containerRef={experienceRestingContainerRef} id="experience">
                     <Experience
                         restingContainerRef={experienceRestingContainerRef}
@@ -116,39 +128,46 @@ export default function App() {
                         onMainCircleImageChange={publishExperienceImage}
                     />
                 </SectionRestingContainer>
+                
                 <SectionRestingContainer containerRef={projectsRestingContainerRef} id="projects">
                     <Projects
                         restingContainerRef={projectsRestingContainerRef}
                         onMainCircleImageChange={publishProjectImage}
                     />
                 </SectionRestingContainer>
+                
                 <SectionRestingContainer containerRef={skillsRestingContainerRef} id="skills">
                     <Skills restingContainerRef={skillsRestingContainerRef} />
                 </SectionRestingContainer>
+                
                 <Contact sectionRef={contactSectionRef} />
             </main>
         </>
     );
 }
 
+// Calculates the About circle size for the current viewport.
 function getAboutCircleSize() {
     return window.innerWidth <= 768
         ? window.innerWidth * 0.95
         : window.innerHeight * 1.6;
 }
 
+// Calculates the Experience circle size for the current viewport.
 function getExperienceCircleSize() {
     return window.innerWidth <= 768
         ? window.innerWidth * 0.78
         : Math.min(window.innerWidth * 0.465, window.innerHeight * 0.69);
 }
 
+// Calculates the Projects circle size for the current viewport.
 function getProjectCircleSize() {
     return window.innerWidth <= 768
         ? window.innerWidth * 0.576
         : Math.min(window.innerWidth * 0.384, window.innerHeight * 0.544);
 }
 
+// Calculates the Skills circle size from the viewport's shorter edge.
 function getSkillsCircleSize() {
     return Math.min(window.innerWidth, window.innerHeight) * 0.9;
 }

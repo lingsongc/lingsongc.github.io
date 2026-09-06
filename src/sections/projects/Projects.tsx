@@ -2,10 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../../data/projects";
-import {
-    scheduleMountedSectionAnchorAlignment,
-    sectionRestingBounds,
-} from "../../motion/sectionRestingBounds";
+import { scheduleMountedSectionAnchorAlignment, sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import { ProjectOrbit, type ProjectOrbitTransitionState } from "./ProjectOrbit";
 
@@ -14,6 +11,7 @@ type ProjectsProps = {
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
+// Coordinates project selection, orbit visibility, and the main-circle image.
 export function Projects({ restingContainerRef, onMainCircleImageChange }: ProjectsProps) {
     const imageVisibleRef = useRef(false);
     const activeProjectRef = useRef(projects[0]);
@@ -27,6 +25,7 @@ export function Projects({ restingContainerRef, onMainCircleImageChange }: Proje
         if (!restingContainer) return;
 
         let contentVisible = false;
+        // Keeps project content and its image visible only at the resting position.
         const updateContentVisibility = () => {
             const { start, end } = sectionRestingBounds(restingContainer);
             const shouldShow = window.scrollY >= start && window.scrollY <= end;
@@ -50,6 +49,7 @@ export function Projects({ restingContainerRef, onMainCircleImageChange }: Proje
         };
     }, [onMainCircleImageChange, restingContainerRef]);
 
+    // Selects a project and updates the image when the section is visible.
     const selectProject = (project: Project) => {
         setActiveProjectId(project.id);
         if (imageVisibleRef.current) onMainCircleImageChange(projectImage(project));
@@ -84,6 +84,7 @@ export function Projects({ restingContainerRef, onMainCircleImageChange }: Proje
     );
 }
 
+// Creates the image data published for a selected project.
 function projectImage(project: Project): ImageDescriptor {
     return {
         src: `/projects/${project.id}.png`,

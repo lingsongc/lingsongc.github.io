@@ -9,6 +9,7 @@ type MainCircleProps = {
     transitions: readonly MainCircleTransition[];
 };
 
+// Displays the current image and moves its circular frame between sections.
 export function MainCircle({ circleRef, image, transitions }: MainCircleProps) {
     useMainCircleTransition(circleRef, transitions);
 

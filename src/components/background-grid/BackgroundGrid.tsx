@@ -8,6 +8,7 @@ type BackgroundGridProps = {
     warpTargetRef?: RefObject<HTMLElement | null>;
 };
 
+// Renders a fixed SVG grid that bends and fades around the main circle.
 export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
     const linesRef = useRef<SVGGElement>(null);
     const fadeCircleRef = useRef<SVGCircleElement>(null);
@@ -23,6 +24,7 @@ export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
         let animationFrame = 0;
         let lastSignature = "";
 
+        // Updates the grid only when the viewport or circle geometry changes.
         const render = () => {
             if (!document.hidden) {
                 const warpTarget = warpTargetRef?.current;
@@ -39,6 +41,7 @@ export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
                     : "static";
                 const signature = `${innerWidth}:${innerHeight}:${circleSignature}`;
 
+                // Avoids rewriting every SVG path on unchanged animation frames.
                 if (signature !== lastSignature) {
                     lastSignature = signature;
                     const pathData = createWarpedGridPaths(innerWidth, innerHeight, circle, GRID_SPACING);
@@ -74,11 +77,13 @@ export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
                 <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
                     <feGaussianBlur stdDeviation="32" />
                 </filter>
+
                 <mask id={maskId} maskUnits="userSpaceOnUse">
                     <rect width="100%" height="100%" fill="white" />
                     <circle ref={fadeCircleRef} fill="black" filter={`url(#${filterId})`} />
                 </mask>
             </defs>
+            
             <g ref={linesRef} className="background-grid-lines" mask={`url(#${maskId})`} />
         </svg>
     );

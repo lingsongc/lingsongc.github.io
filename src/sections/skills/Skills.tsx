@@ -21,6 +21,7 @@ const skillGroups = skills.reduce<SkillGroup[]>((groups, skill) => {
     return groups;
 }, []);
 
+// Renders the complete skill list grouped by category.
 export function Skills({ restingContainerRef }: SkillsProps) {
     useEffect(() => {
         const restingContainer = restingContainerRef.current;
@@ -53,6 +54,7 @@ export function Skills({ restingContainerRef }: SkillsProps) {
     );
 }
 
+// Converts a category name into a stable heading ID.
 function skillCategoryId(category: string) {
     return `skill-${category.toLowerCase().replaceAll(" ", "-")}`;
 }

@@ -13,6 +13,7 @@ type HomeProps = {
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
+// Renders the Home introduction and publishes its image at the top of the page.
 export function Home({ sectionRef, onMainCircleImageChange }: HomeProps) {
     const imageVisibleRef = useRef<boolean | null>(null);
     const leftName = homeDetails.name.isWestern
@@ -23,6 +24,7 @@ export function Home({ sectionRef, onMainCircleImageChange }: HomeProps) {
         : homeDetails.name.firstName;
 
     useEffect(() => {
+        // Removes the Home image as soon as another section can take ownership.
         const updateImage = () => {
             const shouldShow = window.scrollY === 0;
             if (shouldShow === imageVisibleRef.current) return;
