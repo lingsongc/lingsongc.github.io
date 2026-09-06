@@ -1,3 +1,4 @@
+// Defines the categorized skills displayed in the Skills section.
 export type Skill = {
     name: string;
     category: string;

@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { IconArrowLeft } from "@tabler/icons-react";
-import { BackgroundGrid } from "../components/BackgroundGrid";
+import { BackgroundGrid } from "../components/background-grid/BackgroundGrid";
 import type { Project } from "../data/projects";
 
 type ProjectPageLayoutProps = {
@@ -8,6 +8,7 @@ type ProjectPageLayoutProps = {
     children: ReactNode;
 };
 
+// Renders the shared reading layout used by every project detail page.
 export function ProjectPageLayout({ project, children }: ProjectPageLayoutProps) {
     return (
         <>

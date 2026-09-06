@@ -20,10 +20,14 @@
     --text-subtitle: clamp(1.25rem, 2.5vw, 2rem);
     --text-body: clamp(1rem, min(1.25vw, 2.1vh), 1.25rem);
     --text-small: 0.875rem;
+    --body-font-weight: 500;
+    --body-line-height: 1.5;
 
+    --section-padding-inline: clamp(1.5rem, 6vw, 6rem);
     --home-circle-size: clamp(8rem, 28vw, 22rem);
     --home-ring-size: calc(var(--home-circle-size) + 10rem);
     --orbit-ring-width: 0.25rem;
+    --icon-stroke-width: 1.75;
     --navigation-button-size: 1.25rem;
     --navigation-link-size: 2.75rem;
     --navigation-link-gap: 0.25rem;

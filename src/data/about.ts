@@ -1,3 +1,4 @@
+// Stores the content displayed in the Home and About sections.
 type Name = {
     fullName: string;
     firstName: string;

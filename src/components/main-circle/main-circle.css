@@ -1,0 +1,29 @@
+/* main circle */
+
+.main-circle-container {
+    position: fixed;
+    z-index: 2;
+    top: 50%;
+    left: 50%;
+    width: var(--home-circle-size);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+}
+
+.main-circle-mask {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    border-radius: inherit;
+    background-color: var(--colour-image-blank);
+}
+
+.main-circle-image {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}

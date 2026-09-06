@@ -1,0 +1,56 @@
+.project-detail-page {
+    min-height: 100vh;
+    min-height: 100svh;
+    padding: clamp(1.5rem, 5vw, 5rem);
+}
+
+.project-detail-back {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
+}
+
+.project-detail-back svg {
+    width: 1.25rem;
+    height: 1.25rem;
+    stroke-width: var(--icon-stroke-width);
+}
+
+.project-detail-content {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    max-width: 60rem;
+    gap: 1.5rem;
+    margin: clamp(3rem, 8vh, 7rem) auto 0;
+}
+
+.project-detail-content h1 {
+    color: var(--colour-accent);
+}
+
+.project-detail-content section {
+    display: grid;
+    gap: 0.75rem;
+    padding-top: 1.5rem;
+}
+
+.project-detail-content h2 {
+    font-size: var(--text-subtitle);
+}
+
+.project-detail-label {
+    color: var(--colour-text-muted);
+    font-size: var(--text-small);
+    text-transform: uppercase;
+}
+
+.project-detail-image {
+    width: clamp(8rem, 20vw, 14rem);
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+}
