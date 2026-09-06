@@ -2,7 +2,6 @@ import { useRef, type RefObject } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { scheduleMountedSectionAnchorAlignment } from "../../motion/sectionRestingBounds";
 import { contactFinalOffset, contactInitialOffset } from "./contactGeometry";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
@@ -107,15 +106,7 @@ export function Contact({ sectionRef }: ContactProps) {
             },
         });
 
-        const cancelAnchorAlignment = scheduleMountedSectionAnchorAlignment(section, () => {
-            splitTrigger.refresh();
-            if (splitTrigger.isActive || section.getBoundingClientRect().top <= 1) {
-                splitTimeline.progress(1);
-            }
-        });
-
         return () => {
-            cancelAnchorAlignment();
             splitTrigger.kill();
             splitTimeline.kill();
         };

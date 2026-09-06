@@ -5,11 +5,12 @@ import { useNavigationActiveSection } from "./useNavigationActiveSection";
 type NavigationProps = {
     copyrightRef: RefObject<HTMLElement | null>;
     navigationRef: RefObject<HTMLElement | null>;
+    onSectionNavigate: (sectionId: string) => void;
     railRef: RefObject<HTMLDivElement | null>;
 };
 
 // Renders the persistent section navigation and its matching visual rail.
-export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationProps) {
+export function Navigation({ copyrightRef, navigationRef, onSectionNavigate, railRef }: NavigationProps) {
     const currentYear = new Date().getFullYear();
     const activeSection = useNavigationActiveSection();
     const [touchLabel, setTouchLabel] = useState<string | null>(null);
@@ -21,10 +22,12 @@ export function Navigation({ copyrightRef, navigationRef, railRef }: NavigationP
     const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
         const usesTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
-        if (!usesTouch || event.detail === 0 || touchLabel === sectionId) return;
-
-        event.preventDefault();
-        setTouchLabel(sectionId);
+        if (usesTouch && event.detail !== 0 && touchLabel !== sectionId) {
+            event.preventDefault();
+            setTouchLabel(sectionId);
+            return;
+        }
+        onSectionNavigate(sectionId);
     };
 
     return (

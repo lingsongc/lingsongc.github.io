@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { createPortal } from "react-dom";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../../data/projects";
-import { scheduleMountedSectionAnchorAlignment, sectionRestingBounds } from "../../motion/sectionRestingBounds";
+import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import { ProjectOrbit, type ProjectOrbitTransitionState } from "./ProjectOrbit";
 
@@ -36,14 +36,10 @@ export function Projects({ restingContainerRef, onMainCircleImageChange }: Proje
             onMainCircleImageChange(shouldShow ? projectImage(activeProjectRef.current) : null);
         };
 
-        const cancelAnchorAlignment = scheduleMountedSectionAnchorAlignment(
-            restingContainer,
-            updateContentVisibility,
-        );
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
+        updateContentVisibility();
         return () => {
-            cancelAnchorAlignment();
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };

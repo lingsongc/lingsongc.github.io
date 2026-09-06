@@ -1,10 +1,4 @@
-import { useEffect, type RefObject } from "react";
 import { skills } from "../../data/skills";
-import { scheduleMountedSectionAnchorAlignment } from "../../motion/sectionRestingBounds";
-
-type SkillsProps = {
-    restingContainerRef: RefObject<HTMLDivElement | null>;
-};
 
 type SkillGroup = {
     category: string;
@@ -22,14 +16,7 @@ const skillGroups = skills.reduce<SkillGroup[]>((groups, skill) => {
 }, []);
 
 // Renders the complete skill list grouped by category.
-export function Skills({ restingContainerRef }: SkillsProps) {
-    useEffect(() => {
-        const restingContainer = restingContainerRef.current;
-        if (!restingContainer) return;
-
-        return scheduleMountedSectionAnchorAlignment(restingContainer);
-    }, [restingContainerRef]);
-
+export function Skills() {
     return (
         <section className="skill-container" aria-labelledby="skill-title">
             <h2 id="skill-title">Skills</h2>

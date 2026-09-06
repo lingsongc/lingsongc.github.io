@@ -6,12 +6,13 @@ import type { MainCircleTransition } from "../../types/mainCircle";
 type MainCircleProps = {
     circleRef: RefObject<HTMLDivElement | null>;
     image: ImageDescriptor | null;
+    navigationTargetId: string | null;
     transitions: readonly MainCircleTransition[];
 };
 
 // Displays the current image and moves its circular frame between sections.
-export function MainCircle({ circleRef, image, transitions }: MainCircleProps) {
-    useMainCircleTransition(circleRef, transitions);
+export function MainCircle({ circleRef, image, navigationTargetId, transitions }: MainCircleProps) {
+    useMainCircleTransition(circleRef, transitions, navigationTargetId);
 
     return (
         <div ref={circleRef} className="main-circle-container">

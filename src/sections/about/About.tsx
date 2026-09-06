@@ -1,6 +1,6 @@
 import { useEffect, useState, type RefObject } from "react";
 import { aboutDetails } from "../../data/about";
-import { scheduleMountedSectionAnchorAlignment, sectionRestingBounds } from "../../motion/sectionRestingBounds";
+import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 
 const aboutImage: ImageDescriptor = {
@@ -35,16 +35,11 @@ export function About({ restingContainerRef, onMainCircleImageChange }: AboutPro
             onMainCircleImageChange(shouldShow ? aboutImage : null);
         };
 
-        const cancelAnchorAlignment = scheduleMountedSectionAnchorAlignment(
-            restingContainer,
-            updateContentVisibility,
-        );
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
         updateContentVisibility();
 
         return () => {
-            cancelAnchorAlignment();
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };

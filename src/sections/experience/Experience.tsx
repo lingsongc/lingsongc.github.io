@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
 import { education } from "../../data/education";
 import { experiences } from "../../data/experiences";
-import { scheduleMountedSectionAnchorAlignment, sectionRestingBounds } from "../../motion/sectionRestingBounds";
+import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import { ExperienceOrbit } from "./ExperienceOrbit";
 
@@ -59,14 +59,10 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
             }
         };
 
-        const cancelAnchorAlignment = scheduleMountedSectionAnchorAlignment(
-            restingContainer,
-            updateContentVisibility,
-        );
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
         window.addEventListener("resize", updateContentVisibility);
+        updateContentVisibility();
         return () => {
-            cancelAnchorAlignment();
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };

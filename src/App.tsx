@@ -18,6 +18,7 @@ import {
     skillsCircleSize,
 } from "./motion/mainCircleGeometry";
 import { useNavigationTransition } from "./motion/useNavigationTransition";
+import { usePageSectionInitialization } from "./motion/usePageSectionInitialization";
 import type { ImageDescriptor } from "./types/images";
 import type { MainCircleTransition } from "./types/mainCircle";
 
@@ -40,6 +41,7 @@ export default function App() {
     const navigationCopyrightRef = useRef<HTMLElement>(null);
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const [mainCircleImage, setMainCircleImage] = useState<MainCircleImageState>({ owner: null, image: null });
+    const [navigationTargetId, setNavigationTargetId] = useState<string | null>(null);
     
     // Prevents one section from clearing an image supplied by another section.
     const publishMainCircleImage = useCallback((owner: Exclude<MainCircleImageState["owner"], null>, image: ImageDescriptor | null) => {
@@ -103,11 +105,22 @@ export default function App() {
         ];
     }, []);
 
+    // Gives every section link the same alignment and scroll-refresh sequence.
+    const sectionInitializationTargets = useMemo(() => [
+        homeSectionRef,
+        aboutRestingContainerRef,
+        experienceRestingContainerRef,
+        projectsRestingContainerRef,
+        skillsRestingContainerRef,
+        contactSectionRef,
+    ], []);
+
     useNavigationTransition({
         navigationRef,
         copyrightRef: navigationCopyrightRef,
         homeRef: homeSectionRef,
     });
+    usePageSectionInitialization(sectionInitializationTargets);
 
     return (
         <>
@@ -116,11 +129,17 @@ export default function App() {
             <Navigation
                 copyrightRef={navigationCopyrightRef}
                 navigationRef={navigationRef}
+                onSectionNavigate={setNavigationTargetId}
                 railRef={navigationRailRef}
             />
 
             <main>
-                <MainCircle circleRef={mainCircleRef} image={mainCircleImage.image} transitions={mainCircleTransitions} />
+                <MainCircle
+                    circleRef={mainCircleRef}
+                    image={mainCircleImage.image}
+                    navigationTargetId={navigationTargetId}
+                    transitions={mainCircleTransitions}
+                />
                 
                 <Home sectionRef={homeSectionRef} onMainCircleImageChange={publishHomeImage} />
                 
@@ -147,7 +166,7 @@ export default function App() {
                 </SectionRestingContainer>
                 
                 <SectionRestingContainer containerRef={skillsRestingContainerRef} id="skills">
-                    <Skills restingContainerRef={skillsRestingContainerRef} />
+                    <Skills />
                 </SectionRestingContainer>
                 
                 <Contact sectionRef={contactSectionRef} />
