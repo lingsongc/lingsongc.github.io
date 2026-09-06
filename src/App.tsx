@@ -41,44 +41,33 @@ export default function App() {
     const publishExperienceImage = useCallback((image: ImageDescriptor | null) => publishMainCircleImage("experience", image), [publishMainCircleImage]);
     const publishProjectImage = useCallback((image: ImageDescriptor | null) => publishMainCircleImage("projects", image), [publishMainCircleImage]);
     const mainCircleTransitions = useMemo<readonly MainCircleTransition[]>(() => {
-        const aboutCircleSize = () => window.innerWidth <= 768
-            ? window.innerWidth * 0.95
-            : window.innerHeight * 1.6;
-        const experienceCircleSize = () => window.innerWidth <= 768
-            ? window.innerWidth * 0.78
-            : Math.min(window.innerWidth * 0.465, window.innerHeight * 0.69);
-        const projectCircleSize = () => window.innerWidth <= 768
-            ? window.innerWidth * 0.576
-            : Math.min(window.innerWidth * 0.384, window.innerHeight * 0.544);
-        const skillsCircleSize = () => Math.min(window.innerWidth, window.innerHeight) * 0.9;
-
         return [
             {
                 target: aboutRestingContainerRef,
                 geometry: {
-                    width: aboutCircleSize,
-                    left: () => aboutCircleSize() * (window.innerWidth <= 768 ? -0.2 : -0.1),
+                    width: getAboutCircleSize,
+                    left: () => getAboutCircleSize() * (window.innerWidth <= 768 ? -0.2 : -0.1),
                 },
             },
             {
                 target: experienceRestingContainerRef,
                 geometry: {
-                    width: experienceCircleSize,
+                    width: getExperienceCircleSize,
                     top: () => experienceOrbitRef.current?.offsetTop ?? window.innerHeight / 2,
                     left: () => experienceOrbitRef.current?.offsetLeft ?? window.innerWidth / 2,
                 },
             },
             {
                 target: projectsRestingContainerRef,
-                geometry: { width: projectCircleSize, top: "50%", left: "50%" },
+                geometry: { width: getProjectCircleSize, top: "50%", left: "50%" },
             },
             {
                 target: skillsRestingContainerRef,
                 geometry: {
-                    width: skillsCircleSize,
+                    width: getSkillsCircleSize,
                     top: "50%",
                     left: () => {
-                        const circleSize = skillsCircleSize();
+                        const circleSize = getSkillsCircleSize();
                         const circleGap = (window.innerHeight - circleSize) / 2;
                         const railLeft = navigationRailRef.current?.getBoundingClientRect().left ?? window.innerWidth;
                         return railLeft - circleGap - circleSize / 2;
@@ -139,4 +128,26 @@ export default function App() {
             </main>
         </>
     );
+}
+
+function getAboutCircleSize() {
+    return window.innerWidth <= 768
+        ? window.innerWidth * 0.95
+        : window.innerHeight * 1.6;
+}
+
+function getExperienceCircleSize() {
+    return window.innerWidth <= 768
+        ? window.innerWidth * 0.78
+        : Math.min(window.innerWidth * 0.465, window.innerHeight * 0.69);
+}
+
+function getProjectCircleSize() {
+    return window.innerWidth <= 768
+        ? window.innerWidth * 0.576
+        : Math.min(window.innerWidth * 0.384, window.innerHeight * 0.544);
+}
+
+function getSkillsCircleSize() {
+    return Math.min(window.innerWidth, window.innerHeight) * 0.9;
 }
