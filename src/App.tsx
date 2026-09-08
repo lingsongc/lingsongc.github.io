@@ -22,9 +22,10 @@ import { useNavigationTransition } from "./motion/useNavigationTransition";
 import { usePageSectionInitialization } from "./motion/usePageSectionInitialization";
 import type { ImageDescriptor } from "./types/images";
 import type { MainCircleTransition } from "./types/mainCircle";
+import type { SceneId } from "./types/scene";
 
 type MainCircleImageState = {
-    owner: "home" | "about" | "experience" | "projects" | null;
+    owner: Exclude<SceneId, "skills" | "contact"> | null;
     image: ImageDescriptor | null;
 };
 
@@ -42,7 +43,7 @@ export default function App() {
     const navigationCopyrightRef = useRef<HTMLElement>(null);
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const [mainCircleImage, setMainCircleImage] = useState<MainCircleImageState>({ owner: null, image: null });
-    const [navigationTargetId, setNavigationTargetId] = useState<string | null>(null);
+    const [navigationTargetId, setNavigationTargetId] = useState<SceneId | null>(null);
     
     // Prevents one section from clearing an image supplied by another section.
     const publishMainCircleImage = useCallback((owner: Exclude<MainCircleImageState["owner"], null>, image: ImageDescriptor | null) => {

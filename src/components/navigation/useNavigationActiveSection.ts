@@ -2,19 +2,20 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useState } from "react";
-import { navigationSections, type SectionId } from "./navigationSections";
+import type { SceneId } from "../../types/scene";
+import { navigationSections } from "./navigationSections";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 // Tracks the section currently resting near the top of the viewport.
 export function useNavigationActiveSection() {
-    const [activeSection, setActiveSection] = useState<SectionId>("home");
+    const [activeSection, setActiveSection] = useState<SceneId>("home");
 
     useGSAP(() => {
         const sectionElements = navigationSections.map(({ id }) => ({
             id,
             element: document.getElementById(id),
-        })).filter((section): section is { id: SectionId; element: HTMLElement } => (
+        })).filter((section): section is { id: SceneId; element: HTMLElement } => (
             section.element !== null
         ));
 

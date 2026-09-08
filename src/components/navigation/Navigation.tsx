@@ -1,11 +1,12 @@
 import { useEffect, useState, type MouseEvent, type RefObject } from "react";
+import type { SceneId } from "../../types/scene";
 import { navigationSections } from "./navigationSections";
 import { useNavigationActiveSection } from "./useNavigationActiveSection";
 
 type NavigationProps = {
     copyrightRef: RefObject<HTMLElement | null>;
     navigationRef: RefObject<HTMLElement | null>;
-    onSectionNavigate: (sectionId: string) => void;
+    onSectionNavigate: (sectionId: SceneId) => void;
     railRef: RefObject<HTMLDivElement | null>;
 };
 
@@ -19,7 +20,7 @@ export function Navigation({ copyrightRef, navigationRef, onSectionNavigate, rai
     useEffect(() => setTouchLabel(null), [activeSection]);
 
     // Reveals a label on the first touch, then follows the link on the second.
-    const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: SceneId) => {
         const usesTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
 
         if (usesTouch && event.detail !== 0 && touchLabel !== sectionId) {

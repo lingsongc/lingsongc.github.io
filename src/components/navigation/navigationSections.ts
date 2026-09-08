@@ -1,11 +1,16 @@
-// Defines the ordered sections shared by navigation rendering and tracking.
-export const navigationSections = [
-    { id: "home", label: "Home" },
-    { id: "about", label: "About" },
-    { id: "experience", label: "Experience and Education" },
-    { id: "projects", label: "Projects" },
-    { id: "skills", label: "Skills" },
-    { id: "contact", label: "Contact" },
-] as const;
+import { sceneOrder, type SceneId } from "../../types/scene";
 
-export type SectionId = (typeof navigationSections)[number]["id"];
+const navigationLabels = {
+    home: "Home",
+    about: "About",
+    experience: "Experience and Education",
+    projects: "Projects",
+    skills: "Skills",
+    contact: "Contact",
+} satisfies Record<SceneId, string>;
+
+// Combines shared scene order with Navigation-owned user-facing labels.
+export const navigationSections = sceneOrder.map((id) => ({
+    id,
+    label: navigationLabels[id],
+}));

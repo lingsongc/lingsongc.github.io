@@ -3,6 +3,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLayoutEffect, useRef, type RefObject } from "react";
 import type { MainCircleGeometryValue, MainCircleTransition } from "../types/mainCircle";
+import type { SceneId } from "../types/scene";
 import { mainCircleStateAtScroll, type MainCircleHandoff, type MainCircleState } from "./mainCircleTransitionState";
 import { elementDocumentTop, sectionIncomingTransitionRange } from "./sectionRestingBounds";
 
@@ -12,9 +13,9 @@ gsap.registerPlugin(useGSAP, ScrollTrigger);
 export function useMainCircleTransition(
     circleRef: RefObject<HTMLDivElement | null>,
     transitions: readonly MainCircleTransition[],
-    navigationTargetId: string | null,
+    navigationTargetId: SceneId | null,
 ) {
-    const linkedSectionUpdaterRef = useRef<(sectionId: string) => void>(() => undefined);
+    const linkedSectionUpdaterRef = useRef<(sectionId: SceneId | string) => void>(() => undefined);
 
     useGSAP(() => {
         const circle = circleRef.current;

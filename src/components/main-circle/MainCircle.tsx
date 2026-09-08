@@ -2,11 +2,12 @@ import type { RefObject } from "react";
 import { useMainCircleTransition } from "../../motion/useMainCircleTransition";
 import type { ImageDescriptor } from "../../types/images";
 import type { MainCircleTransition } from "../../types/mainCircle";
+import type { SceneId } from "../../types/scene";
 
 type MainCircleProps = {
     circleRef: RefObject<HTMLDivElement | null>;
     image: ImageDescriptor | null;
-    navigationTargetId: string | null;
+    navigationTargetId: SceneId | null;
     transitions: readonly MainCircleTransition[];
 };
 
