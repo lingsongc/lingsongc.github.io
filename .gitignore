@@ -19,3 +19,5 @@ Thumbs.db
 # Dependencies and builds
 node_modules/
 dist/
+
+references/
