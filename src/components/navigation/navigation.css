@@ -148,6 +148,18 @@
     aspect-ratio: 1;
 }
 
+.navigation-controlled.navigation-docked {
+    animation: none;
+}
+
+.navigation-controlled.navigation-rail-departing {
+    animation: navigation-rail-enter 250ms ease both;
+}
+
+.navigation-controlled.navigation-rail-returning {
+    animation: navigation-rail-exit 250ms ease 750ms both;
+}
+
 .navigation-rail-links {
     display: flex;
     flex-direction: column;
@@ -194,6 +206,24 @@
 .navigation-effects-ready .navigation-link,
 .navigation-controlled:not(.navigation-busy) .navigation-link {
     pointer-events: auto;
+}
+
+.navigation-copyright-controlled-entering {
+    animation: navigation-copyright-controlled-enter 250ms ease both;
+}
+
+.navigation-copyright-controlled-exiting {
+    animation: navigation-copyright-controlled-exit 250ms ease 750ms both;
+}
+
+@keyframes navigation-copyright-controlled-enter {
+    from { opacity: 0; }
+    to { opacity: 0.75; }
+}
+
+@keyframes navigation-copyright-controlled-exit {
+    from { opacity: 0.75; }
+    to { opacity: 0; }
 }
 
 .navigation-busy .navigation-link {
@@ -278,6 +308,9 @@
     .navigation-container.navigation-docked,
     .navigation-container.navigation-rail-exiting,
     .navigation-container.navigation-home-entering { animation: none; }
+
+    .navigation-copyright-controlled-entering,
+    .navigation-copyright-controlled-exiting { animation: none; }
 
     .navigation-copyright-visible,
     .navigation-copyright-exiting { transition: none; }

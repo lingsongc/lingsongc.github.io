@@ -83,7 +83,11 @@ export function Projects({ lifecycle, restingContainerRef, onMainCircleImageChan
                 }}
             />
             {createPortal(
-                <div className={`project-selected-content${transitionState === "idle" ? "" : ` project-selected-content-${transitionState}`}`} aria-live="polite">
+                <div
+                    className={`project-selected-content${transitionState === "idle" ? "" : ` project-selected-content-${transitionState}`}`}
+                    aria-hidden={!contentVisible}
+                    aria-live="polite"
+                >
                     <p className="project-selected-summary">{activeProject.summary}</p>
                 </div>,
                 document.body,

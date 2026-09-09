@@ -122,6 +122,7 @@ export function useSlideshowCoordinator(
     options: SlideshowCoordinatorOptions = {},
 ) {
     const controllerRef = useRef<SlideshowCoordinator | null>(null);
+    const effectVersionRef = useRef(0);
     if (!controllerRef.current) {
         controllerRef.current = createSlideshowCoordinator(initialSceneId, options);
     }
@@ -132,7 +133,15 @@ export function useSlideshowCoordinator(
         controller.getSnapshot,
     );
 
-    useEffect(() => () => controller.dispose(), [controller]);
+    useEffect(() => {
+        const effectVersion = ++effectVersionRef.current;
+        return () => {
+            // Strict Mode immediately recreates effects, so defer disposal until a genuine unmount.
+            queueMicrotask(() => {
+                if (effectVersionRef.current === effectVersion) controller.dispose();
+            });
+        };
+    }, [controller]);
 
     const lifecycleFor = useCallback((sceneId: SceneId): SceneLifecycleControl => ({
         active: snapshot.activeSceneId === sceneId,

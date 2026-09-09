@@ -10,7 +10,7 @@ type MainCircleProps = {
     image: ImageDescriptor | null;
     imageVisible?: boolean;
     navigationTargetId: SceneId | null;
-    transitions: readonly MainCircleTransition[];
+    transitions?: readonly MainCircleTransition[];
 };
 
 // Displays the current image and moves its circular frame between sections.
@@ -20,7 +20,7 @@ export function MainCircle({
     image,
     imageVisible = true,
     navigationTargetId,
-    transitions,
+    transitions = [],
 }: MainCircleProps) {
     useMainCircleTransition(circleRef, transitions, navigationTargetId, directTransition);
 

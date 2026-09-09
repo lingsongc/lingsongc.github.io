@@ -6,7 +6,7 @@ import {
     type RefObject,
 } from "react";
 import { transientRailMarkerProgress } from "../../motion/railTravelProgress";
-import type { SceneId } from "../../types/scene";
+import type { SceneId, ScenePhase } from "../../types/scene";
 import { navigationSections } from "./navigationSections";
 import { useNavigationActiveSection } from "./useNavigationActiveSection";
 
@@ -15,13 +15,14 @@ export type NavigationSceneControl = {
     currentSceneId: SceneId;
     destinationSceneId: SceneId | null;
     onSceneRequest: (sceneId: SceneId) => void;
+    phase: ScenePhase;
     travelProgress: number;
 };
 
 type NavigationProps = {
     copyrightRef: RefObject<HTMLElement | null>;
     navigationRef: RefObject<HTMLElement | null>;
-    onSectionNavigate: (sectionId: SceneId) => void;
+    onSectionNavigate?: (sectionId: SceneId) => void;
     railRef: RefObject<HTMLDivElement | null>;
     sceneControl?: NavigationSceneControl;
 };
@@ -47,6 +48,8 @@ export function Navigation({
             sceneControl.travelProgress,
         )
         : [];
+    const positionClasses = sceneControl ? controlledNavigationClasses(sceneControl) : "";
+    const copyrightClasses = sceneControl ? controlledCopyrightClasses(sceneControl) : "";
 
     useEffect(() => setTouchLabel(null), [activeSection, busy]);
 
@@ -67,7 +70,7 @@ export function Navigation({
             event.preventDefault();
             sceneControl.onSceneRequest(sectionId);
         } else {
-            onSectionNavigate(sectionId);
+            onSectionNavigate?.(sectionId);
         }
     };
 
@@ -76,7 +79,7 @@ export function Navigation({
             <div ref={railRef} className="navigation-rail">
                 <span className="navigation-rail-slot" aria-hidden="true" />
 
-                <small ref={copyrightRef} className="navigation-copyright">
+                <small ref={copyrightRef} className={`navigation-copyright${copyrightClasses}`}>
                     Copyright © {currentYear} Chen Ling Song. All Rights Reserved.
                 </small>
                 
@@ -89,7 +92,7 @@ export function Navigation({
 
             <nav
                 ref={navigationRef}
-                className={`navigation-container${sceneControl ? " navigation-controlled" : ""}${busy ? " navigation-busy" : ""}`}
+                className={`navigation-container${sceneControl ? " navigation-controlled" : ""}${busy ? " navigation-busy" : ""}${positionClasses}`}
                 aria-label="Portfolio sections"
             >
                 <ul className="navigation-list">
@@ -126,4 +129,33 @@ export function Navigation({
             </nav>
         </>
     );
+}
+
+// Maps coordinator phases to Home-orbit, docked-rail, and timed rail travel classes.
+function controlledNavigationClasses(sceneControl: NavigationSceneControl) {
+    const { currentSceneId, destinationSceneId, phase } = sceneControl;
+    if (currentSceneId === "home") {
+        if (phase === "moving" && destinationSceneId !== "home") {
+            return " navigation-docked navigation-rail-departing";
+        }
+        if (phase === "opening") return " navigation-home-entering";
+        return " navigation-home-ready";
+    }
+    if (phase === "moving" && destinationSceneId === "home") {
+        return " navigation-docked navigation-rail-returning";
+    }
+    return " navigation-docked navigation-effects-ready";
+}
+
+// Keeps copyright timing aligned with the controlled rail without owning scene state.
+function controlledCopyrightClasses(sceneControl: NavigationSceneControl) {
+    const { currentSceneId, destinationSceneId, phase } = sceneControl;
+    if (currentSceneId === "home") {
+        return phase === "moving" && destinationSceneId !== "home"
+            ? " navigation-copyright-controlled-entering"
+            : "";
+    }
+    return phase === "moving" && destinationSceneId === "home"
+        ? " navigation-copyright-controlled-exiting"
+        : " navigation-copyright-visible";
 }

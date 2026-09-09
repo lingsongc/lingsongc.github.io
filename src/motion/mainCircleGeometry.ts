@@ -1,5 +1,10 @@
 const MOBILE_BREAKPOINT = 768;
 
+// Mirrors the CSS clamp used for the Home circle at the current root font size.
+export function homeCircleSize(viewportWidth: number, rootFontSize: number) {
+    return Math.min(Math.max(rootFontSize * 8, viewportWidth * 0.28), rootFontSize * 22);
+}
+
 // Calculates the About circle size for the current viewport.
 export function aboutCircleSize(viewportWidth: number, viewportHeight: number) {
     return viewportWidth <= MOBILE_BREAKPOINT ? viewportWidth * 0.95 : viewportHeight * 1.6;

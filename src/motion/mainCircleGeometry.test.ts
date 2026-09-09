@@ -4,6 +4,7 @@ import {
     aboutCircleSize,
     contactCircleSize,
     experienceCircleSize,
+    homeCircleSize,
     projectCircleSize,
     skillsCircleLeft,
     skillsCircleSize,
@@ -11,6 +12,12 @@ import {
 
 // Verifies responsive main-circle calculations without rendering the page.
 describe("main circle geometry", () => {
+    it("matches the responsive Home CSS clamp", () => {
+        expect(homeCircleSize(320, 16)).toBe(128);
+        expect(homeCircleSize(1000, 16)).toBe(280);
+        expect(homeCircleSize(1440, 16)).toBe(352);
+    });
+
     it("uses viewport width for the mobile About circle", () => {
         expect(aboutCircleSize(768, 900)).toBeCloseTo(729.6);
     });
