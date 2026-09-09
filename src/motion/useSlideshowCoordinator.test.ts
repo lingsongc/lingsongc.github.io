@@ -78,6 +78,49 @@ describe("slideshow coordinator", () => {
         expect(travel.cancelled()).toBe(true);
         expect(coordinator.getSnapshot().phase).toBe("moving");
     });
+
+    it.each(["closing", "moving", "opening"] as const)(
+        "settles the requested destination and ignores stale callbacks from %s",
+        (phase) => {
+            const travel = controlledTravel();
+            const coordinator = createSlideshowCoordinator("about", { startTravel: travel.start });
+            coordinator.requestScene(aboutToExperience);
+            if (phase !== "closing") coordinator.completeSceneTransition("about", "closing");
+            if (phase === "opening") travel.complete();
+
+            expect(coordinator.recover("resize")).toBe(true);
+            expect(coordinator.getSnapshot()).toMatchObject({
+                currentSceneId: "experience",
+                phase: "idle",
+                requestedSceneId: null,
+                settledVersion: 1,
+                travelProgress: 0,
+            });
+
+            travel.complete();
+            coordinator.completeSceneTransition("experience", "opening");
+            expect(coordinator.getSnapshot().phase).toBe("idle");
+        },
+    );
+
+    it("settles an accepted request immediately when reduced motion is active", () => {
+        const travel = controlledTravel();
+        const coordinator = createSlideshowCoordinator("about", {
+            reducedMotion: true,
+            startTravel: travel.start,
+        });
+
+        expect(coordinator.requestScene(aboutToExperience)).toMatchObject({ status: "accepted" });
+        expect(coordinator.getSnapshot()).toMatchObject({
+            activeSceneId: "experience",
+            currentSceneId: "experience",
+            phase: "idle",
+            requestedSceneId: null,
+            settledVersion: 1,
+            travelProgress: 0,
+        });
+        expect(travel.cancelled()).toBe(false);
+    });
 });
 
 // Provides manual progress and completion controls for deterministic phase tests.

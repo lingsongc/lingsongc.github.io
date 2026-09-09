@@ -7,6 +7,7 @@ import { homeCircleSize } from "./motion/mainCircleGeometry";
 import { resolveMainCircleSceneEndpoint } from "./motion/mainCircleSceneEndpoints";
 import { useMainCircleImageLifecycle } from "./motion/useMainCircleImageLifecycle";
 import { initialSceneIdFromHash } from "./motion/sceneHistory";
+import { useReducedMotionPreference } from "./motion/useReducedMotionPreference";
 import { useSlideshowCoordinator } from "./motion/useSlideshowCoordinator";
 import { useSceneInput } from "./motion/useSceneInput";
 import { sceneCompositionOffset } from "./motion/sceneInputIntent";
@@ -45,12 +46,15 @@ export default function App() {
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const [easedTravelProgress, setEasedTravelProgress] = useState(0);
     const initialSceneIdRef = useRef(initialSceneIdFromHash(window.location.hash));
-    const slideshow = useSlideshowCoordinator(initialSceneIdRef.current);
+    const reducedMotion = useReducedMotionPreference();
+    const slideshow = useSlideshowCoordinator(initialSceneIdRef.current, { reducedMotion });
     const previousScenePhaseRef = useRef<ScenePhase | null>(null);
+    const previousSettledVersionRef = useRef(slideshow.settledVersion);
     const sceneInput = useSceneInput({
         activeScrollerRef: activeSceneScrollerRef,
         currentSceneId: slideshow.currentSceneId,
         phase: slideshow.phase,
+        reducedMotion,
         requestScene: slideshow.requestScene,
     });
     const mainCircleImage = useMainCircleImageLifecycle({
@@ -120,7 +124,8 @@ export default function App() {
 
     useEffect(() => {
         const previousPhase = previousScenePhaseRef.current;
-        if (previousPhase === "opening" && slideshow.phase === "idle") {
+        const settledImmediately = slideshow.settledVersion !== previousSettledVersionRef.current;
+        if ((previousPhase === "opening" && slideshow.phase === "idle") || settledImmediately) {
             const focusedElement = document.activeElement;
             if (!isExplicitControl(focusedElement)) {
                 const heading = document.getElementById(sceneHeadingIds[slideshow.currentSceneId]);
@@ -128,7 +133,8 @@ export default function App() {
             }
         }
         previousScenePhaseRef.current = slideshow.phase;
-    }, [slideshow.currentSceneId, slideshow.phase]);
+        previousSettledVersionRef.current = slideshow.settledVersion;
+    }, [slideshow.currentSceneId, slideshow.phase, slideshow.settledVersion]);
 
     return (
         <>

@@ -10,6 +10,7 @@ import type {
 import {
     advanceSceneTransition,
     createSceneTransitionState,
+    recoverSceneTransition,
     requestSceneTransition,
     type SceneTransitionState,
 } from "./sceneTransitionState";
@@ -19,6 +20,7 @@ import { MAIN_CIRCLE_TRAVEL_DURATION_MS } from "./mainCircleTravel";
 export type SlideshowCoordinatorSnapshot = SceneTransitionState & {
     activeSceneId: SceneId | null;
     busy: boolean;
+    settledVersion: number;
     travelProgress: number;
 };
 
@@ -31,11 +33,14 @@ export type SlideshowCoordinator = {
     completeSceneTransition: (sceneId: SceneId, phase: SceneVisualTransitionPhase) => void;
     dispose: () => void;
     getSnapshot: () => SlideshowCoordinatorSnapshot;
+    recover: (reason: "resize" | "orientation-change" | "document-hidden") => boolean;
     requestScene: (request: SceneRequest) => SceneRequestResult;
+    setReducedMotion: (reducedMotion: boolean) => void;
     subscribe: (listener: () => void) => () => void;
 };
 
 export type SlideshowCoordinatorOptions = {
+    reducedMotion?: boolean;
     startTravel?: SlideshowTravelDriver;
 };
 
@@ -46,15 +51,17 @@ export function createSlideshowCoordinator(
 ): SlideshowCoordinator {
     const listeners = new Set<() => void>();
     const startTravel = options.startTravel ?? startGsapTravel;
+    let reducedMotion = options.reducedMotion ?? false;
     let transitionState = createSceneTransitionState(initialSceneId);
+    let settledVersion = 0;
     let travelProgress = 0;
     let cancelTravel: (() => void) | null = null;
     let disposed = false;
-    let snapshot = coordinatorSnapshot(transitionState, travelProgress);
+    let snapshot = coordinatorSnapshot(transitionState, travelProgress, settledVersion);
 
     // Publishes one immutable snapshot after state or travel progress changes.
     const publish = () => {
-        snapshot = coordinatorSnapshot(transitionState, travelProgress);
+        snapshot = coordinatorSnapshot(transitionState, travelProgress, settledVersion);
         listeners.forEach((listener) => listener());
     };
 
@@ -65,6 +72,18 @@ export function createSlideshowCoordinator(
         travelProgress = 1;
         transitionState = advanceSceneTransition(transitionState);
         publish();
+    };
+
+    // Cancels active work and makes the requested destination the only valid resting state.
+    const recover = (reason: "resize" | "orientation-change" | "document-hidden") => {
+        if (disposed || transitionState.phase === "idle") return false;
+        cancelTravel?.();
+        cancelTravel = null;
+        transitionState = recoverSceneTransition(transitionState, reason);
+        travelProgress = 0;
+        settledVersion += 1;
+        publish();
+        return true;
     };
 
     return {
@@ -100,15 +119,26 @@ export function createSlideshowCoordinator(
             listeners.clear();
         },
         getSnapshot: () => snapshot,
+        recover,
         requestScene(request) {
             if (disposed) return { status: "ignored", reason: "busy" };
             const update = requestSceneTransition(transitionState, request);
+            if (update.result.status === "accepted" && reducedMotion) {
+                transitionState = createSceneTransitionState(update.result.destinationSceneId);
+                travelProgress = 0;
+                settledVersion += 1;
+                publish();
+                return update.result;
+            }
             if (update.state !== transitionState) {
                 transitionState = update.state;
                 travelProgress = 0;
                 publish();
             }
             return update.result;
+        },
+        setReducedMotion(value) {
+            reducedMotion = value;
         },
         subscribe(listener) {
             listeners.add(listener);
@@ -134,6 +164,7 @@ export function useSlideshowCoordinator(
         controller.getSnapshot,
         controller.getSnapshot,
     );
+    const lastSettledVersionRef = useRef(snapshot.settledVersion);
 
     useEffect(() => {
         const effectVersion = ++effectVersionRef.current;
@@ -145,6 +176,11 @@ export function useSlideshowCoordinator(
         };
     }, [controller]);
 
+    useEffect(
+        () => controller.setReducedMotion(options.reducedMotion ?? false),
+        [controller, options.reducedMotion],
+    );
+
     useEffect(() => {
         // Replaces only malformed initial hashes; an absent hash remains the valid Home default.
         if (!window.location.hash || sceneIdFromHash(window.location.hash)) return;
@@ -153,8 +189,12 @@ export function useSlideshowCoordinator(
     }, []);
 
     useEffect(() => {
-        // The circle has reached its endpoint when opening begins, so this is the single URL write.
-        if (snapshot.phase !== "opening" || snapshot.requestedSceneId !== snapshot.currentSceneId) return;
+        // Writes on normal arrival or an immediate environmental and reduced-motion settlement.
+        const arrivedDuringOpening = snapshot.phase === "opening"
+            && snapshot.requestedSceneId === snapshot.currentSceneId;
+        const arrivedImmediately = snapshot.settledVersion !== lastSettledVersionRef.current;
+        if (!arrivedDuringOpening && !arrivedImmediately) return;
+        lastSettledVersionRef.current = snapshot.settledVersion;
         if (sceneIdFromHash(window.location.hash) === snapshot.currentSceneId) return;
 
         lastHandledHashRef.current = `#${snapshot.currentSceneId}`;
@@ -163,7 +203,25 @@ export function useSlideshowCoordinator(
             "",
             sceneUrl(snapshot.currentSceneId, window.location),
         );
-    }, [snapshot.currentSceneId, snapshot.phase, snapshot.requestedSceneId]);
+    }, [snapshot.currentSceneId, snapshot.phase, snapshot.requestedSceneId, snapshot.settledVersion]);
+
+    useEffect(() => {
+        // Stops a busy timeline rather than leaving geometry half-way through a changed environment.
+        const handleResize = () => controller.recover("resize");
+        const handleOrientationChange = () => controller.recover("orientation-change");
+        const handleVisibilityChange = () => {
+            if (document.hidden) controller.recover("document-hidden");
+        };
+
+        window.addEventListener("resize", handleResize);
+        window.addEventListener("orientationchange", handleOrientationChange);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            window.removeEventListener("resize", handleResize);
+            window.removeEventListener("orientationchange", handleOrientationChange);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
+    }, [controller]);
 
     useEffect(() => {
         // Routes native Back, Forward, and manually changed hashes through the direct coordinator path.
@@ -228,11 +286,13 @@ function startGsapTravel({ onComplete, onProgress }: Parameters<SlideshowTravelD
 function coordinatorSnapshot(
     state: SceneTransitionState,
     travelProgress: number,
+    settledVersion: number,
 ): SlideshowCoordinatorSnapshot {
     return {
         ...state,
         activeSceneId: state.phase === "moving" ? null : state.currentSceneId,
         busy: state.phase !== "idle",
+        settledVersion,
         travelProgress,
     };
 }

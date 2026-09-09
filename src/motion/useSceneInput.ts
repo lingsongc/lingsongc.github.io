@@ -33,6 +33,7 @@ type SceneInputOptions = {
     activeScrollerRef: RefObject<HTMLDivElement | null>;
     currentSceneId: SceneId;
     phase: ScenePhase;
+    reducedMotion: boolean;
     requestScene: (request: SceneRequest) => SceneRequestResult;
 };
 
@@ -50,6 +51,7 @@ export function useSceneInput({
     activeScrollerRef,
     currentSceneId,
     phase,
+    reducedMotion,
     requestScene,
 }: SceneInputOptions) {
     const [resistanceProgress, setResistanceProgress] = useState(0);
@@ -198,7 +200,7 @@ export function useSceneInput({
             }
 
             if (isTerminalSceneDirection(currentSceneId, direction)) {
-                showHardEdge(direction, impulse);
+                if (!reducedMotion) showHardEdge(direction, impulse);
                 return;
             }
 
@@ -208,7 +210,7 @@ export function useSceneInput({
             wheelIntentRef.current = update.state;
 
             if (!update.committedDirection) {
-                publishResistance(wheelIntentProgress(update.state, now));
+                publishResistance(reducedMotion ? 0 : wheelIntentProgress(update.state, now));
                 scheduleWheelReturn(update.state);
                 return;
             }
@@ -229,7 +231,7 @@ export function useSceneInput({
             window.clearTimeout(neutralTimerRef.current);
             cancelAnimationFrame(returnFrameRef.current);
         };
-    }, [activeScrollerRef, currentSceneId, phase, publishResistance, requestScene, showHardEdge]);
+    }, [activeScrollerRef, currentSceneId, phase, publishResistance, reducedMotion, requestScene, showHardEdge]);
 
     useEffect(() => {
         if (phase !== "idle") return;
@@ -294,7 +296,7 @@ export function useSceneInput({
             event.preventDefault();
             gesture.axis = "vertical";
             gesture.progress = intent.progress;
-            publishResistance(isTerminalSceneDirection(currentSceneId, direction)
+            publishResistance(reducedMotion ? 0 : isTerminalSceneDirection(currentSceneId, direction)
                 ? hardEdgeResistance(direction, intent.progress)
                 : intent.progress);
         };
@@ -340,7 +342,7 @@ export function useSceneInput({
             window.removeEventListener("touchend", handleTouchEnd);
             window.removeEventListener("touchcancel", handleTouchCancel);
         };
-    }, [activeScrollerRef, currentSceneId, phase, publishResistance, requestScene, startImmediateReturn]);
+    }, [activeScrollerRef, currentSceneId, phase, publishResistance, reducedMotion, requestScene, startImmediateReturn]);
 
     useEffect(() => {
         if (phase !== "idle") return;
