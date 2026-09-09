@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { BackgroundGrid } from "./components/background-grid/BackgroundGrid";
 import { MainCircle } from "./components/main-circle/MainCircle";
 import { Navigation } from "./components/navigation/Navigation";
@@ -7,6 +7,8 @@ import { homeCircleSize } from "./motion/mainCircleGeometry";
 import { resolveMainCircleSceneEndpoint } from "./motion/mainCircleSceneEndpoints";
 import { useMainCircleImageLifecycle } from "./motion/useMainCircleImageLifecycle";
 import { useSlideshowCoordinator } from "./motion/useSlideshowCoordinator";
+import { useWheelSceneIntent } from "./motion/useWheelSceneIntent";
+import { wheelCompositionOffset } from "./motion/wheelIntent";
 import { About } from "./sections/about/About";
 import { Contact } from "./sections/contact/Contact";
 import { Experience } from "./sections/experience/Experience";
@@ -31,11 +33,27 @@ export default function App() {
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const [easedTravelProgress, setEasedTravelProgress] = useState(0);
     const slideshow = useSlideshowCoordinator("home");
+    const wheelIntent = useWheelSceneIntent({
+        phase: slideshow.phase,
+        requestScene: slideshow.requestScene,
+    });
     const mainCircleImage = useMainCircleImageLifecycle({
         currentSceneId: slideshow.currentSceneId,
         phase: slideshow.phase,
         requestedSceneId: slideshow.requestedSceneId,
     });
+
+    useLayoutEffect(() => {
+        // Portalled Section layers read the same page-owned pull as the viewport stage.
+        document.documentElement.style.setProperty(
+            "--slideshow-resistance-offset",
+            `${wheelCompositionOffset(wheelIntent.resistanceProgress)}px`,
+        );
+    }, [wheelIntent.resistanceProgress]);
+
+    useEffect(() => () => {
+        document.documentElement.style.removeProperty("--slideshow-resistance-offset");
+    }, []);
 
     // Measures the current viewport-owned inputs needed by a requested endpoint.
     const resolveCircleEndpoint = useCallback((sceneId: SceneId) => {
@@ -76,12 +94,13 @@ export default function App() {
 
     // Converts a named control activation into one direct, non-queued request.
     const requestScene = useCallback((sceneId: SceneId) => {
+        wheelIntent.cancelResistance();
         slideshow.requestScene({
             kind: "direct",
             destinationSceneId: sceneId,
             source: "navigation",
         });
-    }, [slideshow.requestScene]);
+    }, [slideshow.requestScene, wheelIntent.cancelResistance]);
 
     return (
         <>

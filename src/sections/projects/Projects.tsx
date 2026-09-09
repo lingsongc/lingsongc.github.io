@@ -84,7 +84,7 @@ export function Projects({ lifecycle, restingContainerRef, onMainCircleImageChan
             />
             {createPortal(
                 <div
-                    className={`project-selected-content${transitionState === "idle" ? "" : ` project-selected-content-${transitionState}`}`}
+                    className={`project-selected-content scene-composition-layer${transitionState === "idle" ? "" : ` project-selected-content-${transitionState}`}`}
                     aria-hidden={!contentVisible}
                     aria-live="polite"
                 >

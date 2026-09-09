@@ -191,7 +191,7 @@ export function ExperienceOrbit({
                 </div>
             </aside>
             {createPortal(
-                <div className={`experience-orbit-foreground${contentVisible ? " experience-orbit-foreground-visible" : ""}`}>
+                <div className={`experience-orbit-foreground scene-composition-layer${contentVisible ? " experience-orbit-foreground-visible" : ""}`}>
                     <div className="experience-orbit-front" aria-hidden="true">
                         <svg className="experience-orbit-front-path" viewBox={experienceOrbitViewBox} style={experienceOrbitLayerStyles}>
                             <path className="experience-orbit-path" d={experienceOrbitFrontPath} />
