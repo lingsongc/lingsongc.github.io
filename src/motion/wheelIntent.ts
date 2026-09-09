@@ -4,7 +4,6 @@ import type { SceneDirection } from "../types/scene";
 export const WHEEL_INTENT_THRESHOLD = 3;
 export const WHEEL_INTENT_PAUSE_MS = 200;
 export const WHEEL_INTENT_RETURN_MS = 300;
-export const WHEEL_COMPOSITION_PULL_PX = 24;
 
 const PIXELS_PER_IMPULSE = 100;
 const LINES_PER_IMPULSE = 3;
@@ -84,11 +83,6 @@ export function wheelIntentProgress(state: WheelIntentState, now: number) {
     );
     const smoothReturn = returnProgress * returnProgress * (3 - 2 * returnProgress);
     return state.accumulation / WHEEL_INTENT_THRESHOLD * (1 - smoothReturn);
-}
-
-// Maps forward intent upward and backward intent downward within the pull cap.
-export function wheelCompositionOffset(progress: number) {
-    return clamp(progress, -1, 1) * -WHEEL_COMPOSITION_PULL_PX;
 }
 
 // Records momentum while the gate waits for a genuinely neutral interval.

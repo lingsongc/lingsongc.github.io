@@ -1,10 +1,11 @@
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
 import type { SceneId, ScenePhase } from "../../types/scene";
 
 export type ScenePanelProps = {
     active: boolean;
     children: ReactNode;
     headingFocusTargetId: string;
+    overflowRef?: RefObject<HTMLDivElement | null>;
     phase: ScenePhase;
     sceneId: SceneId;
 };
@@ -14,6 +15,7 @@ export function ScenePanel({
     active,
     children,
     headingFocusTargetId,
+    overflowRef,
     phase,
     sceneId,
 }: ScenePanelProps) {
@@ -26,6 +28,7 @@ export function ScenePanel({
             inert={!active}
         >
             <div
+                ref={active ? overflowRef : undefined}
                 className="scene-panel-overflow"
                 aria-labelledby={headingFocusTargetId}
             >

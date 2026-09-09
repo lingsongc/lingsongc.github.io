@@ -5,7 +5,6 @@ import {
     normalizeWheelDelta,
     noteWheelActivity,
     releaseWheelNeutrality,
-    wheelCompositionOffset,
     wheelIntentProgress,
     WHEEL_INTENT_PAUSE_MS,
     WHEEL_INTENT_RETURN_MS,
@@ -69,12 +68,6 @@ describe("wheel intent", () => {
             state,
             100 + WHEEL_INTENT_PAUSE_MS + WHEEL_INTENT_RETURN_MS,
         )).toBe(0);
-    });
-
-    it("maps bounded forward and backward resistance to the 24px composition pull", () => {
-        expect(wheelCompositionOffset(1)).toBe(-24);
-        expect(wheelCompositionOffset(-1)).toBe(24);
-        expect(wheelCompositionOffset(2)).toBe(-24);
     });
 
     it("requires momentum to become neutral after a transition", () => {

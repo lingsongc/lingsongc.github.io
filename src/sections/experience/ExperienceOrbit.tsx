@@ -160,7 +160,12 @@ export function ExperienceOrbit({
 
     return (
         <>
-            <aside ref={orbitRef} className="experience-orbit" aria-label={`${label} entries`}>
+            <aside
+                ref={orbitRef}
+                className="experience-orbit"
+                data-scene-input-owner
+                aria-label={`${label} entries`}
+            >
                 <svg className="experience-orbit-ring" viewBox={experienceOrbitViewBox} style={experienceOrbitSectionStyles} aria-hidden="true">
                     <ellipse className="experience-orbit-path" cx={experienceOrbitGeometry.viewBoxWidth / 2} cy={experienceOrbitGeometry.viewBoxHeight / 2} rx={experienceOrbitGeometry.radiusX} ry={experienceOrbitGeometry.radiusY} />
                 </svg>

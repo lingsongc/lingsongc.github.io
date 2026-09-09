@@ -2,6 +2,7 @@ import {
     useEffect,
     useState,
     type CSSProperties,
+    type KeyboardEvent,
     type MouseEvent,
     type RefObject,
 } from "react";
@@ -74,6 +75,16 @@ export function Navigation({
         }
     };
 
+    // Gives Space the same named-control activation as Enter in controlled mode.
+    const handleNavigationKeyDown = (
+        event: KeyboardEvent<HTMLAnchorElement>,
+        sectionId: SceneId,
+    ) => {
+        if (event.key !== " " || !sceneControl) return;
+        event.preventDefault();
+        if (!busy) sceneControl.onSceneRequest(sectionId);
+    };
+
     return (
         <>
             <div ref={railRef} className="navigation-rail">
@@ -119,6 +130,7 @@ export function Navigation({
                                     tabIndex={busy ? -1 : undefined}
                                     style={{ "--navigation-travel-progress": markerProgress } as CSSProperties}
                                     onClick={(event) => handleNavigationClick(event, section.id)}
+                                    onKeyDown={(event) => handleNavigationKeyDown(event, section.id)}
                                 >
                                     <span className="navigation-label">{section.label}</span>
                                 </a>

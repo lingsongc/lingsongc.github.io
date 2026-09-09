@@ -7,8 +7,8 @@ import { homeCircleSize } from "./motion/mainCircleGeometry";
 import { resolveMainCircleSceneEndpoint } from "./motion/mainCircleSceneEndpoints";
 import { useMainCircleImageLifecycle } from "./motion/useMainCircleImageLifecycle";
 import { useSlideshowCoordinator } from "./motion/useSlideshowCoordinator";
-import { useWheelSceneIntent } from "./motion/useWheelSceneIntent";
-import { wheelCompositionOffset } from "./motion/wheelIntent";
+import { useSceneInput } from "./motion/useSceneInput";
+import { sceneCompositionOffset } from "./motion/sceneInputIntent";
 import { About } from "./sections/about/About";
 import { Contact } from "./sections/contact/Contact";
 import { Experience } from "./sections/experience/Experience";
@@ -21,6 +21,7 @@ import type { SceneId } from "./types/scene";
 // Composes the six viewport Sections around one page-level slideshow coordinator.
 export default function App() {
     const mainCircleRef = useRef<HTMLDivElement>(null);
+    const activeSceneScrollerRef = useRef<HTMLDivElement>(null);
     const homeSectionRef = useRef<HTMLElement>(null);
     const aboutFallbackRef = useRef<HTMLDivElement>(null);
     const experienceFallbackRef = useRef<HTMLDivElement>(null);
@@ -33,7 +34,9 @@ export default function App() {
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const [easedTravelProgress, setEasedTravelProgress] = useState(0);
     const slideshow = useSlideshowCoordinator("home");
-    const wheelIntent = useWheelSceneIntent({
+    const sceneInput = useSceneInput({
+        activeScrollerRef: activeSceneScrollerRef,
+        currentSceneId: slideshow.currentSceneId,
         phase: slideshow.phase,
         requestScene: slideshow.requestScene,
     });
@@ -47,9 +50,9 @@ export default function App() {
         // Portalled Section layers read the same page-owned pull as the viewport stage.
         document.documentElement.style.setProperty(
             "--slideshow-resistance-offset",
-            `${wheelCompositionOffset(wheelIntent.resistanceProgress)}px`,
+            `${sceneCompositionOffset(sceneInput.resistanceProgress)}px`,
         );
-    }, [wheelIntent.resistanceProgress]);
+    }, [sceneInput.resistanceProgress]);
 
     useEffect(() => () => {
         document.documentElement.style.removeProperty("--slideshow-resistance-offset");
@@ -94,18 +97,18 @@ export default function App() {
 
     // Converts a named control activation into one direct, non-queued request.
     const requestScene = useCallback((sceneId: SceneId) => {
-        wheelIntent.cancelResistance();
+        sceneInput.cancelResistance();
         slideshow.requestScene({
             kind: "direct",
             destinationSceneId: sceneId,
             source: "navigation",
         });
-    }, [slideshow.requestScene, wheelIntent.cancelResistance]);
+    }, [slideshow.requestScene, sceneInput.cancelResistance]);
 
     return (
         <>
             <BackgroundGrid
-                resistanceProgress={wheelIntent.resistanceProgress}
+                resistanceProgress={sceneInput.resistanceProgress}
                 warpTargetRef={mainCircleRef}
             />
 
@@ -142,6 +145,7 @@ export default function App() {
                 <ScenePanel
                     active={slideshow.activeSceneId === "home"}
                     headingFocusTargetId="home-title"
+                    overflowRef={activeSceneScrollerRef}
                     phase={slideshow.phase}
                     sceneId="home"
                 >
@@ -155,6 +159,7 @@ export default function App() {
                 <ScenePanel
                     active={slideshow.activeSceneId === "about"}
                     headingFocusTargetId="about-title"
+                    overflowRef={activeSceneScrollerRef}
                     phase={slideshow.phase}
                     sceneId="about"
                 >
@@ -168,6 +173,7 @@ export default function App() {
                 <ScenePanel
                     active={slideshow.activeSceneId === "experience"}
                     headingFocusTargetId="experience-title"
+                    overflowRef={activeSceneScrollerRef}
                     phase={slideshow.phase}
                     sceneId="experience"
                 >
@@ -182,6 +188,7 @@ export default function App() {
                 <ScenePanel
                     active={slideshow.activeSceneId === "projects"}
                     headingFocusTargetId="project-title"
+                    overflowRef={activeSceneScrollerRef}
                     phase={slideshow.phase}
                     sceneId="projects"
                 >
@@ -195,6 +202,7 @@ export default function App() {
                 <ScenePanel
                     active={slideshow.activeSceneId === "skills"}
                     headingFocusTargetId="skill-title"
+                    overflowRef={activeSceneScrollerRef}
                     phase={slideshow.phase}
                     sceneId="skills"
                 >
@@ -204,6 +212,7 @@ export default function App() {
                 <ScenePanel
                     active={slideshow.activeSceneId === "contact"}
                     headingFocusTargetId="contact-title"
+                    overflowRef={activeSceneScrollerRef}
                     phase={slideshow.phase}
                     sceneId="contact"
                 >
