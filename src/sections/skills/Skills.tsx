@@ -59,7 +59,7 @@ export function Skills({ lifecycle }: SkillsProps) {
             aria-labelledby="skill-title"
             onTransitionEnd={handleTransitionEnd}
         >
-            <h2 id="skill-title">Skills</h2>
+            <h2 id="skill-title" tabIndex={-1}>Skills</h2>
             <div>
                 {skillGroups.map((group) => {
                     const categoryId = skillCategoryId(group.category);

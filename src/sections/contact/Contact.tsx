@@ -215,7 +215,7 @@ export function Contact({ lifecycle, sectionRef }: ContactProps) {
                 </nav>
             </div>
             <div className="contact-content">
-                <h2 id="contact-title">Contact</h2>
+                <h2 id="contact-title" tabIndex={-1}>Contact</h2>
                 <p className="contact-description">Have a project in mind?</p>
                 <a className="contact-action" href="mailto:lingsong.c4@gmail.com">Send me an email</a>
             </div>

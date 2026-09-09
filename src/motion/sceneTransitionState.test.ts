@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import type { ScenePhase, SceneRequest } from "../types/scene";
+import { sceneOrder, type ScenePhase, type SceneRequest } from "../types/scene";
 import {
     advanceSceneTransition,
     createSceneTransitionState,
@@ -71,6 +71,30 @@ describe("scene transition state", () => {
             direction: "forward",
         });
         expect(update.state.requestedSceneId).toBe("contact");
+    });
+
+    it.each(sceneOrder.flatMap((originSceneId) => sceneOrder
+        .filter((destinationSceneId) => destinationSceneId !== originSceneId)
+        .map((destinationSceneId) => [originSceneId, destinationSceneId] as const),
+    ))("accepts direct rail travel from %s to %s without intermediate state", (
+        originSceneId,
+        destinationSceneId,
+    ) => {
+        const update = requestSceneTransition(createSceneTransitionState(originSceneId), {
+            kind: "direct",
+            destinationSceneId,
+            source: "navigation",
+        });
+
+        expect(update.result).toMatchObject({
+            status: "accepted",
+            destinationSceneId,
+        });
+        expect(update.state).toMatchObject({
+            currentSceneId: originSceneId,
+            phase: "closing",
+            requestedSceneId: destinationSceneId,
+        });
     });
 
     it("derives backward direction for a reverse direct request", () => {

@@ -13,6 +13,7 @@ import {
     requestSceneTransition,
     type SceneTransitionState,
 } from "./sceneTransitionState";
+import { sceneIdFromHash, sceneUrl } from "./sceneHistory";
 import { MAIN_CIRCLE_TRAVEL_DURATION_MS } from "./mainCircleTravel";
 
 export type SlideshowCoordinatorSnapshot = SceneTransitionState & {
@@ -127,6 +128,7 @@ export function useSlideshowCoordinator(
         controllerRef.current = createSlideshowCoordinator(initialSceneId, options);
     }
     const controller = controllerRef.current;
+    const lastHandledHashRef = useRef(window.location.hash);
     const snapshot = useSyncExternalStore(
         controller.subscribe,
         controller.getSnapshot,
@@ -140,6 +142,59 @@ export function useSlideshowCoordinator(
             queueMicrotask(() => {
                 if (effectVersionRef.current === effectVersion) controller.dispose();
             });
+        };
+    }, [controller]);
+
+    useEffect(() => {
+        // Replaces only malformed initial hashes; an absent hash remains the valid Home default.
+        if (!window.location.hash || sceneIdFromHash(window.location.hash)) return;
+        lastHandledHashRef.current = "#home";
+        window.history.replaceState({ sceneId: "home" }, "", sceneUrl("home", window.location));
+    }, []);
+
+    useEffect(() => {
+        // The circle has reached its endpoint when opening begins, so this is the single URL write.
+        if (snapshot.phase !== "opening" || snapshot.requestedSceneId !== snapshot.currentSceneId) return;
+        if (sceneIdFromHash(window.location.hash) === snapshot.currentSceneId) return;
+
+        lastHandledHashRef.current = `#${snapshot.currentSceneId}`;
+        window.history.pushState(
+            { sceneId: snapshot.currentSceneId },
+            "",
+            sceneUrl(snapshot.currentSceneId, window.location),
+        );
+    }, [snapshot.currentSceneId, snapshot.phase, snapshot.requestedSceneId]);
+
+    useEffect(() => {
+        // Routes native Back, Forward, and manually changed hashes through the direct coordinator path.
+        const requestLocationScene = () => {
+            const hash = window.location.hash;
+            if (hash === lastHandledHashRef.current) return;
+            lastHandledHashRef.current = hash;
+
+            const destinationSceneId = sceneIdFromHash(hash);
+            if (!destinationSceneId) {
+                lastHandledHashRef.current = "#home";
+                window.history.replaceState({ sceneId: "home" }, "", sceneUrl("home", window.location));
+                controller.requestScene({
+                    kind: "direct",
+                    destinationSceneId: "home",
+                    source: "history",
+                });
+                return;
+            }
+            controller.requestScene({
+                kind: "direct",
+                destinationSceneId,
+                source: "history",
+            });
+        };
+
+        window.addEventListener("popstate", requestLocationScene);
+        window.addEventListener("hashchange", requestLocationScene);
+        return () => {
+            window.removeEventListener("popstate", requestLocationScene);
+            window.removeEventListener("hashchange", requestLocationScene);
         };
     }, [controller]);
 

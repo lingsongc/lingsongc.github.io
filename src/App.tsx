@@ -6,6 +6,7 @@ import { ScenePanel } from "./components/scene-panel/ScenePanel";
 import { homeCircleSize } from "./motion/mainCircleGeometry";
 import { resolveMainCircleSceneEndpoint } from "./motion/mainCircleSceneEndpoints";
 import { useMainCircleImageLifecycle } from "./motion/useMainCircleImageLifecycle";
+import { initialSceneIdFromHash } from "./motion/sceneHistory";
 import { useSlideshowCoordinator } from "./motion/useSlideshowCoordinator";
 import { useSceneInput } from "./motion/useSceneInput";
 import { sceneCompositionOffset } from "./motion/sceneInputIntent";
@@ -16,7 +17,17 @@ import { Home } from "./sections/home/Home";
 import { Projects } from "./sections/projects/Projects";
 import { Skills } from "./sections/skills/Skills";
 import type { MainCircleImagePublisher } from "./types/images";
-import type { SceneId } from "./types/scene";
+import type { SceneId, ScenePhase } from "./types/scene";
+
+// Maps each coordinator-owned scene to its Section-owned focus destination.
+const sceneHeadingIds: Record<SceneId, string> = {
+    home: "home-title",
+    about: "about-title",
+    experience: "experience-title",
+    projects: "project-title",
+    skills: "skill-title",
+    contact: "contact-title",
+};
 
 // Composes the six viewport Sections around one page-level slideshow coordinator.
 export default function App() {
@@ -33,7 +44,9 @@ export default function App() {
     const navigationCopyrightRef = useRef<HTMLElement>(null);
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const [easedTravelProgress, setEasedTravelProgress] = useState(0);
-    const slideshow = useSlideshowCoordinator("home");
+    const initialSceneIdRef = useRef(initialSceneIdFromHash(window.location.hash));
+    const slideshow = useSlideshowCoordinator(initialSceneIdRef.current);
+    const previousScenePhaseRef = useRef<ScenePhase | null>(null);
     const sceneInput = useSceneInput({
         activeScrollerRef: activeSceneScrollerRef,
         currentSceneId: slideshow.currentSceneId,
@@ -104,6 +117,18 @@ export default function App() {
             source: "navigation",
         });
     }, [slideshow.requestScene, sceneInput.cancelResistance]);
+
+    useEffect(() => {
+        const previousPhase = previousScenePhaseRef.current;
+        if (previousPhase === "opening" && slideshow.phase === "idle") {
+            const focusedElement = document.activeElement;
+            if (!isExplicitControl(focusedElement)) {
+                const heading = document.getElementById(sceneHeadingIds[slideshow.currentSceneId]);
+                heading?.focus({ preventScroll: true });
+            }
+        }
+        previousScenePhaseRef.current = slideshow.phase;
+    }, [slideshow.currentSceneId, slideshow.phase]);
 
     return (
         <>
@@ -224,4 +249,11 @@ export default function App() {
             </main>
         </>
     );
+}
+
+// Leaves an intentionally active link, button, or form field in place after its scene opens.
+function isExplicitControl(element: Element | null) {
+    return element?.matches(
+        "a, button, input, textarea, select, option, [contenteditable]:not([contenteditable='false']), [role='button'], [role='slider'], [role='listbox']",
+    ) ?? false;
 }

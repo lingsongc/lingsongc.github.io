@@ -92,7 +92,7 @@ export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomePro
                 ))}
             </div>
             <div className="home-text">
-                <h1 id="home-title" className="home-title" aria-label={homeDetails.name.fullName}>
+                <h1 id="home-title" className="home-title" aria-label={homeDetails.name.fullName} tabIndex={-1}>
                     <span className={`home-name-left ${homeDetails.name.isWestern ? "home-first-name" : ""}`} aria-hidden="true">
                         <span className="home-name-value">{leftName}</span>
                     </span>

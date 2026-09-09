@@ -91,7 +91,7 @@ export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCir
             <div className="experience-copy">
                 <header className="experience-header">
                     <div className="experience-header-content">
-                        <h2 id="experience-title" className="experience-title">
+                        <h2 id="experience-title" className="experience-title" tabIndex={-1}>
                             {experienceType === "experience" ? "Experience" : "Education"}
                         </h2>
                         <div

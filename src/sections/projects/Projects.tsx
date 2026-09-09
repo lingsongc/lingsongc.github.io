@@ -71,7 +71,7 @@ export function Projects({ lifecycle, restingContainerRef, onMainCircleImageChan
             className="project-container"
             aria-labelledby="project-title"
         >
-            <h2 id="project-title" className="project-title">Projects</h2>
+            <h2 id="project-title" className="project-title" tabIndex={-1}>Projects</h2>
             <ProjectOrbit
                 activeProjectId={activeProjectId}
                 projects={projects}

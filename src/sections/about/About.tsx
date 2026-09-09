@@ -88,7 +88,7 @@ export function About({ lifecycle, restingContainerRef, onMainCircleImageChange 
             aria-labelledby="about-title"
         >
             <div ref={contentRef} className="about-text" onTransitionEnd={handleContentTransitionEnd}>
-                <h2 id="about-title">About Me</h2>
+                <h2 id="about-title" tabIndex={-1}>About Me</h2>
                 <div className="about-description">
                     {paragraphs.map((paragraph) => (
                         <p key={paragraph}>{paragraph.trim()}</p>
