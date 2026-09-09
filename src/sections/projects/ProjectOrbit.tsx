@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef } from "react";
+import { useLayoutEffect, useRef, type AnimationEvent } from "react";
 import type { Project } from "../../data/projects";
 import {
     fitProjectAngleToViewport,
@@ -15,6 +15,7 @@ type ProjectOrbitProps = {
     projects: readonly Project[];
     transitionState: ProjectOrbitTransitionState;
     onProjectSelect: (project: Project) => void;
+    onTransitionComplete?: () => void;
 };
 
 // Renders project controls across three rings and keeps them inside the viewport.
@@ -23,11 +24,24 @@ export function ProjectOrbit({
     projects,
     transitionState,
     onProjectSelect,
+    onTransitionComplete,
 }: ProjectOrbitProps) {
     const orbitRef = useRef<HTMLDivElement>(null);
     const ringRefs = useRef<Array<HTMLSpanElement | null>>([]);
     const planetRefs = useRef<Array<HTMLLIElement | null>>([]);
     const buttonRefs = useRef<Array<HTMLButtonElement | null>>([]);
+
+    // Reports the final ring's owned entry or exit animation as orbit completion.
+    const handleOrbitAnimationEnd = (event: AnimationEvent<HTMLDivElement>) => {
+        const target = event.target;
+        if (
+            !(target instanceof HTMLElement)
+            || target.dataset.ringIndex !== String(PROJECT_RING_COUNT)
+            || (event.animationName !== "project-orbit-enter" && event.animationName !== "project-orbit-exit")
+        ) return;
+
+        onTransitionComplete?.();
+    };
 
     useLayoutEffect(() => {
         const orbit = orbitRef.current;
@@ -60,7 +74,11 @@ export function ProjectOrbit({
     }, [projects]);
 
     return (
-        <div ref={orbitRef} className={`project-orbit${transitionState === "idle" ? "" : ` project-content-${transitionState}`}`}>
+        <div
+            ref={orbitRef}
+            className={`project-orbit${transitionState === "idle" ? "" : ` project-content-${transitionState}`}`}
+            onAnimationEnd={handleOrbitAnimationEnd}
+        >
             <div aria-hidden="true">
                 {Array.from({ length: PROJECT_RING_COUNT }, (_, index) => (
                     <span

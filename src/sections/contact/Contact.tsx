@@ -1,12 +1,14 @@
-import { useRef, type RefObject } from "react";
+import { useEffect, useRef, type RefObject } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import type { SceneLifecycleControl } from "../../types/scene";
 import { contactFinalOffset, contactInitialOffset } from "./contactGeometry";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
 type ContactProps = {
+    lifecycle?: SceneLifecycleControl;
     sectionRef: RefObject<HTMLElement | null>;
 };
 
@@ -37,12 +39,15 @@ const contactProfiles = [
 const contactProfilesById = new Map(contactProfiles.map((profile) => [profile.id, profile]));
 
 // Renders Contact content and animates its profile links out from the main circle.
-export function Contact({ sectionRef }: ContactProps) {
+export function Contact({ lifecycle, sectionRef }: ContactProps) {
     const orbitRef = useRef<HTMLDivElement>(null);
     const blobLayerRef = useRef<HTMLDivElement>(null);
     const linkLayerRef = useRef<HTMLElement>(null);
     const satelliteRefs = useRef<Array<HTMLSpanElement | null>>([]);
     const linkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
+    const splitTimelineRef = useRef<gsap.core.Timeline | null>(null);
+    const lifecycleRef = useRef(lifecycle);
+    lifecycleRef.current = lifecycle;
 
     useGSAP(() => {
         const section = sectionRef.current;
@@ -85,7 +90,21 @@ export function Contact({ sectionRef }: ContactProps) {
             y: (_, element: HTMLElement) => profileInitialOffset(element, 1),
             scale: 1,
         });
-        const splitTimeline = gsap.timeline({ paused: true })
+        const splitTimeline = gsap.timeline({
+            paused: true,
+            onComplete: () => {
+                const currentLifecycle = lifecycleRef.current;
+                if (currentLifecycle?.phase === "opening") {
+                    currentLifecycle.onTransitionComplete("opening");
+                }
+            },
+            onReverseComplete: () => {
+                const currentLifecycle = lifecycleRef.current;
+                if (currentLifecycle?.phase === "closing") {
+                    currentLifecycle.onTransitionComplete("closing");
+                }
+            },
+        })
             .to(blobLayer, { autoAlpha: 1, duration: 0.06 }, 0)
             .to(splitElements, {
                 x: (_, element: HTMLElement) => profileFinalOffset(element, 0),
@@ -95,7 +114,8 @@ export function Contact({ sectionRef }: ContactProps) {
             }, 0)
             .to(linkLayer, { autoAlpha: 1, duration: 0.12 }, 0.38);
 
-        const splitTrigger = ScrollTrigger.create({
+        splitTimelineRef.current = splitTimeline;
+        const splitTrigger = lifecycle ? null : ScrollTrigger.create({
             trigger: section,
             start: "top 1px",
             invalidateOnRefresh: true,
@@ -107,10 +127,42 @@ export function Contact({ sectionRef }: ContactProps) {
         });
 
         return () => {
-            splitTrigger.kill();
+            splitTrigger?.kill();
             splitTimeline.kill();
+            splitTimelineRef.current = null;
         };
-    }, { scope: sectionRef });
+    }, {
+        scope: sectionRef,
+        dependencies: [Boolean(lifecycle)],
+        revertOnUpdate: true,
+    });
+
+    useEffect(() => {
+        if (!lifecycle) return;
+        const splitTimeline = splitTimelineRef.current;
+        if (!splitTimeline) return;
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+        if (lifecycle.active && lifecycle.phase === "idle") {
+            splitTimeline.progress(1, true).pause();
+        } else if (lifecycle.active && lifecycle.phase === "opening") {
+            if (reducedMotion) {
+                splitTimeline.progress(1, true).pause();
+                lifecycle.onTransitionComplete("opening");
+            } else {
+                splitTimeline.play();
+            }
+        } else if (lifecycle.phase === "closing") {
+            if (reducedMotion) {
+                splitTimeline.progress(0, true).pause();
+                lifecycle.onTransitionComplete("closing");
+            } else {
+                splitTimeline.reverse();
+            }
+        } else {
+            splitTimeline.progress(0, true).pause();
+        }
+    }, [lifecycle?.active, lifecycle?.phase]);
 
     return (
         <section ref={sectionRef} id="contact" className="contact-container" aria-labelledby="contact-title">

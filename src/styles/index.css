@@ -9,5 +9,6 @@
 @import "../sections/about/about.css";
 @import "../sections/experience/experience.css";
 @import "../sections/projects/projects.css";
+@import "../sections/skills/skills.css";
 @import "../sections/contact/contact.css";
 @import "../pages/project-detail.css";

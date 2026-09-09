@@ -1,6 +1,7 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef, type RefObject, type TransitionEvent } from "react";
 import { homeDetails } from "../../data/about";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
+import type { SceneLifecycleControl } from "../../types/scene";
 
 const homeImage: ImageDescriptor = {
     src: "/about/profile.jpeg",
@@ -9,21 +10,32 @@ const homeImage: ImageDescriptor = {
 };
 
 type HomeProps = {
+    lifecycle?: SceneLifecycleControl;
     sectionRef: RefObject<HTMLElement | null>;
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
 // Renders the Home introduction and publishes its image at the top of the page.
-export function Home({ sectionRef, onMainCircleImageChange }: HomeProps) {
+export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomeProps) {
     const imageVisibleRef = useRef<boolean | null>(null);
+    const navigationRingRef = useRef<HTMLDivElement>(null);
     const leftName = homeDetails.name.isWestern
         ? homeDetails.name.firstName
         : homeDetails.name.lastName;
     const rightName = homeDetails.name.isWestern
         ? homeDetails.name.lastName
         : homeDetails.name.firstName;
+    const contentVisible = lifecycle?.active === true
+        && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
+    const controlled = lifecycle !== undefined;
+    const controlledExiting = controlled ? !contentVisible : false;
 
     useEffect(() => {
+        if (controlled) {
+            onMainCircleImageChange(contentVisible ? homeImage : null);
+            return;
+        }
+
         // Removes the Home image as soon as another section can take ownership.
         const updateImage = () => {
             const shouldShow = window.scrollY === 0;
@@ -35,11 +47,46 @@ export function Home({ sectionRef, onMainCircleImageChange }: HomeProps) {
         window.addEventListener("scroll", updateImage, { passive: true });
         updateImage();
         return () => window.removeEventListener("scroll", updateImage);
-    }, [onMainCircleImageChange]);
+    }, [contentVisible, controlled, onMainCircleImageChange]);
+
+    useEffect(() => {
+        if (!lifecycle || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+        const navigationRing = navigationRingRef.current;
+        const hasTimedTransition = navigationRing
+            ? getComputedStyle(navigationRing).transitionDuration
+                .split(",")
+                .some((duration) => Number.parseFloat(duration) > 0)
+            : false;
+        if (!navigationRing || hasTimedTransition) return;
+
+        lifecycle.onTransitionComplete(lifecycle.phase);
+    }, [lifecycle?.onTransitionComplete, lifecycle?.phase]);
+
+    // Reports completion from the longest Home-owned transform transition.
+    const handleHomeTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+        if (
+            !lifecycle
+            || event.target !== event.currentTarget
+            || event.propertyName !== "transform"
+            || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")
+        ) return;
+
+        lifecycle.onTransitionComplete(lifecycle.phase);
+    };
 
     return (
-        <section ref={sectionRef} id="home" className="home-container" aria-labelledby="home-title">
-            <div className="orbit-ring home-navigation-ring" aria-hidden="true">
+        <section
+            ref={sectionRef}
+            id="home"
+            className={`home-container${controlledExiting ? " home-exiting" : ""}`}
+            aria-labelledby="home-title"
+        >
+            <div
+                ref={navigationRingRef}
+                className="orbit-ring home-navigation-ring"
+                aria-hidden="true"
+                onTransitionEnd={handleHomeTransitionEnd}
+            >
                 {Array.from({ length: 6 }, (_, index) => (
                     <span className="home-navigation-exit-marker" key={index} />
                 ))}

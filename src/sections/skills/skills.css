@@ -1,0 +1,17 @@
+/* Skills uses a minimal lifecycle fade until its final composition is approved. */
+
+.skill-container-lifecycle {
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 500ms ease, visibility 0s linear 500ms;
+}
+
+.skill-container-lifecycle.skill-content-visible {
+    visibility: visible;
+    opacity: 1;
+    transition-delay: 0s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .skill-container-lifecycle { transition: none; }
+}

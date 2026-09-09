@@ -26,6 +26,7 @@ type ExperienceOrbitProps = {
     orbitRef: RefObject<HTMLElement | null>;
     onEntrySelect: (index: number) => void;
     onReady: () => void;
+    onTransitionComplete?: () => void;
 };
 
 // Renders and controls the circular selector for timeline entries.
@@ -39,9 +40,12 @@ export function ExperienceOrbit({
     orbitRef,
     onEntrySelect,
     onReady,
+    onTransitionComplete,
 }: ExperienceOrbitProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
+    const planetLayerRef = useRef<HTMLDivElement>(null);
     const interactiveRef = useRef(interactive);
+    const transitionCompleteRef = useRef(onTransitionComplete);
     const targetIndexRef = useRef(0);
     const activateRef = useRef(onEntrySelect);
     const selectRef = useRef<(index: number) => void>(() => undefined);
@@ -49,6 +53,7 @@ export function ExperienceOrbit({
     const [selectorFocused, setSelectorFocused] = useState(false);
     const [selectorHovered, setSelectorHovered] = useState(false);
     interactiveRef.current = interactive;
+    transitionCompleteRef.current = onTransitionComplete;
     activateRef.current = onEntrySelect;
 
     // Activates an entry and scrolls its hidden snap area to the same position.
@@ -115,13 +120,25 @@ export function ExperienceOrbit({
         };
     }, [entries.length]);
 
+    useEffect(() => {
+        const planetLayer = planetLayerRef.current;
+        if (!transitionCompleteRef.current || !planetLayer) return;
+        const hasTimedTransition = getComputedStyle(planetLayer).transitionDuration
+            .split(",")
+            .some((duration) => Number.parseFloat(duration) > 0);
+        if (!hasTimedTransition) transitionCompleteRef.current();
+    }, [contentVisible]);
+
     // Rendering this layer at page level lets planets pass in front of the main circle.
     const planetLayer = (
         <div
+            ref={planetLayerRef}
             className={`experience-orbit-planets${contentVisible ? " experience-orbit-planets-visible" : ""}${interactive ? " experience-orbit-planets-ready" : ""}`}
             style={experienceOrbitLayerStyles}
             onTransitionEnd={(event) => {
-                if (event.target === event.currentTarget && event.propertyName === "transform" && contentVisible) onReady();
+                if (event.target !== event.currentTarget || event.propertyName !== "transform") return;
+                if (contentVisible) onReady();
+                transitionCompleteRef.current?.();
             }}
         >
             <ol className="experience-event-orbit-list" aria-label={`${label} entries`}>

@@ -1,7 +1,8 @@
-import { useEffect, useState, type RefObject } from "react";
+import { useEffect, useRef, useState, type RefObject, type TransitionEvent } from "react";
 import { aboutDetails } from "../../data/about";
 import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
+import type { SceneLifecycleControl } from "../../types/scene";
 
 const aboutImage: ImageDescriptor = {
     src: "/about/profile-2.jpg",
@@ -11,28 +12,33 @@ const aboutImage: ImageDescriptor = {
 };
 
 type AboutProps = {
+    lifecycle?: SceneLifecycleControl;
     restingContainerRef: RefObject<HTMLDivElement | null>;
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
-// Reveals the About content and publishes its image during the resting interval.
-export function About({ restingContainerRef, onMainCircleImageChange }: AboutProps) {
-    const [contentVisible, setContentVisible] = useState(false);
+// Reveals About from explicit scene state while retaining the scroll-bound migration fallback.
+export function About({ lifecycle, restingContainerRef, onMainCircleImageChange }: AboutProps) {
+    const contentRef = useRef<HTMLDivElement>(null);
+    const [fallbackContentVisible, setFallbackContentVisible] = useState(false);
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
+    const controlledContentVisible = lifecycle?.active === true
+        && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
+    const contentVisible = lifecycle ? controlledContentVisible : fallbackContentVisible;
 
     useEffect(() => {
+        if (lifecycle) return;
         const restingContainer = restingContainerRef.current;
         if (!restingContainer) return;
         let currentVisibility = false;
 
-        // Keeps the content and main-circle image in sync with the section bounds.
+        // Keeps the fallback content state aligned with the current resting bounds.
         const updateContentVisibility = () => {
             const { start, end } = sectionRestingBounds(restingContainer);
             const shouldShow = window.scrollY >= start && window.scrollY < end;
             if (shouldShow === currentVisibility) return;
             currentVisibility = shouldShow;
-            setContentVisible(shouldShow);
-            onMainCircleImageChange(shouldShow ? aboutImage : null);
+            setFallbackContentVisible(shouldShow);
         };
 
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
@@ -43,14 +49,44 @@ export function About({ restingContainerRef, onMainCircleImageChange }: AboutPro
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
-    }, [onMainCircleImageChange, restingContainerRef]);
+    }, [lifecycle, restingContainerRef]);
+
+    useEffect(() => {
+        onMainCircleImageChange(contentVisible ? aboutImage : null);
+    }, [contentVisible, onMainCircleImageChange]);
+
+    useEffect(() => {
+        if (!lifecycle || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+        const content = contentRef.current;
+        const hasTimedTransition = content
+            ? getComputedStyle(content).transitionDuration
+                .split(",")
+                .some((duration) => Number.parseFloat(duration) > 0)
+            : false;
+        if (!content || hasTimedTransition) return;
+
+        // A zero-duration transition has no transitionend event, so complete it immediately.
+        lifecycle.onTransitionComplete(lifecycle.phase);
+    }, [lifecycle?.onTransitionComplete, lifecycle?.phase]);
+
+    // Reports completion only when About's owned seam transition actually finishes.
+    const handleContentTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
+        if (
+            !lifecycle
+            || event.currentTarget !== event.target
+            || event.propertyName !== "clip-path"
+            || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")
+        ) return;
+
+        lifecycle.onTransitionComplete(lifecycle.phase);
+    };
 
     return (
         <section
             className={`about-container${contentVisible ? " about-content-visible" : ""}`}
             aria-labelledby="about-title"
         >
-            <div className="about-text">
+            <div ref={contentRef} className="about-text" onTransitionEnd={handleContentTransitionEnd}>
                 <h2 id="about-title">About Me</h2>
                 <div className="about-description">
                     {paragraphs.map((paragraph) => (

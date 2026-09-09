@@ -4,6 +4,7 @@ import { education } from "../../data/education";
 import { experiences } from "../../data/experiences";
 import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
+import type { SceneLifecycleControl } from "../../types/scene";
 import { ExperienceOrbit } from "./ExperienceOrbit";
 
 type ExperienceType = "experience" | "education";
@@ -16,16 +17,17 @@ const educationEvents = education.map(({ id, institution, qualification, ...even
 }));
 const eventsByType = { experience: experienceEvents, education: educationEvents };
 type ExperienceProps = {
+    lifecycle?: SceneLifecycleControl;
     restingContainerRef: RefObject<HTMLDivElement | null>;
     orbitRef: RefObject<HTMLElement | null>;
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
 // Coordinates the shared Experience and Education timeline, content, and image.
-export function Experience({ restingContainerRef, orbitRef, onMainCircleImageChange }: ExperienceProps) {
+export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCircleImageChange }: ExperienceProps) {
     const imageVisibleRef = useRef(false);
     const activeImageRef = useRef<ImageDescriptor | null>(null);
-    const [contentVisible, setContentVisible] = useState(false);
+    const [fallbackContentVisible, setFallbackContentVisible] = useState(false);
     const [orbitReady, setOrbitReady] = useState(false);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
     const [activeEventIds, setActiveEventIds] = useState({
@@ -38,25 +40,23 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
     ) ?? activeEvents[0];
     activeImageRef.current = eventImage(experienceType, activeEvent.id);
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
+    const controlledContentVisible = lifecycle?.active === true
+        && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
+    const contentVisible = lifecycle ? controlledContentVisible : fallbackContentVisible;
 
     useEffect(() => {
+        if (lifecycle) return;
         const restingContainer = restingContainerRef.current;
         if (!restingContainer) return;
         let contentVisible = false;
 
-        // Keeps timeline visibility and its main-circle image aligned with scrolling.
+        // Keeps the fallback timeline visibility aligned with scrolling.
         const updateContentVisibility = () => {
             const { start, end } = sectionRestingBounds(restingContainer);
             const shouldShow = window.scrollY >= start && window.scrollY <= end;
             if (shouldShow === contentVisible) return;
             contentVisible = shouldShow;
-            imageVisibleRef.current = shouldShow;
-            setContentVisible(shouldShow);
-            onMainCircleImageChange(shouldShow ? activeImageRef.current : null);
-            setOrbitReady(false);
-            if (shouldShow && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-                setOrbitReady(true);
-            }
+            setFallbackContentVisible(shouldShow);
         };
 
         window.addEventListener("scroll", updateContentVisibility, { passive: true });
@@ -66,7 +66,13 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
             window.removeEventListener("scroll", updateContentVisibility);
             window.removeEventListener("resize", updateContentVisibility);
         };
-    }, [onMainCircleImageChange, restingContainerRef]);
+    }, [lifecycle, restingContainerRef]);
+
+    useEffect(() => {
+        imageVisibleRef.current = contentVisible;
+        onMainCircleImageChange(contentVisible ? activeImageRef.current : null);
+        setOrbitReady(contentVisible && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    }, [contentVisible, onMainCircleImageChange]);
 
     // Selects a timeline event while preserving each timeline's last selection.
     const activateEvent = (index: number) => {
@@ -98,6 +104,7 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
                                     className={`experience-type-button${experienceType === type ? " experience-type-button-active" : ""}`}
                                     type="button"
                                     aria-pressed={experienceType === type}
+                                    disabled={!contentVisible}
                                     onClick={() => {
                                         if (type === experienceType) return;
                                         setExperienceType(type);
@@ -143,11 +150,17 @@ export function Experience({ restingContainerRef, orbitRef, onMainCircleImageCha
                 contentVisible={contentVisible}
                 entries={activeEvents}
                 imagePath={(id) => eventImagePath(experienceType, id)}
-                interactive={orbitReady}
+                interactive={orbitReady && contentVisible}
                 label={experienceType}
                 orbitRef={orbitRef}
                 onEntrySelect={activateEvent}
-                onReady={() => setOrbitReady(true)}
+                onReady={() => {
+                    if (contentVisible) setOrbitReady(true);
+                }}
+                onTransitionComplete={() => {
+                    if (!lifecycle || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+                    lifecycle.onTransitionComplete(lifecycle.phase);
+                }}
             />
         </section>
     );
