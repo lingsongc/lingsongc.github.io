@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { createWarpedGridPaths, warpGridPoint, type GridCircle } from "./backgroundGridGeometry";
+import {
+    createWarpedGridPaths,
+    triangularGridDisplacement,
+    warpGridPoint,
+    type GridCircle,
+} from "./backgroundGridGeometry";
 
 const circle: GridCircle = { x: 0, y: 0, radius: 10 };
 
@@ -38,6 +43,79 @@ describe("background grid geometry", () => {
         const paths = createWarpedGridPaths(320, 180, { x: 320, y: 180, radius: 80 });
 
         expect(paths.every((path) => !path.includes("NaN") && !path.includes("Infinity"))).toBe(true);
+    });
+
+    it("keeps triangular displacement at zero without resistance", () => {
+        expect(triangularGridDisplacement(720, 900, {
+            width: 1440,
+            height: 900,
+            progress: 0,
+        })).toEqual([0, 0]);
+    });
+
+    it("lifts 32px from the bottom centre at full forward resistance", () => {
+        expect(triangularGridDisplacement(720, 900, {
+            width: 1440,
+            height: 900,
+            progress: 1,
+        })).toEqual([0, -32]);
+    });
+
+    it("mirrors forward and backward influence across the viewport", () => {
+        const forward = triangularGridDisplacement(620, 750, {
+            width: 1440,
+            height: 900,
+            progress: 0.75,
+        });
+        const backward = triangularGridDisplacement(620, 150, {
+            width: 1440,
+            height: 900,
+            progress: -0.75,
+        });
+
+        expect(forward[0]).toBe(0);
+        expect(backward[0]).toBe(0);
+        expect(forward[1]).toBeCloseTo(-backward[1]);
+    });
+
+    it("is horizontally symmetric around the edge centre", () => {
+        const left = triangularGridDisplacement(620, 750, {
+            width: 1440,
+            height: 900,
+            progress: 1,
+        });
+        const right = triangularGridDisplacement(820, 750, {
+            width: 1440,
+            height: 900,
+            progress: 1,
+        });
+        expect(left).toEqual(right);
+    });
+
+    it("leaves points beyond the triangular influence fixed", () => {
+        expect(triangularGridDisplacement(0, 900, {
+            width: 1440,
+            height: 900,
+            progress: 1,
+        })).toEqual([0, 0]);
+        expect(triangularGridDisplacement(720, 0, {
+            width: 1440,
+            height: 900,
+            progress: 1,
+        })).toEqual([0, 0]);
+    });
+
+    it("caps combined circle and triangular displacement", () => {
+        const [warpedX, warpedY] = warpGridPoint(720, 700, {
+            x: 720,
+            y: 752,
+            radius: 52,
+        }, {
+            width: 1440,
+            height: 900,
+            progress: 1,
+        });
+        expect(Math.hypot(warpedX - 720, warpedY - 700)).toBeCloseTo(64);
     });
 });
 

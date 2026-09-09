@@ -5,15 +5,18 @@ const GRID_SPACING = 48;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 type BackgroundGridProps = {
+    resistanceProgress?: number;
     warpTargetRef?: RefObject<HTMLElement | null>;
 };
 
 // Renders a fixed SVG grid that bends and fades around the main circle.
-export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
+export function BackgroundGrid({ resistanceProgress = 0, warpTargetRef }: BackgroundGridProps) {
     const linesRef = useRef<SVGGElement>(null);
     const fadeCircleRef = useRef<SVGCircleElement>(null);
+    const resistanceProgressRef = useRef(resistanceProgress);
     const filterId = useId();
     const maskId = useId();
+    resistanceProgressRef.current = resistanceProgress;
 
     useEffect(() => {
         const lines = linesRef.current;
@@ -24,51 +27,74 @@ export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
         let animationFrame = 0;
         let lastSignature = "";
 
-        // Updates the grid only when the viewport or circle geometry changes.
+        // Updates at most once per frame while geometry or resistance is changing.
         const render = () => {
-            if (!document.hidden) {
-                const warpTarget = warpTargetRef?.current;
-                const rect = warpTarget?.getBoundingClientRect();
-                const circle = rect
-                    ? {
-                        x: rect.left + rect.width / 2,
-                        y: rect.top + rect.height / 2,
-                        radius: Math.min(rect.width, rect.height) / 2,
-                    }
-                    : null;
-                const circleSignature = circle
-                    ? `${circle.x.toFixed(1)}:${circle.y.toFixed(1)}:${circle.radius.toFixed(1)}`
-                    : "static";
-                const signature = `${innerWidth}:${innerHeight}:${circleSignature}`;
+            animationFrame = 0;
+            if (document.hidden) return;
 
-                // Avoids rewriting every SVG path on unchanged animation frames.
-                if (signature !== lastSignature) {
-                    lastSignature = signature;
-                    const pathData = createWarpedGridPaths(innerWidth, innerHeight, circle, GRID_SPACING);
+            const warpTarget = warpTargetRef?.current;
+            const rect = warpTarget?.getBoundingClientRect();
+            const circle = rect
+                ? {
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                    radius: Math.min(rect.width, rect.height) / 2,
+                }
+                : null;
+            const circleSignature = circle
+                ? `${circle.x.toFixed(1)}:${circle.y.toFixed(1)}:${circle.radius.toFixed(1)}`
+                : "static";
+            const resistance = resistanceProgressRef.current;
+            const signature = `${innerWidth}:${innerHeight}:${circleSignature}:${resistance.toFixed(3)}`;
 
-                    while (pathElements.length < pathData.length) {
-                        const path = document.createElementNS(SVG_NAMESPACE, "path");
-                        lines.append(path);
-                        pathElements.push(path);
-                    }
-                    while (pathElements.length > pathData.length) pathElements.pop()?.remove();
-                    pathData.forEach((data, index) => pathElements[index].setAttribute("d", data));
+            // Avoids rewriting every SVG path on unchanged animation frames.
+            if (signature !== lastSignature) {
+                lastSignature = signature;
+                const pathData = createWarpedGridPaths(
+                    innerWidth,
+                    innerHeight,
+                    circle,
+                    GRID_SPACING,
+                    resistance,
+                );
 
-                    if (circle) {
-                        fadeCircle.setAttribute("cx", circle.x.toString());
-                        fadeCircle.setAttribute("cy", circle.y.toString());
-                        fadeCircle.setAttribute("r", (circle.radius + 24).toString());
-                    } else {
-                        fadeCircle.setAttribute("r", "0");
-                    }
+                while (pathElements.length < pathData.length) {
+                    const path = document.createElementNS(SVG_NAMESPACE, "path");
+                    lines.append(path);
+                    pathElements.push(path);
+                }
+                while (pathElements.length > pathData.length) pathElements.pop()?.remove();
+                pathData.forEach((data, index) => pathElements[index].setAttribute("d", data));
+
+                if (circle) {
+                    fadeCircle.setAttribute("cx", circle.x.toString());
+                    fadeCircle.setAttribute("cy", circle.y.toString());
+                    fadeCircle.setAttribute("r", (circle.radius + 24).toString());
+                } else {
+                    fadeCircle.setAttribute("r", "0");
                 }
             }
 
             animationFrame = requestAnimationFrame(render);
         };
 
+        // Stops the frame loop while hidden and resumes with a fresh geometry sample.
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                cancelAnimationFrame(animationFrame);
+                animationFrame = 0;
+                return;
+            }
+            lastSignature = "";
+            if (animationFrame === 0) animationFrame = requestAnimationFrame(render);
+        };
+
         animationFrame = requestAnimationFrame(render);
-        return () => cancelAnimationFrame(animationFrame);
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => {
+            cancelAnimationFrame(animationFrame);
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+        };
     }, [warpTargetRef]);
 
     return (

@@ -104,7 +104,10 @@ export default function App() {
 
     return (
         <>
-            <BackgroundGrid warpTargetRef={mainCircleRef} />
+            <BackgroundGrid
+                resistanceProgress={wheelIntent.resistanceProgress}
+                warpTargetRef={mainCircleRef}
+            />
 
             <Navigation
                 copyrightRef={navigationCopyrightRef}
