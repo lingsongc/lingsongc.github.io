@@ -24,11 +24,12 @@ export function Projects({ lifecycle, restingContainerRef, onMainCircleImageChan
     const controlledTransitionState: ProjectOrbitTransitionState = lifecycle?.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle")
         ? "visible"
-        : lifecycle?.phase === "closing"
+        : lifecycle?.active === true && lifecycle.phase === "closing"
             ? "exiting"
             : "idle";
     const transitionState = lifecycle ? controlledTransitionState : fallbackTransitionState;
     const contentVisible = transitionState === "visible";
+    const controlled = lifecycle !== undefined;
 
     useEffect(() => {
         if (lifecycle) return;
@@ -56,8 +57,8 @@ export function Projects({ lifecycle, restingContainerRef, onMainCircleImageChan
 
     useEffect(() => {
         imageVisibleRef.current = contentVisible;
-        onMainCircleImageChange(contentVisible ? projectImage(activeProjectRef.current) : null);
-    }, [contentVisible, onMainCircleImageChange]);
+        onMainCircleImageChange(controlled || contentVisible ? projectImage(activeProjectRef.current) : null);
+    }, [contentVisible, controlled, onMainCircleImageChange]);
 
     // Selects a project and updates the image when the section is visible.
     const selectProject = (project: Project) => {
@@ -77,7 +78,7 @@ export function Projects({ lifecycle, restingContainerRef, onMainCircleImageChan
                 transitionState={transitionState}
                 onProjectSelect={selectProject}
                 onTransitionComplete={() => {
-                    if (!lifecycle || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+                    if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
                     lifecycle.onTransitionComplete(lifecycle.phase);
                 }}
             />

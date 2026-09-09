@@ -152,7 +152,7 @@ export function Contact({ lifecycle, sectionRef }: ContactProps) {
             } else {
                 splitTimeline.play();
             }
-        } else if (lifecycle.phase === "closing") {
+        } else if (lifecycle.active && lifecycle.phase === "closing") {
             if (reducedMotion) {
                 splitTimeline.progress(0, true).pause();
                 lifecycle.onTransitionComplete("closing");

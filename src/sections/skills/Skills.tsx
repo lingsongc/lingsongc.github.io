@@ -28,7 +28,7 @@ export function Skills({ lifecycle }: SkillsProps) {
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
 
     useEffect(() => {
-        if (!lifecycle || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+        if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
         const section = sectionRef.current;
         const hasTimedTransition = section
             ? getComputedStyle(section).transitionDuration
@@ -43,7 +43,7 @@ export function Skills({ lifecycle }: SkillsProps) {
     // Reports completion from the minimal Skills visibility transition.
     const handleTransitionEnd = (event: TransitionEvent<HTMLElement>) => {
         if (
-            !lifecycle
+            !lifecycle?.active
             || event.target !== event.currentTarget
             || event.propertyName !== "opacity"
             || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")

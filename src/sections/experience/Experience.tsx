@@ -42,7 +42,8 @@ export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCir
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
     const controlledContentVisible = lifecycle?.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
-    const contentVisible = lifecycle ? controlledContentVisible : fallbackContentVisible;
+    const controlled = lifecycle !== undefined;
+    const contentVisible = controlled ? controlledContentVisible : fallbackContentVisible;
 
     useEffect(() => {
         if (lifecycle) return;
@@ -70,9 +71,9 @@ export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCir
 
     useEffect(() => {
         imageVisibleRef.current = contentVisible;
-        onMainCircleImageChange(contentVisible ? activeImageRef.current : null);
+        onMainCircleImageChange(controlled || contentVisible ? activeImageRef.current : null);
         setOrbitReady(contentVisible && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-    }, [contentVisible, onMainCircleImageChange]);
+    }, [contentVisible, controlled, onMainCircleImageChange]);
 
     // Selects a timeline event while preserving each timeline's last selection.
     const activateEvent = (index: number) => {
@@ -158,7 +159,7 @@ export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCir
                     if (contentVisible) setOrbitReady(true);
                 }}
                 onTransitionComplete={() => {
-                    if (!lifecycle || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+                    if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
                     lifecycle.onTransitionComplete(lifecycle.phase);
                 }}
             />

@@ -191,8 +191,14 @@
 }
 
 .navigation-home-ready .navigation-link,
-.navigation-effects-ready .navigation-link {
+.navigation-effects-ready .navigation-link,
+.navigation-controlled:not(.navigation-busy) .navigation-link {
     pointer-events: auto;
+}
+
+.navigation-busy .navigation-link {
+    cursor: default;
+    pointer-events: none;
 }
 
 .navigation-link::before,
@@ -205,6 +211,21 @@
     background-color: var(--colour-background);
     content: "";
     transition: background-color 180ms ease, border-radius 180ms ease, transform 180ms ease;
+}
+
+.navigation-link::after {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--navigation-button-size);
+    border-radius: 50%;
+    aspect-ratio: 1;
+    background-color: var(--colour-text);
+    content: "";
+    opacity: var(--navigation-travel-progress, 0);
+    transform: translate(-50%, -50%);
+    transition: opacity 80ms linear;
+    pointer-events: none;
 }
 
 .navigation-link-active::before {

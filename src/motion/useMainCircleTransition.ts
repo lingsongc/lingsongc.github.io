@@ -2,8 +2,14 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useLayoutEffect, useRef, type RefObject } from "react";
-import type { MainCircleGeometryValue, MainCircleTransition } from "../types/mainCircle";
+import type {
+    MainCircleDirectTransition,
+    MainCircleEndpoint,
+    MainCircleGeometryValue,
+    MainCircleTransition,
+} from "../types/mainCircle";
 import type { SceneId } from "../types/scene";
+import { MAIN_CIRCLE_TRAVEL_DURATION_MS, mainCircleTravelAtTime } from "./mainCircleTravel";
 import { mainCircleStateAtScroll, type MainCircleHandoff, type MainCircleState } from "./mainCircleTransitionState";
 import { elementDocumentTop, sectionIncomingTransitionRange } from "./sectionRestingBounds";
 
@@ -14,10 +20,18 @@ export function useMainCircleTransition(
     circleRef: RefObject<HTMLDivElement | null>,
     transitions: readonly MainCircleTransition[],
     navigationTargetId: SceneId | null,
+    directTransition?: MainCircleDirectTransition,
 ) {
     const linkedSectionUpdaterRef = useRef<(sectionId: SceneId | string) => void>(() => undefined);
+    const directEndpointsRef = useRef<{
+        from: MainCircleEndpoint;
+        key: string;
+        to: MainCircleEndpoint;
+    } | null>(null);
+    const directEnabled = directTransition !== undefined;
 
     useGSAP(() => {
+        if (directEnabled) return;
         const circle = circleRef.current;
         if (!circle) return;
 
@@ -67,11 +81,56 @@ export function useMainCircleTransition(
             linkedSectionUpdaterRef.current = () => undefined;
             scrollTrigger?.kill();
         };
-    }, [transitions]);
+    }, { dependencies: [transitions, directEnabled], revertOnUpdate: true });
 
     useLayoutEffect(() => {
-        if (navigationTargetId) linkedSectionUpdaterRef.current(navigationTargetId);
-    }, [navigationTargetId]);
+        if (!directEnabled && navigationTargetId) linkedSectionUpdaterRef.current(navigationTargetId);
+    }, [directEnabled, navigationTargetId]);
+
+    useLayoutEffect(() => {
+        const circle = circleRef.current;
+        if (!circle || !directTransition) return;
+        const {
+            currentSceneId,
+            ease,
+            onTravelProgress,
+            phase,
+            requestedSceneId,
+            resolveEndpoint,
+            travelProgress,
+        } = directTransition;
+
+        if (phase !== "moving" || !requestedSceneId) {
+            directEndpointsRef.current = null;
+            gsap.set(circle, resolveEndpoint(currentSceneId));
+            onTravelProgress?.(phase === "opening" ? 1 : 0);
+            return;
+        }
+
+        const transitionKey = `${currentSceneId}:${requestedSceneId}`;
+        if (directEndpointsRef.current?.key !== transitionKey) {
+            directEndpointsRef.current = {
+                from: resolveEndpoint(currentSceneId),
+                key: transitionKey,
+                to: resolveEndpoint(requestedSceneId),
+            };
+        }
+
+        const endpoints = directEndpointsRef.current;
+        const snapshot = mainCircleTravelAtTime(
+            endpoints.from,
+            endpoints.to,
+            travelProgress * MAIN_CIRCLE_TRAVEL_DURATION_MS,
+            ease ?? smoothDirectTravelEase,
+        );
+        gsap.set(circle, snapshot.endpoint);
+        onTravelProgress?.(snapshot.easedProgress);
+    }, [circleRef, directTransition]);
+}
+
+// Gives direct travel smooth acceleration and deceleration without overshoot.
+function smoothDirectTravelEase(progress: number) {
+    return progress * progress * (3 - 2 * progress);
 }
 
 // Reads the circle's CSS-defined Home geometry before scroll motion changes it.

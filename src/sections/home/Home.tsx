@@ -32,7 +32,7 @@ export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomePro
 
     useEffect(() => {
         if (controlled) {
-            onMainCircleImageChange(contentVisible ? homeImage : null);
+            onMainCircleImageChange(homeImage);
             return;
         }
 
@@ -50,7 +50,7 @@ export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomePro
     }, [contentVisible, controlled, onMainCircleImageChange]);
 
     useEffect(() => {
-        if (!lifecycle || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+        if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
         const navigationRing = navigationRingRef.current;
         const hasTimedTransition = navigationRing
             ? getComputedStyle(navigationRing).transitionDuration
@@ -65,7 +65,7 @@ export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomePro
     // Reports completion from the longest Home-owned transform transition.
     const handleHomeTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
         if (
-            !lifecycle
+            !lifecycle?.active
             || event.target !== event.currentTarget
             || event.propertyName !== "transform"
             || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")

@@ -7,11 +7,12 @@ import { navigationSections } from "./navigationSections";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
-// Tracks the section currently resting near the top of the viewport.
-export function useNavigationActiveSection() {
+// Tracks the section currently resting near the top only while fallback mode is enabled.
+export function useNavigationActiveSection(enabled = true) {
     const [activeSection, setActiveSection] = useState<SceneId>("home");
 
     useGSAP(() => {
+        if (!enabled) return;
         const sectionElements = navigationSections.map(({ id }) => ({
             id,
             element: document.getElementById(id),
@@ -47,7 +48,7 @@ export function useNavigationActiveSection() {
             onRefresh: updateActiveSection,
         });
         updateActiveSection();
-    }, []);
+    }, { dependencies: [enabled], revertOnUpdate: true });
 
     return activeSection;
 }

@@ -24,7 +24,8 @@ export function About({ lifecycle, restingContainerRef, onMainCircleImageChange 
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
     const controlledContentVisible = lifecycle?.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
-    const contentVisible = lifecycle ? controlledContentVisible : fallbackContentVisible;
+    const controlled = lifecycle !== undefined;
+    const contentVisible = controlled ? controlledContentVisible : fallbackContentVisible;
 
     useEffect(() => {
         if (lifecycle) return;
@@ -52,11 +53,11 @@ export function About({ lifecycle, restingContainerRef, onMainCircleImageChange 
     }, [lifecycle, restingContainerRef]);
 
     useEffect(() => {
-        onMainCircleImageChange(contentVisible ? aboutImage : null);
-    }, [contentVisible, onMainCircleImageChange]);
+        onMainCircleImageChange(controlled || contentVisible ? aboutImage : null);
+    }, [contentVisible, controlled, onMainCircleImageChange]);
 
     useEffect(() => {
-        if (!lifecycle || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+        if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
         const content = contentRef.current;
         const hasTimedTransition = content
             ? getComputedStyle(content).transitionDuration
@@ -72,7 +73,7 @@ export function About({ lifecycle, restingContainerRef, onMainCircleImageChange 
     // Reports completion only when About's owned seam transition actually finishes.
     const handleContentTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
         if (
-            !lifecycle
+            !lifecycle?.active
             || event.currentTarget !== event.target
             || event.propertyName !== "clip-path"
             || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")
