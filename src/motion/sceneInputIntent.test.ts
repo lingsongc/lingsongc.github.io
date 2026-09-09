@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
     canScrollScene,
+    firstScrollableOwnerIndex,
     hardEdgeResistance,
     isTerminalSceneDirection,
     keyboardSceneDirection,
+    keyboardScrollDistance,
     releasedTouchDirection,
     returningResistance,
     sceneCompositionOffset,
@@ -69,6 +71,20 @@ describe("scene input intent", () => {
         expect(canScrollScene(middle, "forward")).toBe(true);
         expect(canScrollScene(middle, "backward")).toBe(true);
         expect(canScrollScene(bottom, "forward")).toBe(false);
+    });
+
+    it("gives the nearest scroll owner priority before the Section viewport", () => {
+        const top = { clientHeight: 400, scrollHeight: 800, scrollTop: 0 };
+        const bottom = { clientHeight: 400, scrollHeight: 800, scrollTop: 400 };
+
+        expect(firstScrollableOwnerIndex([top, bottom], "forward")).toBe(0);
+        expect(firstScrollableOwnerIndex([bottom, top], "forward")).toBe(1);
+        expect(firstScrollableOwnerIndex([bottom, bottom], "forward")).toBeNull();
+    });
+
+    it("uses line-scale Arrow scrolling and viewport-scale Page scrolling", () => {
+        expect(keyboardScrollDistance("ArrowDown", 800)).toBe(40);
+        expect(keyboardScrollDistance("PageDown", 800)).toBe(680);
     });
 
     it("caps repeated terminal intent at 35 percent resistance", () => {

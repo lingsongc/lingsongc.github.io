@@ -60,6 +60,7 @@ export function ProjectOrbit({
                     projectOrbitAngle(project.id, index, projects.length),
                     ring.offsetWidth / 2,
                     button.offsetWidth / 2,
+                    orbit.offsetWidth,
                     window.innerHeight,
                 );
                 planet.style.setProperty("--project-angle", `${angle}deg`);

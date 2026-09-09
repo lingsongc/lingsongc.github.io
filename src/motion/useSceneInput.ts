@@ -8,9 +8,11 @@ import type {
 } from "../types/scene";
 import {
     canScrollScene,
+    firstScrollableOwnerIndex,
     hardEdgeResistance,
     isTerminalSceneDirection,
     keyboardSceneDirection,
+    keyboardScrollDistance,
     releasedTouchDirection,
     returningResistance,
     touchDragIntent,
@@ -38,7 +40,7 @@ type TouchGesture = {
     axis: "pending" | "vertical";
     identifier: number;
     progress: number;
-    scroller: HTMLElement | null;
+    scrollOwners: HTMLElement[];
     startX: number;
     startY: number;
 };
@@ -173,8 +175,17 @@ export function useSceneInput({
 
             const impulse = normalizeWheelDelta(event.deltaY, event.deltaMode);
             if (impulse === 0) return;
-            event.preventDefault();
             const now = performance.now();
+            const direction = impulse > 0 ? "forward" : "backward";
+            const scrollOwners = inputScrollOwners(event.target, activeScrollerRef.current);
+
+            if (firstScrollableOwner(scrollOwners, direction)) {
+                wheelIntentRef.current = createWheelIntentState(true, now);
+                scheduleNeutralRelease();
+                return;
+            }
+
+            event.preventDefault();
 
             if (wheelIntentRef.current.neutralRequired) {
                 wheelIntentRef.current = applyWheelIntent(
@@ -186,7 +197,6 @@ export function useSceneInput({
                 return;
             }
 
-            const direction = impulse > 0 ? "forward" : "backward";
             if (isTerminalSceneDirection(currentSceneId, direction)) {
                 showHardEdge(direction, impulse);
                 return;
@@ -219,7 +229,7 @@ export function useSceneInput({
             window.clearTimeout(neutralTimerRef.current);
             cancelAnimationFrame(returnFrameRef.current);
         };
-    }, [currentSceneId, phase, publishResistance, requestScene, showHardEdge]);
+    }, [activeScrollerRef, currentSceneId, phase, publishResistance, requestScene, showHardEdge]);
 
     useEffect(() => {
         if (phase !== "idle") return;
@@ -233,12 +243,11 @@ export function useSceneInput({
             }
             if (isInteractiveInputTarget(event.target)) return;
             const touch = event.touches[0];
-            const target = event.target instanceof Element ? event.target : null;
             touchGestureRef.current = {
                 axis: "pending",
                 identifier: touch.identifier,
                 progress: 0,
-                scroller: target?.closest<HTMLElement>(".scene-panel-overflow") ?? null,
+                scrollOwners: inputScrollOwners(event.target, activeScrollerRef.current),
                 startX: touch.clientX,
                 startY: touch.clientY,
             };
@@ -277,7 +286,7 @@ export function useSceneInput({
             }
 
             const direction = intent.progress > 0 ? "forward" : "backward";
-            if (gesture.axis === "pending" && canScrollInDirection(gesture.scroller, direction)) {
+            if (gesture.axis === "pending" && firstScrollableOwner(gesture.scrollOwners, direction)) {
                 touchGestureRef.current = null;
                 return;
             }
@@ -331,7 +340,7 @@ export function useSceneInput({
             window.removeEventListener("touchend", handleTouchEnd);
             window.removeEventListener("touchcancel", handleTouchCancel);
         };
-    }, [currentSceneId, phase, publishResistance, requestScene, startImmediateReturn]);
+    }, [activeScrollerRef, currentSceneId, phase, publishResistance, requestScene, startImmediateReturn]);
 
     useEffect(() => {
         if (phase !== "idle") return;
@@ -341,7 +350,19 @@ export function useSceneInput({
             if (event.defaultPrevented || event.repeat || isInteractiveInputTarget(event.target)) return;
             const direction = keyboardSceneDirection(event.key);
             if (!direction) return;
-            if (canScrollInDirection(activeScrollerRef.current, direction)) return;
+            const scrollOwner = firstScrollableOwner(
+                inputScrollOwners(event.target, activeScrollerRef.current),
+                direction,
+            );
+            if (scrollOwner) {
+                event.preventDefault();
+                const distance = keyboardScrollDistance(event.key, scrollOwner.clientHeight);
+                scrollOwner.scrollBy({
+                    top: direction === "forward" ? distance : -distance,
+                    behavior: "auto",
+                });
+                return;
+            }
 
             event.preventDefault();
             cancelResistance();
@@ -359,11 +380,22 @@ export function useSceneInput({
 function isInteractiveInputTarget(target: EventTarget | null) {
     if (!(target instanceof Element)) return false;
     return target.closest(
-        "a, button, input, textarea, select, option, [contenteditable]:not([contenteditable='false']), [role='button'], [role='slider'], [role='listbox'], [data-scene-input-owner]",
+        "a, button, input, textarea, select, option, [contenteditable]:not([contenteditable='false']), [role='button'], [role='slider'], [role='listbox']",
     ) !== null;
 }
 
-// Preserves native scrolling whenever the active local viewport can still move.
-function canScrollInDirection(scroller: HTMLElement | null, direction: SceneDirection) {
-    return scroller ? canScrollScene(scroller, direction) : false;
+// Orders the target's nested viewport before the active Section viewport.
+function inputScrollOwners(target: EventTarget | null, activeScroller: HTMLElement | null) {
+    const nestedOwner = target instanceof Element
+        ? target.closest<HTMLElement>("[data-scene-scroll-owner]")
+        : null;
+    return nestedOwner && nestedOwner !== activeScroller
+        ? [nestedOwner, ...(activeScroller ? [activeScroller] : [])]
+        : activeScroller ? [activeScroller] : [];
+}
+
+// Returns the first viewport that can still move in the requested direction.
+function firstScrollableOwner(owners: readonly HTMLElement[], direction: SceneDirection) {
+    const index = firstScrollableOwnerIndex(owners, direction);
+    return index === null ? null : owners[index];
 }

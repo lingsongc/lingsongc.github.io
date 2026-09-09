@@ -22,17 +22,30 @@ export function fitProjectAngleToViewport(
     angle: number,
     radius: number,
     planetRadius: number,
+    viewportWidth: number,
     viewportHeight: number,
 ) {
+    const horizontalLimit = Math.max(0, viewportWidth / 2 - planetRadius - 1);
     const verticalLimit = Math.max(0, viewportHeight / 2 - planetRadius - 1);
-    const safeOffset = Math.acos(Math.min(1, verticalLimit / radius)) * 180 / Math.PI;
     const normalizedAngle = (angle % 360 + 360) % 360;
+    const isSafe = (candidate: number) => {
+        const radians = candidate * Math.PI / 180;
+        return Math.abs(Math.sin(radians) * radius) <= horizontalLimit
+            && Math.abs(Math.cos(radians) * radius) <= verticalLimit;
+    };
+    if (isSafe(normalizedAngle)) return normalizedAngle;
 
-    if (normalizedAngle < safeOffset) return safeOffset;
-    if (normalizedAngle > 360 - safeOffset) return 360 - safeOffset;
-    if (normalizedAngle > 180 - safeOffset && normalizedAngle < 180 + safeOffset) {
-        return normalizedAngle < 180 ? 180 - safeOffset : 180 + safeOffset;
+    // A hundredth-degree search keeps both axes visible without changing ring radii.
+    let nearestAngle = normalizedAngle;
+    let nearestDistance = Number.POSITIVE_INFINITY;
+    for (let step = 0; step < 36000; step += 1) {
+        const candidate = step / 100;
+        if (!isSafe(candidate)) continue;
+        const directDistance = Math.abs(candidate - normalizedAngle);
+        const distance = Math.min(directDistance, 360 - directDistance);
+        if (distance >= nearestDistance - 0.000001) continue;
+        nearestAngle = candidate;
+        nearestDistance = distance;
     }
-
-    return normalizedAngle;
+    return nearestAngle;
 }

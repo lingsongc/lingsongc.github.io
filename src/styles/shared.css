@@ -9,8 +9,13 @@
     display: grid;
     min-height: 100vh;
     min-height: 100svh;
+    min-height: 100dvh;
     align-items: center;
-    padding: clamp(4rem, 8vw, 8rem) var(--section-padding-inline);
+    padding:
+        calc(clamp(4rem, 8vw, 8rem) + env(safe-area-inset-top))
+        calc(var(--section-padding-inline) + env(safe-area-inset-right))
+        calc(clamp(4rem, 8vw, 8rem) + env(safe-area-inset-bottom))
+        calc(var(--section-padding-inline) + env(safe-area-inset-left));
     scroll-margin-block-start: 0;
 }
 

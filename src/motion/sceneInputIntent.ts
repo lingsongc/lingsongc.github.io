@@ -73,6 +73,22 @@ export function canScrollScene(
         : scrollTop > 1;
 }
 
+// Selects the highest-priority owned viewport that can consume the direction.
+export function firstScrollableOwnerIndex(
+    owners: readonly ScrollBoundarySnapshot[],
+    direction: SceneDirection,
+) {
+    const index = owners.findIndex((owner) => canScrollScene(owner, direction));
+    return index === -1 ? null : index;
+}
+
+// Gives Arrow and Page keys a predictable native-scale local scroll distance.
+export function keyboardScrollDistance(key: string, clientHeight: number) {
+    return key === "PageUp" || key === "PageDown"
+        ? Math.max(1, clientHeight * 0.85)
+        : 40;
+}
+
 // Produces a smaller signed response that cannot accumulate beyond the hard edge.
 export function hardEdgeResistance(direction: SceneDirection, magnitude = 1) {
     const sign = direction === "forward" ? 1 : -1;

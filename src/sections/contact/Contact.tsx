@@ -3,7 +3,7 @@ import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { SceneLifecycleControl } from "../../types/scene";
-import { contactFinalOffset, contactInitialOffset } from "./contactGeometry";
+import { contactFittedFinalOffset, contactInitialOffset } from "./contactGeometry";
 
 gsap.registerPlugin(useGSAP, ScrollTrigger);
 
@@ -68,7 +68,14 @@ export function Contact({ lifecycle, sectionRef }: ContactProps) {
         // Calculates a rendered profile's final offset from the orbit center.
         const profileFinalOffset = (element: HTMLElement, axis: 0 | 1) => {
             const profile = contactProfile(element);
-            return contactFinalOffset(profile?.offset ?? [0, 0], orbit.offsetWidth, axis);
+            return contactFittedFinalOffset(
+                profile?.offset ?? [0, 0],
+                profile?.diameterRatio ?? 0,
+                orbit.offsetWidth,
+                window.innerWidth,
+                window.innerHeight,
+                axis,
+            );
         };
         
         // Calculates a rendered profile's starting position inside the circle.

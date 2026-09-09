@@ -11,6 +11,7 @@ body:has(.slideshow-stage) {
     width: 100%;
     height: 100vh;
     height: 100svh;
+    height: 100dvh;
     overflow: clip;
 }
 
@@ -35,14 +36,14 @@ body:has(.slideshow-stage) {
 
 .scene-panel-overflow {
     width: 100%;
-    height: 100vh;
-    height: 100svh;
+    height: 100%;
     overflow: hidden;
     overscroll-behavior: contain;
 }
 
 .scene-panel-active > .scene-panel-overflow {
     overflow-y: auto;
+    overscroll-behavior-y: contain;
     scrollbar-color: var(--colour-line) transparent;
     scrollbar-width: thin;
 }
@@ -52,6 +53,8 @@ body:has(.slideshow-stage) {
 }
 
 .scene-panel-active > .scene-panel-overflow::-webkit-scrollbar-thumb {
+    border: 1px solid transparent;
     border-radius: 999px;
     background-color: var(--colour-line);
+    background-clip: padding-box;
 }

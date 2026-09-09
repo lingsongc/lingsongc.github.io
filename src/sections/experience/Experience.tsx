@@ -121,7 +121,12 @@ export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCir
                 </header>
                 
                 <div className="experience-content-region">
-                    <article className="experience-text">
+                    <article
+                        className="experience-text"
+                        data-scene-scroll-owner
+                        tabIndex={contentVisible ? 0 : -1}
+                        aria-label={`${activeEvent.title} details`}
+                    >
                         <h3 className="experience-event-title">{activeEvent.title}</h3>
                         <div className="experience-event-metadata">
                             <p className="experience-metadata-item">

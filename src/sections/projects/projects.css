@@ -308,6 +308,8 @@
 @media (max-width: 48rem) {
     .project-container,
     .project-selected-content { --project-circle-size: 57.6vw; }
+
+    .project-title { font-size: clamp(2.5rem, 12vw, 4rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {

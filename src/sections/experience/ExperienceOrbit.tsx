@@ -2,6 +2,10 @@ import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 
 import { createPortal } from "react-dom";
 import { IconMouse } from "@tabler/icons-react";
 import {
+    createExperienceWheelBoundaryState,
+    updateExperienceWheelBoundary,
+} from "./experienceOrbitInput";
+import {
     experienceOrbitGeometry,
     experienceOrbitEntryAngle,
     experienceOrbitFrontPath,
@@ -49,6 +53,7 @@ export function ExperienceOrbit({
     const targetIndexRef = useRef(0);
     const activateRef = useRef(onEntrySelect);
     const selectRef = useRef<(index: number) => void>(() => undefined);
+    const wheelBoundaryRef = useRef(createExperienceWheelBoundaryState());
     const [position, setPosition] = useState(0);
     const [selectorFocused, setSelectorFocused] = useState(false);
     const [selectorHovered, setSelectorHovered] = useState(false);
@@ -69,6 +74,7 @@ export function ExperienceOrbit({
     useEffect(() => {
         const activeIndex = Math.max(0, entries.findIndex((entry) => entry.id === activeEntryId));
         targetIndexRef.current = activeIndex;
+        wheelBoundaryRef.current = createExperienceWheelBoundaryState();
         scrollRef.current?.scrollTo({ top: experienceOrbitScrollTop(activeIndex) });
         setPosition(activeIndex);
     }, [entries]);
@@ -81,13 +87,17 @@ export function ExperienceOrbit({
         const handleWheel = (event: WheelEvent) => {
             if (!interactiveRef.current || event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
             const direction = event.deltaY < 0 ? -1 : 1;
-            const deltaScale = event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? scrollArea.clientHeight : 1;
             const atBoundary = direction < 0 ? targetIndexRef.current === 0 : targetIndexRef.current === entries.length - 1;
+            const update = updateExperienceWheelBoundary(
+                wheelBoundaryRef.current,
+                direction,
+                atBoundary,
+                performance.now(),
+            );
+            wheelBoundaryRef.current = update.state;
+            if (!update.consume) return;
             event.preventDefault();
-            if (atBoundary) {
-                window.scrollBy({ top: event.deltaY * deltaScale });
-                return;
-            }
+            if (atBoundary) return;
             selectRef.current(targetIndexRef.current + direction);
         };
         // Selects the nearest entry after native scrolling finishes.
@@ -163,7 +173,6 @@ export function ExperienceOrbit({
             <aside
                 ref={orbitRef}
                 className="experience-orbit"
-                data-scene-input-owner
                 aria-label={`${label} entries`}
             >
                 <svg className="experience-orbit-ring" viewBox={experienceOrbitViewBox} style={experienceOrbitSectionStyles} aria-hidden="true">
@@ -172,6 +181,7 @@ export function ExperienceOrbit({
                 <div
                     ref={scrollRef}
                     className="experience-orbit-scroll"
+                    data-scene-scroll-owner
                     onScroll={() => setPosition((scrollRef.current?.scrollTop ?? 0) / experienceOrbitGeometry.scrollStep)}
                     onMouseEnter={() => setSelectorHovered(true)}
                     onMouseLeave={() => setSelectorHovered(false)}
