@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState, type RefObject, type TransitionEvent } from "react";
+import { useEffect, useRef, type TransitionEvent } from "react";
 import { aboutDetails } from "../../data/about";
-import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import type { SceneLifecycleControl } from "../../types/scene";
 
@@ -12,52 +11,23 @@ const aboutImage: ImageDescriptor = {
 };
 
 type AboutProps = {
-    lifecycle?: SceneLifecycleControl;
-    restingContainerRef: RefObject<HTMLDivElement | null>;
+    lifecycle: SceneLifecycleControl;
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
-// Reveals About from explicit scene state while retaining the scroll-bound migration fallback.
-export function About({ lifecycle, restingContainerRef, onMainCircleImageChange }: AboutProps) {
+// Reveals About exclusively from the explicit slideshow lifecycle.
+export function About({ lifecycle, onMainCircleImageChange }: AboutProps) {
     const contentRef = useRef<HTMLDivElement>(null);
-    const [fallbackContentVisible, setFallbackContentVisible] = useState(false);
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
-    const controlledContentVisible = lifecycle?.active === true
+    const contentVisible = lifecycle.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
-    const controlled = lifecycle !== undefined;
-    const contentVisible = controlled ? controlledContentVisible : fallbackContentVisible;
 
     useEffect(() => {
-        if (lifecycle) return;
-        const restingContainer = restingContainerRef.current;
-        if (!restingContainer) return;
-        let currentVisibility = false;
-
-        // Keeps the fallback content state aligned with the current resting bounds.
-        const updateContentVisibility = () => {
-            const { start, end } = sectionRestingBounds(restingContainer);
-            const shouldShow = window.scrollY >= start && window.scrollY < end;
-            if (shouldShow === currentVisibility) return;
-            currentVisibility = shouldShow;
-            setFallbackContentVisible(shouldShow);
-        };
-
-        window.addEventListener("scroll", updateContentVisibility, { passive: true });
-        window.addEventListener("resize", updateContentVisibility);
-        updateContentVisibility();
-
-        return () => {
-            window.removeEventListener("scroll", updateContentVisibility);
-            window.removeEventListener("resize", updateContentVisibility);
-        };
-    }, [lifecycle, restingContainerRef]);
+        onMainCircleImageChange(aboutImage);
+    }, [onMainCircleImageChange]);
 
     useEffect(() => {
-        onMainCircleImageChange(controlled || contentVisible ? aboutImage : null);
-    }, [contentVisible, controlled, onMainCircleImageChange]);
-
-    useEffect(() => {
-        if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+        if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
         const content = contentRef.current;
         const hasTimedTransition = content
             ? getComputedStyle(content).transitionDuration
@@ -68,12 +38,12 @@ export function About({ lifecycle, restingContainerRef, onMainCircleImageChange 
 
         // A zero-duration transition has no transitionend event, so complete it immediately.
         lifecycle.onTransitionComplete(lifecycle.phase);
-    }, [lifecycle?.onTransitionComplete, lifecycle?.phase]);
+    }, [lifecycle]);
 
     // Reports completion only when About's owned seam transition actually finishes.
     const handleContentTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
         if (
-            !lifecycle?.active
+            !lifecycle.active
             || event.currentTarget !== event.target
             || event.propertyName !== "clip-path"
             || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")

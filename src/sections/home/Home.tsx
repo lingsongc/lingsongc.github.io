@@ -1,4 +1,4 @@
-import { useEffect, useRef, type RefObject, type TransitionEvent } from "react";
+import { useEffect, useRef, type TransitionEvent } from "react";
 import { homeDetails } from "../../data/about";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import type { SceneLifecycleControl } from "../../types/scene";
@@ -10,14 +10,12 @@ const homeImage: ImageDescriptor = {
 };
 
 type HomeProps = {
-    lifecycle?: SceneLifecycleControl;
-    sectionRef: RefObject<HTMLElement | null>;
+    lifecycle: SceneLifecycleControl;
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
 // Renders the Home introduction and publishes its image at the top of the page.
-export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomeProps) {
-    const imageVisibleRef = useRef<boolean | null>(null);
+export function Home({ lifecycle, onMainCircleImageChange }: HomeProps) {
     const navigationRingRef = useRef<HTMLDivElement>(null);
     const leftName = homeDetails.name.isWestern
         ? homeDetails.name.firstName
@@ -25,32 +23,16 @@ export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomePro
     const rightName = homeDetails.name.isWestern
         ? homeDetails.name.lastName
         : homeDetails.name.firstName;
-    const contentVisible = lifecycle?.active === true
+    const contentVisible = lifecycle.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
-    const controlled = lifecycle !== undefined;
-    const controlledExiting = controlled ? !contentVisible : false;
+    const controlledExiting = !contentVisible;
 
     useEffect(() => {
-        if (controlled) {
-            onMainCircleImageChange(homeImage);
-            return;
-        }
-
-        // Removes the Home image as soon as another section can take ownership.
-        const updateImage = () => {
-            const shouldShow = window.scrollY === 0;
-            if (shouldShow === imageVisibleRef.current) return;
-            imageVisibleRef.current = shouldShow;
-            onMainCircleImageChange(shouldShow ? homeImage : null);
-        };
-
-        window.addEventListener("scroll", updateImage, { passive: true });
-        updateImage();
-        return () => window.removeEventListener("scroll", updateImage);
-    }, [contentVisible, controlled, onMainCircleImageChange]);
+        onMainCircleImageChange(homeImage);
+    }, [onMainCircleImageChange]);
 
     useEffect(() => {
-        if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+        if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
         const navigationRing = navigationRingRef.current;
         const hasTimedTransition = navigationRing
             ? getComputedStyle(navigationRing).transitionDuration
@@ -60,12 +42,12 @@ export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomePro
         if (!navigationRing || hasTimedTransition) return;
 
         lifecycle.onTransitionComplete(lifecycle.phase);
-    }, [lifecycle?.onTransitionComplete, lifecycle?.phase]);
+    }, [lifecycle]);
 
     // Reports completion from the longest Home-owned transform transition.
     const handleHomeTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
         if (
-            !lifecycle?.active
+            !lifecycle.active
             || event.target !== event.currentTarget
             || event.propertyName !== "transform"
             || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")
@@ -76,7 +58,6 @@ export function Home({ lifecycle, sectionRef, onMainCircleImageChange }: HomePro
 
     return (
         <section
-            ref={sectionRef}
             id="home"
             className={`home-container${controlledExiting ? " home-exiting" : ""}`}
             aria-labelledby="home-title"

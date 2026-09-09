@@ -3,7 +3,7 @@ import { skills } from "../../data/skills";
 import type { SceneLifecycleControl } from "../../types/scene";
 
 type SkillsProps = {
-    lifecycle?: SceneLifecycleControl;
+    lifecycle: SceneLifecycleControl;
 };
 
 type SkillGroup = {
@@ -24,11 +24,11 @@ const skillGroups = skills.reduce<SkillGroup[]>((groups, skill) => {
 // Renders the complete skill list grouped by category.
 export function Skills({ lifecycle }: SkillsProps) {
     const sectionRef = useRef<HTMLElement>(null);
-    const contentVisible = lifecycle?.active === true
+    const contentVisible = lifecycle.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
 
     useEffect(() => {
-        if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+        if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
         const section = sectionRef.current;
         const hasTimedTransition = section
             ? getComputedStyle(section).transitionDuration
@@ -38,12 +38,12 @@ export function Skills({ lifecycle }: SkillsProps) {
         if (!section || hasTimedTransition) return;
 
         lifecycle.onTransitionComplete(lifecycle.phase);
-    }, [lifecycle?.onTransitionComplete, lifecycle?.phase]);
+    }, [lifecycle]);
 
     // Reports completion from the minimal Skills visibility transition.
     const handleTransitionEnd = (event: TransitionEvent<HTMLElement>) => {
         if (
-            !lifecycle?.active
+            !lifecycle.active
             || event.target !== event.currentTarget
             || event.propertyName !== "opacity"
             || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")
@@ -55,7 +55,7 @@ export function Skills({ lifecycle }: SkillsProps) {
     return (
         <section
             ref={sectionRef}
-            className={`skill-container${lifecycle ? " skill-container-lifecycle" : ""}${contentVisible ? " skill-content-visible" : ""}`}
+            className={`skill-container skill-container-lifecycle${contentVisible ? " skill-content-visible" : ""}`}
             aria-labelledby="skill-title"
             onTransitionEnd={handleTransitionEnd}
         >

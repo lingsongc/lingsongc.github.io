@@ -34,13 +34,7 @@ const sceneHeadingIds: Record<SceneId, string> = {
 export default function App() {
     const mainCircleRef = useRef<HTMLDivElement>(null);
     const activeSceneScrollerRef = useRef<HTMLDivElement>(null);
-    const homeSectionRef = useRef<HTMLElement>(null);
-    const aboutFallbackRef = useRef<HTMLDivElement>(null);
-    const experienceFallbackRef = useRef<HTMLDivElement>(null);
     const experienceOrbitRef = useRef<HTMLElement>(null);
-    const projectsFallbackRef = useRef<HTMLDivElement>(null);
-    const skillsFallbackRef = useRef<HTMLDivElement>(null);
-    const contactSectionRef = useRef<HTMLElement>(null);
     const navigationRef = useRef<HTMLElement>(null);
     const navigationCopyrightRef = useRef<HTMLElement>(null);
     const navigationRailRef = useRef<HTMLDivElement>(null);
@@ -170,7 +164,6 @@ export default function App() {
                     }}
                     image={mainCircleImage.image}
                     imageVisible={mainCircleImage.imageVisible}
-                    navigationTargetId={null}
                 />
 
                 <ScenePanel
@@ -182,7 +175,6 @@ export default function App() {
                 >
                     <Home
                         lifecycle={slideshow.lifecycleFor("home")}
-                        sectionRef={homeSectionRef}
                         onMainCircleImageChange={publishHomeImage}
                     />
                 </ScenePanel>
@@ -196,7 +188,6 @@ export default function App() {
                 >
                     <About
                         lifecycle={slideshow.lifecycleFor("about")}
-                        restingContainerRef={aboutFallbackRef}
                         onMainCircleImageChange={publishAboutImage}
                     />
                 </ScenePanel>
@@ -210,7 +201,6 @@ export default function App() {
                 >
                     <Experience
                         lifecycle={slideshow.lifecycleFor("experience")}
-                        restingContainerRef={experienceFallbackRef}
                         orbitRef={experienceOrbitRef}
                         onMainCircleImageChange={publishExperienceImage}
                     />
@@ -225,7 +215,6 @@ export default function App() {
                 >
                     <Projects
                         lifecycle={slideshow.lifecycleFor("projects")}
-                        restingContainerRef={projectsFallbackRef}
                         onMainCircleImageChange={publishProjectImage}
                     />
                 </ScenePanel>
@@ -247,10 +236,7 @@ export default function App() {
                     phase={slideshow.phase}
                     sceneId="contact"
                 >
-                    <Contact
-                        lifecycle={slideshow.lifecycleFor("contact")}
-                        sectionRef={contactSectionRef}
-                    />
+                    <Contact lifecycle={slideshow.lifecycleFor("contact")} />
                 </ScenePanel>
             </main>
         </>

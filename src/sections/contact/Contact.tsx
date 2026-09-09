@@ -1,15 +1,13 @@
-import { useEffect, useRef, type RefObject } from "react";
+import { useEffect, useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import type { SceneLifecycleControl } from "../../types/scene";
 import { contactFittedFinalOffset, contactInitialOffset } from "./contactGeometry";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+gsap.registerPlugin(useGSAP);
 
 type ContactProps = {
-    lifecycle?: SceneLifecycleControl;
-    sectionRef: RefObject<HTMLElement | null>;
+    lifecycle: SceneLifecycleControl;
 };
 
 const contactProfiles = [
@@ -39,7 +37,8 @@ const contactProfiles = [
 const contactProfilesById = new Map(contactProfiles.map((profile) => [profile.id, profile]));
 
 // Renders Contact content and animates its profile links out from the main circle.
-export function Contact({ lifecycle, sectionRef }: ContactProps) {
+export function Contact({ lifecycle }: ContactProps) {
+    const sectionRef = useRef<HTMLElement>(null);
     const orbitRef = useRef<HTMLDivElement>(null);
     const blobLayerRef = useRef<HTMLDivElement>(null);
     const linkLayerRef = useRef<HTMLElement>(null);
@@ -58,8 +57,6 @@ export function Contact({ lifecycle, sectionRef }: ContactProps) {
 
         const splitElements = [...satelliteRefs.current, ...linkRefs.current]
             .filter((element): element is HTMLElement => element !== null);
-        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        
         // Finds the shared profile settings for a rendered link or shape.
         const contactProfile = (element: HTMLElement) => (
             contactProfilesById.get(element.dataset.contactLink as typeof contactProfiles[number]["id"])
@@ -122,30 +119,17 @@ export function Contact({ lifecycle, sectionRef }: ContactProps) {
             .to(linkLayer, { autoAlpha: 1, duration: 0.12 }, 0.38);
 
         splitTimelineRef.current = splitTimeline;
-        const splitTrigger = lifecycle ? null : ScrollTrigger.create({
-            trigger: section,
-            start: "top 1px",
-            invalidateOnRefresh: true,
-            onEnter: () => reducedMotion ? splitTimeline.progress(1) : splitTimeline.play(),
-            onLeaveBack: () => reducedMotion ? splitTimeline.progress(0) : splitTimeline.reverse(),
-            onRefresh: (self) => {
-                if (self.isActive) splitTimeline.progress(reducedMotion ? 1 : splitTimeline.progress()).play();
-            },
-        });
-
         return () => {
-            splitTrigger?.kill();
             splitTimeline.kill();
             splitTimelineRef.current = null;
         };
     }, {
         scope: sectionRef,
-        dependencies: [Boolean(lifecycle)],
+        dependencies: [],
         revertOnUpdate: true,
     });
 
     useEffect(() => {
-        if (!lifecycle) return;
         const splitTimeline = splitTimelineRef.current;
         if (!splitTimeline) return;
         const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -169,7 +153,7 @@ export function Contact({ lifecycle, sectionRef }: ContactProps) {
         } else {
             splitTimeline.progress(0, true).pause();
         }
-    }, [lifecycle?.active, lifecycle?.phase]);
+    }, [lifecycle.active, lifecycle.phase]);
 
     return (
         <section ref={sectionRef} id="contact" className="contact-container" aria-labelledby="contact-title">

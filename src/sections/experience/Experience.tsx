@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type RefObject } from "react";
 import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
 import { education } from "../../data/education";
 import { experiences } from "../../data/experiences";
-import { sectionRestingBounds } from "../../motion/sectionRestingBounds";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import type { SceneLifecycleControl } from "../../types/scene";
 import { ExperienceOrbit } from "./ExperienceOrbit";
@@ -17,17 +16,15 @@ const educationEvents = education.map(({ id, institution, qualification, ...even
 }));
 const eventsByType = { experience: experienceEvents, education: educationEvents };
 type ExperienceProps = {
-    lifecycle?: SceneLifecycleControl;
-    restingContainerRef: RefObject<HTMLDivElement | null>;
+    lifecycle: SceneLifecycleControl;
     orbitRef: RefObject<HTMLElement | null>;
     onMainCircleImageChange: MainCircleImagePublisher;
 };
 
 // Coordinates the shared Experience and Education timeline, content, and image.
-export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCircleImageChange }: ExperienceProps) {
+export function Experience({ lifecycle, orbitRef, onMainCircleImageChange }: ExperienceProps) {
     const imageVisibleRef = useRef(false);
     const activeImageRef = useRef<ImageDescriptor | null>(null);
-    const [fallbackContentVisible, setFallbackContentVisible] = useState(false);
     const [orbitReady, setOrbitReady] = useState(false);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
     const [activeEventIds, setActiveEventIds] = useState({
@@ -40,40 +37,14 @@ export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCir
     ) ?? activeEvents[0];
     activeImageRef.current = eventImage(experienceType, activeEvent.id);
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
-    const controlledContentVisible = lifecycle?.active === true
+    const contentVisible = lifecycle.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
-    const controlled = lifecycle !== undefined;
-    const contentVisible = controlled ? controlledContentVisible : fallbackContentVisible;
-
-    useEffect(() => {
-        if (lifecycle) return;
-        const restingContainer = restingContainerRef.current;
-        if (!restingContainer) return;
-        let contentVisible = false;
-
-        // Keeps the fallback timeline visibility aligned with scrolling.
-        const updateContentVisibility = () => {
-            const { start, end } = sectionRestingBounds(restingContainer);
-            const shouldShow = window.scrollY >= start && window.scrollY <= end;
-            if (shouldShow === contentVisible) return;
-            contentVisible = shouldShow;
-            setFallbackContentVisible(shouldShow);
-        };
-
-        window.addEventListener("scroll", updateContentVisibility, { passive: true });
-        window.addEventListener("resize", updateContentVisibility);
-        updateContentVisibility();
-        return () => {
-            window.removeEventListener("scroll", updateContentVisibility);
-            window.removeEventListener("resize", updateContentVisibility);
-        };
-    }, [lifecycle, restingContainerRef]);
 
     useEffect(() => {
         imageVisibleRef.current = contentVisible;
-        onMainCircleImageChange(controlled || contentVisible ? activeImageRef.current : null);
+        onMainCircleImageChange(activeImageRef.current);
         setOrbitReady(contentVisible && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-    }, [contentVisible, controlled, onMainCircleImageChange]);
+    }, [contentVisible, onMainCircleImageChange]);
 
     // Selects a timeline event while preserving each timeline's last selection.
     const activateEvent = (index: number) => {
@@ -164,7 +135,7 @@ export function Experience({ lifecycle, restingContainerRef, orbitRef, onMainCir
                     if (contentVisible) setOrbitReady(true);
                 }}
                 onTransitionComplete={() => {
-                    if (!lifecycle?.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
+                    if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
                     lifecycle.onTransitionComplete(lifecycle.phase);
                 }}
             />

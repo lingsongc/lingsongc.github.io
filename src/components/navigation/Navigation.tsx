@@ -9,7 +9,6 @@ import {
 import { transientRailMarkerProgress } from "../../motion/railTravelProgress";
 import type { SceneId, ScenePhase } from "../../types/scene";
 import { navigationSections } from "./navigationSections";
-import { useNavigationActiveSection } from "./useNavigationActiveSection";
 
 export type NavigationSceneControl = {
     busy: boolean;
@@ -23,34 +22,31 @@ export type NavigationSceneControl = {
 type NavigationProps = {
     copyrightRef: RefObject<HTMLElement | null>;
     navigationRef: RefObject<HTMLElement | null>;
-    onSectionNavigate?: (sectionId: SceneId) => void;
     railRef: RefObject<HTMLDivElement | null>;
-    sceneControl?: NavigationSceneControl;
+    sceneControl: NavigationSceneControl;
 };
 
 // Renders the persistent section navigation and its matching visual rail.
 export function Navigation({
     copyrightRef,
     navigationRef,
-    onSectionNavigate,
     railRef,
     sceneControl,
 }: NavigationProps) {
     const currentYear = new Date().getFullYear();
-    const fallbackActiveSection = useNavigationActiveSection(sceneControl === undefined);
-    const activeSection = sceneControl?.currentSceneId ?? fallbackActiveSection;
-    const busy = sceneControl?.busy ?? false;
+    const activeSection = sceneControl.currentSceneId;
+    const busy = sceneControl.busy;
     const [touchLabel, setTouchLabel] = useState<string | null>(null);
     const visibleSections = navigationSections.filter((section) => section.id !== "home");
-    const transientMarkers = sceneControl?.destinationSceneId
+    const transientMarkers = sceneControl.destinationSceneId
         ? transientRailMarkerProgress(
             sceneControl.currentSceneId,
             sceneControl.destinationSceneId,
             sceneControl.travelProgress,
         )
         : [];
-    const positionClasses = sceneControl ? controlledNavigationClasses(sceneControl) : "";
-    const copyrightClasses = sceneControl ? controlledCopyrightClasses(sceneControl) : "";
+    const positionClasses = controlledNavigationClasses(sceneControl);
+    const copyrightClasses = controlledCopyrightClasses(sceneControl);
 
     useEffect(() => setTouchLabel(null), [activeSection, busy]);
 
@@ -67,12 +63,8 @@ export function Navigation({
             setTouchLabel(sectionId);
             return;
         }
-        if (sceneControl) {
-            event.preventDefault();
-            sceneControl.onSceneRequest(sectionId);
-        } else {
-            onSectionNavigate?.(sectionId);
-        }
+        event.preventDefault();
+        sceneControl.onSceneRequest(sectionId);
     };
 
     // Gives Space the same named-control activation as Enter in controlled mode.
@@ -80,7 +72,7 @@ export function Navigation({
         event: KeyboardEvent<HTMLAnchorElement>,
         sectionId: SceneId,
     ) => {
-        if (event.key !== " " || !sceneControl) return;
+        if (event.key !== " ") return;
         event.preventDefault();
         if (!busy) sceneControl.onSceneRequest(sectionId);
     };
@@ -103,7 +95,7 @@ export function Navigation({
 
             <nav
                 ref={navigationRef}
-                className={`navigation-container${sceneControl ? " navigation-controlled" : ""}${busy ? " navigation-busy" : ""}${positionClasses}`}
+                className={`navigation-container navigation-controlled${busy ? " navigation-busy" : ""}${positionClasses}`}
                 aria-label="Portfolio sections"
             >
                 <ul className="navigation-list">
