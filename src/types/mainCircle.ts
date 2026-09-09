@@ -1,5 +1,6 @@
 import type gsap from "gsap";
 import type { RefObject } from "react";
+import type { SceneId } from "./scene";
 
 // Defines the shared geometry and transition contracts for the main circle.
 export type MainCircleGeometryValue = string | number | (() => string | number);
@@ -14,3 +15,18 @@ export type MainCircleTransition = {
     target: RefObject<HTMLElement | null>;
     geometry: MainCircleGeometry;
 };
+
+export type MainCircleEndpoint = {
+    width: number;
+    top: number;
+    left: number;
+};
+
+export type MainCircleEndpointResolver<Context> = (context: Context) => MainCircleEndpoint;
+
+export type MainCircleSceneEndpointResolvers<Context> = Record<
+    SceneId,
+    MainCircleEndpointResolver<Context>
+>;
+
+export type MainCircleSceneEndpoints = Record<SceneId, MainCircleEndpoint>;
