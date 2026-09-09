@@ -2,6 +2,7 @@
 @import "./base.css";
 @import "../components/background-grid/background-grid.css";
 @import "./shared.css";
+@import "../components/scene-panel/scene-panel.css";
 @import "../components/main-circle/main-circle.css";
 @import "../components/navigation/navigation.css";
 @import "../sections/home/home.css";
