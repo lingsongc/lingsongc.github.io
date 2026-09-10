@@ -5,18 +5,15 @@ const GRID_SPACING = 48;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 type BackgroundGridProps = {
-    resistanceProgress?: number;
     warpTargetRef?: RefObject<HTMLElement | null>;
 };
 
 // Renders a fixed SVG grid that bends and fades around the main circle.
-export function BackgroundGrid({ resistanceProgress = 0, warpTargetRef }: BackgroundGridProps) {
+export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
     const linesRef = useRef<SVGGElement>(null);
     const fadeCircleRef = useRef<SVGCircleElement>(null);
-    const resistanceProgressRef = useRef(resistanceProgress);
     const filterId = useId();
     const maskId = useId();
-    resistanceProgressRef.current = resistanceProgress;
 
     useEffect(() => {
         const lines = linesRef.current;
@@ -44,8 +41,7 @@ export function BackgroundGrid({ resistanceProgress = 0, warpTargetRef }: Backgr
             const circleSignature = circle
                 ? `${circle.x.toFixed(1)}:${circle.y.toFixed(1)}:${circle.radius.toFixed(1)}`
                 : "static";
-            const resistance = resistanceProgressRef.current;
-            const signature = `${innerWidth}:${innerHeight}:${circleSignature}:${resistance.toFixed(3)}`;
+            const signature = `${innerWidth}:${innerHeight}:${circleSignature}`;
 
             // Avoids rewriting every SVG path on unchanged animation frames.
             if (signature !== lastSignature) {
@@ -55,7 +51,6 @@ export function BackgroundGrid({ resistanceProgress = 0, warpTargetRef }: Backgr
                     innerHeight,
                     circle,
                     GRID_SPACING,
-                    resistance,
                 );
 
                 while (pathElements.length < pathData.length) {
@@ -98,19 +93,22 @@ export function BackgroundGrid({ resistanceProgress = 0, warpTargetRef }: Backgr
     }, [warpTargetRef]);
 
     return (
-        <svg className="background-grid" aria-hidden="true">
-            <defs>
-                <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
-                    <feGaussianBlur stdDeviation="32" />
-                </filter>
+        <>
+            <svg className="background-grid" aria-hidden="true">
+                <defs>
+                    <filter id={filterId} x="-30%" y="-30%" width="160%" height="160%">
+                        <feGaussianBlur stdDeviation="32" />
+                    </filter>
 
-                <mask id={maskId} maskUnits="userSpaceOnUse">
-                    <rect width="100%" height="100%" fill="white" />
-                    <circle ref={fadeCircleRef} fill="black" filter={`url(#${filterId})`} />
-                </mask>
-            </defs>
-            
-            <g ref={linesRef} className="background-grid-lines" mask={`url(#${maskId})`} />
-        </svg>
+                    <mask id={maskId} maskUnits="userSpaceOnUse">
+                        <rect width="100%" height="100%" fill="white" />
+                        <circle ref={fadeCircleRef} fill="black" filter={`url(#${filterId})`} />
+                    </mask>
+                </defs>
+
+                <g ref={linesRef} className="background-grid-lines" mask={`url(#${maskId})`} />
+            </svg>
+
+        </>
     );
 }

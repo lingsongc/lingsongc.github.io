@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { BackgroundGrid } from "./components/background-grid/BackgroundGrid";
 import { MainCircle } from "./components/main-circle/MainCircle";
 import { Navigation } from "./components/navigation/Navigation";
@@ -10,7 +10,6 @@ import { initialSceneIdFromHash } from "./motion/sceneHistory";
 import { useReducedMotionPreference } from "./motion/useReducedMotionPreference";
 import { useSlideshowCoordinator } from "./motion/useSlideshowCoordinator";
 import { useSceneInput } from "./motion/useSceneInput";
-import { sceneCompositionOffset } from "./motion/sceneInputIntent";
 import { About } from "./sections/about/About";
 import { Contact } from "./sections/contact/Contact";
 import { Experience } from "./sections/experience/Experience";
@@ -56,18 +55,6 @@ export default function App() {
         phase: slideshow.phase,
         requestedSceneId: slideshow.requestedSceneId,
     });
-
-    useLayoutEffect(() => {
-        // Portalled Section layers read the same page-owned pull as the viewport stage.
-        document.documentElement.style.setProperty(
-            "--slideshow-resistance-offset",
-            `${sceneCompositionOffset(sceneInput.resistanceProgress)}px`,
-        );
-    }, [sceneInput.resistanceProgress]);
-
-    useEffect(() => () => {
-        document.documentElement.style.removeProperty("--slideshow-resistance-offset");
-    }, []);
 
     // Measures the current viewport-owned inputs needed by a requested endpoint.
     const resolveCircleEndpoint = useCallback((sceneId: SceneId) => {
@@ -132,10 +119,7 @@ export default function App() {
 
     return (
         <>
-            <BackgroundGrid
-                resistanceProgress={sceneInput.resistanceProgress}
-                warpTargetRef={mainCircleRef}
-            />
+            <BackgroundGrid warpTargetRef={mainCircleRef} />
 
             <Navigation
                 copyrightRef={navigationCopyrightRef}

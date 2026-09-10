@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type RefObject } from "react";
+import { useCallback, useEffect, useRef, type RefObject } from "react";
 import type {
     SceneDirection,
     SceneId,
@@ -54,7 +54,6 @@ export function useSceneInput({
     reducedMotion,
     requestScene,
 }: SceneInputOptions) {
-    const [resistanceProgress, setResistanceProgress] = useState(0);
     const resistanceRef = useRef(0);
     const wheelIntentRef = useRef(createWheelIntentState());
     const touchGestureRef = useRef<TouchGesture | null>(null);
@@ -63,10 +62,9 @@ export function useSceneInput({
     const returnTimerRef = useRef<number | undefined>(undefined);
     const neutralTimerRef = useRef<number | undefined>(undefined);
 
-    // Publishes the one resistance value shared by the composition and grid.
+    // Retains normalized intent for commit, reset, and terminal-boundary handling.
     const publishResistance = useCallback((progress: number) => {
         resistanceRef.current = progress;
-        setResistanceProgress(progress);
     }, []);
 
     // Stops pending timers and animation frames before replacing input state.
@@ -375,7 +373,7 @@ export function useSceneInput({
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [activeScrollerRef, cancelResistance, phase, requestScene]);
 
-    return { cancelResistance, resistanceProgress };
+    return { cancelResistance };
 }
 
 // Leaves native controls and Section-declared gesture owners in charge of their input.

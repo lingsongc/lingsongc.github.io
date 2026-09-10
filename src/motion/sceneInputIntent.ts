@@ -4,7 +4,6 @@ import { sceneOrder, type SceneDirection, type SceneId } from "../types/scene";
 export const TOUCH_INTENT_THRESHOLD_PX = 96;
 export const TOUCH_AXIS_LOCK_PX = 8;
 export const HARD_EDGE_PROGRESS = 0.35;
-export const SCENE_COMPOSITION_PULL_PX = 24;
 
 export type TouchDragIntent = {
     axis: "horizontal" | "pending" | "vertical";
@@ -93,11 +92,6 @@ export function keyboardScrollDistance(key: string, clientHeight: number) {
 export function hardEdgeResistance(direction: SceneDirection, magnitude = 1) {
     const sign = direction === "forward" ? 1 : -1;
     return sign * HARD_EDGE_PROGRESS * clamp(Math.abs(magnitude), 0, 1);
-}
-
-// Maps shared resistance to the bounded vertical composition displacement.
-export function sceneCompositionOffset(progress: number) {
-    return clamp(progress, -1, 1) * -SCENE_COMPOSITION_PULL_PX;
 }
 
 // Returns any signed resistance smoothly to zero without bounce or overshoot.

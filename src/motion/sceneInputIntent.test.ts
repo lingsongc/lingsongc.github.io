@@ -8,7 +8,6 @@ import {
     keyboardScrollDistance,
     releasedTouchDirection,
     returningResistance,
-    sceneCompositionOffset,
     touchDragIntent,
     touchVerticalProgress,
 } from "./sceneInputIntent";
@@ -91,12 +90,6 @@ describe("scene input intent", () => {
         expect(hardEdgeResistance("forward", 1)).toBe(0.35);
         expect(hardEdgeResistance("forward", 3)).toBe(0.35);
         expect(hardEdgeResistance("backward", 1)).toBe(-0.35);
-    });
-
-    it("maps shared resistance to the bounded 24px composition pull", () => {
-        expect(sceneCompositionOffset(1)).toBe(-24);
-        expect(sceneCompositionOffset(-1)).toBe(24);
-        expect(sceneCompositionOffset(2)).toBe(-24);
     });
 
     it("returns hard-edge and touch resistance without overshoot", () => {
