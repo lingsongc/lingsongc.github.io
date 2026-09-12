@@ -42,20 +42,25 @@ body:has(.slideshow-stage) {
     pointer-events: none;
 }
 
-.scene-panel-active > .scene-panel-overflow {
+.scene-panel-active.scene-panel-scrollable > .scene-panel-overflow {
     overflow-y: auto;
     overscroll-behavior-y: contain;
     scrollbar-color: var(--colour-line) transparent;
     scrollbar-width: thin;
 }
 
-.scene-panel-active > .scene-panel-overflow::-webkit-scrollbar {
+.scene-panel-active.scene-panel-scrollable > .scene-panel-overflow::-webkit-scrollbar {
     width: 0.375rem;
 }
 
-.scene-panel-active > .scene-panel-overflow::-webkit-scrollbar-thumb {
+.scene-panel-active.scene-panel-scrollable > .scene-panel-overflow::-webkit-scrollbar-thumb {
     border: 1px solid transparent;
     border-radius: 999px;
     background-color: var(--colour-line);
     background-clip: padding-box;
+}
+
+/* Programmatic heading focus preserves screen-reader context without a wheel-triggered ring. */
+.scene-panel :is(h1, h2)[tabindex="-1"]:focus {
+    outline: none;
 }

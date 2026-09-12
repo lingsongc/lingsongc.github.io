@@ -159,6 +159,7 @@ export default function App() {
                     active={slideshow.activeSceneId === "experience"}
                     headingFocusTargetId="experience-title"
                     overflowRef={activeSceneScrollerRef}
+                    scrollable={false}
                 >
                     <Experience
                         lifecycle={slideshow.lifecycleFor("experience")}
@@ -171,6 +172,7 @@ export default function App() {
                     active={slideshow.activeSceneId === "projects"}
                     headingFocusTargetId="project-title"
                     overflowRef={activeSceneScrollerRef}
+                    scrollable={false}
                 >
                     <Projects
                         lifecycle={slideshow.lifecycleFor("projects")}

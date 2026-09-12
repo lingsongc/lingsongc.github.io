@@ -17,14 +17,14 @@ export function useSlideshowCoordinator() {
     const reducedMotionRef = useRef(reducedMotion);
     const lastHandledHashRef = useRef(window.location.hash);
     const lastSettledVersionRef = useRef(state.settledVersion);
-    const phaseTimerRef = useRef<number | undefined>(undefined);
+    const phaseFrameRef = useRef(0);
     const travelFrameRef = useRef(0);
 
     const commit = useCallback((next: CoordinatorState) => { stateRef.current = next; setState(next); }, []);
     const settleRequestedScene = useCallback(() => {
         const current = stateRef.current;
         if (current.phase === "idle") return false;
-        window.clearTimeout(phaseTimerRef.current);
+        cancelAnimationFrame(phaseFrameRef.current);
         cancelAnimationFrame(travelFrameRef.current);
         commit({ ...createSceneTransitionState(current.requestedSceneId), settledVersion: current.settledVersion + 1, travelProgress: 0 });
         return true;
@@ -41,13 +41,24 @@ export function useSlideshowCoordinator() {
     }, [commit]);
 
     useEffect(() => {
-        window.clearTimeout(phaseTimerRef.current);
+        cancelAnimationFrame(phaseFrameRef.current);
         cancelAnimationFrame(travelFrameRef.current);
-        if (state.phase === "closing") {
-            phaseTimerRef.current = window.setTimeout(() => {
+        if (state.phase === "closing" || state.phase === "opening") {
+            const visualPhase = state.phase;
+            const startedAt = performance.now();
+            // A paint-aligned clock keeps the CSS transition active without updating React on every frame.
+            const tick = (now: number) => {
                 const current = stateRef.current;
-                if (current.phase === "closing") commit({ ...advanceSceneTransition(current), settledVersion: current.settledVersion, travelProgress: 0 });
-            }, SCENE_VISUAL_DURATION_MS);
+                if (current.phase !== visualPhase) return;
+                if (now - startedAt >= SCENE_VISUAL_DURATION_MS) {
+                    commit(visualPhase === "closing"
+                        ? { ...advanceSceneTransition(current), settledVersion: current.settledVersion, travelProgress: 0 }
+                        : { ...createSceneTransitionState(current.requestedSceneId), settledVersion: current.settledVersion, travelProgress: 0 });
+                    return;
+                }
+                phaseFrameRef.current = requestAnimationFrame(tick);
+            };
+            phaseFrameRef.current = requestAnimationFrame(tick);
         } else if (state.phase === "moving") {
             const startedAt = performance.now();
             const tick = (now: number) => {
@@ -62,13 +73,8 @@ export function useSlideshowCoordinator() {
                 travelFrameRef.current = requestAnimationFrame(tick);
             };
             travelFrameRef.current = requestAnimationFrame(tick);
-        } else if (state.phase === "opening") {
-            phaseTimerRef.current = window.setTimeout(() => {
-                const current = stateRef.current;
-                if (current.phase === "opening") commit({ ...createSceneTransitionState(current.requestedSceneId), settledVersion: current.settledVersion, travelProgress: 0 });
-            }, SCENE_VISUAL_DURATION_MS);
         }
-        return () => { window.clearTimeout(phaseTimerRef.current); cancelAnimationFrame(travelFrameRef.current); };
+        return () => { cancelAnimationFrame(phaseFrameRef.current); cancelAnimationFrame(travelFrameRef.current); };
     }, [commit, state.phase]);
 
     useEffect(() => {
