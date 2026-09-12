@@ -35,6 +35,13 @@ body:has(.slideshow-stage) {
     overscroll-behavior: contain;
 }
 
+.scene-panel-overlay {
+    position: absolute;
+    inset: 0;
+    overflow: visible;
+    pointer-events: none;
+}
+
 .scene-panel-active > .scene-panel-overflow {
     overflow-y: auto;
     overscroll-behavior-y: contain;

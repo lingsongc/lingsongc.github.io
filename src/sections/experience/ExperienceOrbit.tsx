@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
-import { createPortal } from "react-dom";
 import { IconMouse } from "@tabler/icons-react";
+import { ScenePanelOverlay } from "../../components/scene-panel/ScenePanel";
 import {
     createExperienceWheelBoundaryState,
     updateExperienceWheelBoundary,
@@ -29,8 +29,7 @@ type ExperienceOrbitProps = {
     label: string;
     orbitRef: RefObject<HTMLElement | null>;
     onEntrySelect: (index: number) => void;
-    onReady: () => void;
-    onTransitionComplete?: () => void;
+    reducedMotion: boolean;
 };
 
 // Renders and controls the circular selector for timeline entries.
@@ -43,13 +42,10 @@ export function ExperienceOrbit({
     label,
     orbitRef,
     onEntrySelect,
-    onReady,
-    onTransitionComplete,
+    reducedMotion,
 }: ExperienceOrbitProps) {
     const scrollRef = useRef<HTMLDivElement>(null);
-    const planetLayerRef = useRef<HTMLDivElement>(null);
     const interactiveRef = useRef(interactive);
-    const transitionCompleteRef = useRef(onTransitionComplete);
     const targetIndexRef = useRef(0);
     const activateRef = useRef(onEntrySelect);
     const selectRef = useRef<(index: number) => void>(() => undefined);
@@ -58,7 +54,6 @@ export function ExperienceOrbit({
     const [selectorFocused, setSelectorFocused] = useState(false);
     const [selectorHovered, setSelectorHovered] = useState(false);
     interactiveRef.current = interactive;
-    transitionCompleteRef.current = onTransitionComplete;
     activateRef.current = onEntrySelect;
 
     // Activates an entry and scrolls its hidden snap area to the same position.
@@ -66,7 +61,7 @@ export function ExperienceOrbit({
         if (!interactiveRef.current || !entries[index]) return;
         targetIndexRef.current = index;
         activateRef.current(index);
-        const scrollBehavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+        const scrollBehavior = reducedMotion ? "auto" : "smooth";
         scrollRef.current?.scrollTo({ top: experienceOrbitScrollTop(index), behavior: scrollBehavior });
     };
     selectRef.current = selectEntry;
@@ -130,26 +125,11 @@ export function ExperienceOrbit({
         };
     }, [entries.length]);
 
-    useEffect(() => {
-        const planetLayer = planetLayerRef.current;
-        if (!transitionCompleteRef.current || !planetLayer) return;
-        const hasTimedTransition = getComputedStyle(planetLayer).transitionDuration
-            .split(",")
-            .some((duration) => Number.parseFloat(duration) > 0);
-        if (!hasTimedTransition) transitionCompleteRef.current();
-    }, [contentVisible]);
-
     // Rendering this layer at page level lets planets pass in front of the main circle.
     const planetLayer = (
         <div
-            ref={planetLayerRef}
             className={`experience-orbit-planets${contentVisible ? " experience-orbit-planets-visible" : ""}${interactive ? " experience-orbit-planets-ready" : ""}`}
             style={experienceOrbitLayerStyles}
-            onTransitionEnd={(event) => {
-                if (event.target !== event.currentTarget || event.propertyName !== "transform") return;
-                if (contentVisible) onReady();
-                transitionCompleteRef.current?.();
-            }}
         >
             <ol className="experience-event-orbit-list" aria-label={`${label} entries`}>
                 {entries.map((entry, index) => {
@@ -205,8 +185,8 @@ export function ExperienceOrbit({
                     </div>
                 </div>
             </aside>
-            {createPortal(
-                <div className={`experience-orbit-foreground scene-composition-layer${contentVisible ? " experience-orbit-foreground-visible" : ""}`}>
+            <ScenePanelOverlay>
+                <div className={`experience-orbit-foreground${contentVisible ? " experience-orbit-foreground-visible" : ""}`}>
                     <div className="experience-orbit-front" aria-hidden="true">
                         <svg className="experience-orbit-front-path" viewBox={experienceOrbitViewBox} style={experienceOrbitLayerStyles}>
                             <path className="experience-orbit-path" d={experienceOrbitFrontPath} />
@@ -219,9 +199,8 @@ export function ExperienceOrbit({
                     >
                         <IconMouse />
                     </span>
-                </div>,
-                document.body,
-            )}
+                </div>
+            </ScenePanelOverlay>
         </>
     );
 }

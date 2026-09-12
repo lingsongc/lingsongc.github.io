@@ -27,7 +27,6 @@ export function createWarpedGridPaths(
 
     return paths;
 }
-
 // Applies the persistent circle's radial lensing to one grid point.
 export function warpGridPoint(
     x: number,
@@ -75,15 +74,4 @@ function createLinePath(
     }
 
     return points.join(" ");
-}
-
-// Softens a normalized influence while preserving exact endpoints.
-function smoothstep(value: number) {
-    const normalized = clamp(value, 0, 1);
-    return normalized * normalized * (3 - 2 * normalized);
-}
-
-// Keeps progress and influence values within their declared range.
-function clamp(value: number, minimum: number, maximum: number) {
-    return Math.min(Math.max(value, minimum), maximum);
 }

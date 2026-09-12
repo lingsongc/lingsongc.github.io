@@ -89,10 +89,6 @@
     }
 }
 
-.navigation-container.navigation-rail-exiting {
-    animation: navigation-rail-exit 250ms ease both;
-}
-
 @keyframes navigation-rail-exit {
     from {
         visibility: visible;
@@ -148,10 +144,6 @@
     aspect-ratio: 1;
 }
 
-.navigation-controlled.navigation-docked {
-    animation: none;
-}
-
 .navigation-controlled.navigation-rail-departing {
     animation: navigation-rail-enter 250ms ease both;
 }
@@ -177,11 +169,6 @@
 .navigation-copyright-visible {
     opacity: 0.75;
     transition: opacity 250ms ease 500ms;
-}
-
-.navigation-copyright-exiting {
-    opacity: 0;
-    transition: opacity 250ms ease;
 }
 
 .navigation-theme-slot {
@@ -281,15 +268,13 @@
 }
 
 :is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:hover::before,
-:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible::before,
-:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link-touch-open::before {
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible::before {
     border-radius: 0.5rem;
     transform: rotate(45deg);
 }
 
 :is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:hover .navigation-label,
-:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible .navigation-label,
-:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link-touch-open .navigation-label {
+:is(.navigation-home-ready, .navigation-effects-ready) .navigation-link:focus-visible .navigation-label {
     clip-path: inset(0);
 }
 
@@ -305,13 +290,10 @@
         transition: none;
     }
 
-    .navigation-container.navigation-docked,
-    .navigation-container.navigation-rail-exiting,
     .navigation-container.navigation-home-entering { animation: none; }
 
     .navigation-copyright-controlled-entering,
     .navigation-copyright-controlled-exiting { animation: none; }
 
-    .navigation-copyright-visible,
-    .navigation-copyright-exiting { transition: none; }
+    .navigation-copyright-visible { transition: none; }
 }

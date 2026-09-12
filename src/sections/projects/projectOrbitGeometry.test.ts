@@ -52,4 +52,10 @@ describe("project orbit geometry", () => {
 
         expect(Math.abs(horizontalOffset)).toBeLessThanOrEqual(129.5);
     });
+
+    it("returns the nearest safe side across circular wraparound", () => {
+        const angle = fitProjectAngleToViewport(359, 500, 50, 1200, 600);
+        expect(angle).toBeGreaterThan(290);
+        expect(angle).toBeLessThan(310);
+    });
 });

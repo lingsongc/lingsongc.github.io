@@ -1,13 +1,5 @@
-import {
-    useEffect,
-    useState,
-    type CSSProperties,
-    type KeyboardEvent,
-    type MouseEvent,
-    type RefObject,
-} from "react";
-import { transientRailMarkerProgress } from "../../motion/railTravelProgress";
-import type { SceneId, ScenePhase } from "../../types/scene";
+import { type CSSProperties, type KeyboardEvent, type MouseEvent, type RefObject } from "react";
+import { sceneOrder, type SceneId, type ScenePhase } from "../../types/scene";
 import { navigationSections } from "./navigationSections";
 
 export type NavigationSceneControl = {
@@ -20,23 +12,18 @@ export type NavigationSceneControl = {
 };
 
 type NavigationProps = {
-    copyrightRef: RefObject<HTMLElement | null>;
-    navigationRef: RefObject<HTMLElement | null>;
     railRef: RefObject<HTMLDivElement | null>;
     sceneControl: NavigationSceneControl;
 };
 
 // Renders the persistent section navigation and its matching visual rail.
 export function Navigation({
-    copyrightRef,
-    navigationRef,
     railRef,
     sceneControl,
 }: NavigationProps) {
     const currentYear = new Date().getFullYear();
     const activeSection = sceneControl.currentSceneId;
     const busy = sceneControl.busy;
-    const [touchLabel, setTouchLabel] = useState<string | null>(null);
     const visibleSections = navigationSections.filter((section) => section.id !== "home");
     const transientMarkers = sceneControl.destinationSceneId
         ? transientRailMarkerProgress(
@@ -48,19 +35,10 @@ export function Navigation({
     const positionClasses = controlledNavigationClasses(sceneControl);
     const copyrightClasses = controlledCopyrightClasses(sceneControl);
 
-    useEffect(() => setTouchLabel(null), [activeSection, busy]);
-
-    // Reveals a label on the first touch, then follows the link on the second.
+    // Activates named navigation immediately for mouse, touch, and keyboard clicks.
     const handleNavigationClick = (event: MouseEvent<HTMLAnchorElement>, sectionId: SceneId) => {
         if (busy) {
             event.preventDefault();
-            return;
-        }
-        const usesTouch = window.matchMedia("(hover: none), (pointer: coarse)").matches;
-
-        if (usesTouch && event.detail !== 0 && touchLabel !== sectionId) {
-            event.preventDefault();
-            setTouchLabel(sectionId);
             return;
         }
         event.preventDefault();
@@ -82,7 +60,7 @@ export function Navigation({
             <div ref={railRef} className="navigation-rail">
                 <span className="navigation-rail-slot" aria-hidden="true" />
 
-                <small ref={copyrightRef} className={`navigation-copyright${copyrightClasses}`}>
+                <small className={`navigation-copyright${copyrightClasses}`}>
                     Copyright © {currentYear} Chen Ling Song. All Rights Reserved.
                 </small>
                 
@@ -94,7 +72,6 @@ export function Navigation({
             </div>
 
             <nav
-                ref={navigationRef}
                 className={`navigation-container navigation-controlled${busy ? " navigation-busy" : ""}${positionClasses}`}
                 aria-label="Portfolio sections"
             >
@@ -110,8 +87,6 @@ export function Navigation({
                                 <a
                                     className={`navigation-link${activeSection === section.id
                                         ? " navigation-link-active"
-                                        : ""}${touchLabel === section.id
-                                        ? " navigation-link-touch-open"
                                         : ""}${markerProgress > 0
                                         ? " navigation-link-travelling"
                                         : ""}`}
@@ -162,4 +137,25 @@ function controlledCopyrightClasses(sceneControl: NavigationSceneControl) {
     return phase === "moving" && destinationSceneId === "home"
         ? " navigation-copyright-controlled-exiting"
         : " navigation-copyright-visible";
+}
+
+// Calculates visual-only intermediate marker fills in direct travel order.
+export function transientRailMarkerProgress(fromSceneId: SceneId, toSceneId: SceneId, easedProgress: number) {
+    const fromIndex = sceneOrder.indexOf(fromSceneId);
+    const toIndex = sceneOrder.indexOf(toSceneId);
+    const distance = Math.abs(toIndex - fromIndex);
+    if (distance <= 1) return [];
+    const direction = toIndex > fromIndex ? 1 : -1;
+    const progress = clamp(easedProgress, 0, 1);
+    return Array.from({ length: distance - 1 }, (_, index) => {
+        const ordinal = index + 1;
+        return {
+            sceneId: sceneOrder[fromIndex + ordinal * direction],
+            progress: clamp(1 - Math.abs(progress - ordinal / distance) * distance, 0, 1),
+        };
+    });
+}
+
+function clamp(value: number, minimum: number, maximum: number) {
+    return Math.min(Math.max(value, minimum), maximum);
 }

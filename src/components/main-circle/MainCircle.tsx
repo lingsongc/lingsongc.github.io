@@ -1,26 +1,20 @@
-import type { RefObject } from "react";
-import { useMainCircleTransition } from "../../motion/useMainCircleTransition";
 import type { ImageDescriptor } from "../../types/images";
-import type { MainCircleDirectTransition } from "../../types/mainCircle";
+import type { MainCircleEndpoint } from "../../types/mainCircle";
 
 type MainCircleProps = {
-    circleRef: RefObject<HTMLDivElement | null>;
-    directTransition: MainCircleDirectTransition;
+    geometry: MainCircleEndpoint | null;
     image: ImageDescriptor | null;
     imageVisible?: boolean;
 };
 
 // Displays the current image and moves its circular frame between sections.
 export function MainCircle({
-    circleRef,
-    directTransition,
+    geometry,
     image,
     imageVisible = true,
 }: MainCircleProps) {
-    useMainCircleTransition(circleRef, directTransition);
-
     return (
-        <div ref={circleRef} className="main-circle-container">
+        <div className="main-circle-container" style={geometry ?? undefined}>
             <div className="main-circle-mask">
                 {image && (
                     <img

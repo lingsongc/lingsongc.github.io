@@ -1,4 +1,4 @@
-import { useEffect, useRef, type TransitionEvent } from "react";
+import { useEffect } from "react";
 import { homeDetails } from "../../data/about";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import type { SceneLifecycleControl } from "../../types/scene";
@@ -16,7 +16,6 @@ type HomeProps = {
 
 // Renders the Home introduction and publishes its image at the top of the page.
 export function Home({ lifecycle, onMainCircleImageChange }: HomeProps) {
-    const navigationRingRef = useRef<HTMLDivElement>(null);
     const leftName = homeDetails.name.isWestern
         ? homeDetails.name.firstName
         : homeDetails.name.lastName;
@@ -31,31 +30,6 @@ export function Home({ lifecycle, onMainCircleImageChange }: HomeProps) {
         onMainCircleImageChange(homeImage);
     }, [onMainCircleImageChange]);
 
-    useEffect(() => {
-        if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
-        const navigationRing = navigationRingRef.current;
-        const hasTimedTransition = navigationRing
-            ? getComputedStyle(navigationRing).transitionDuration
-                .split(",")
-                .some((duration) => Number.parseFloat(duration) > 0)
-            : false;
-        if (!navigationRing || hasTimedTransition) return;
-
-        lifecycle.onTransitionComplete(lifecycle.phase);
-    }, [lifecycle]);
-
-    // Reports completion from the longest Home-owned transform transition.
-    const handleHomeTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
-        if (
-            !lifecycle.active
-            || event.target !== event.currentTarget
-            || event.propertyName !== "transform"
-            || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")
-        ) return;
-
-        lifecycle.onTransitionComplete(lifecycle.phase);
-    };
-
     return (
         <section
             id="home"
@@ -63,10 +37,8 @@ export function Home({ lifecycle, onMainCircleImageChange }: HomeProps) {
             aria-labelledby="home-title"
         >
             <div
-                ref={navigationRingRef}
                 className="orbit-ring home-navigation-ring"
                 aria-hidden="true"
-                onTransitionEnd={handleHomeTransitionEnd}
             >
                 {Array.from({ length: 6 }, (_, index) => (
                     <span className="home-navigation-exit-marker" key={index} />

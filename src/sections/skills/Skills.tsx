@@ -1,4 +1,3 @@
-import { useEffect, useRef, type TransitionEvent } from "react";
 import { skills } from "../../data/skills";
 import type { SceneLifecycleControl } from "../../types/scene";
 
@@ -23,41 +22,13 @@ const skillGroups = skills.reduce<SkillGroup[]>((groups, skill) => {
 
 // Renders the complete skill list grouped by category.
 export function Skills({ lifecycle }: SkillsProps) {
-    const sectionRef = useRef<HTMLElement>(null);
     const contentVisible = lifecycle.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
 
-    useEffect(() => {
-        if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
-        const section = sectionRef.current;
-        const hasTimedTransition = section
-            ? getComputedStyle(section).transitionDuration
-                .split(",")
-                .some((duration) => Number.parseFloat(duration) > 0)
-            : false;
-        if (!section || hasTimedTransition) return;
-
-        lifecycle.onTransitionComplete(lifecycle.phase);
-    }, [lifecycle]);
-
-    // Reports completion from the minimal Skills visibility transition.
-    const handleTransitionEnd = (event: TransitionEvent<HTMLElement>) => {
-        if (
-            !lifecycle.active
-            || event.target !== event.currentTarget
-            || event.propertyName !== "opacity"
-            || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")
-        ) return;
-
-        lifecycle.onTransitionComplete(lifecycle.phase);
-    };
-
     return (
         <section
-            ref={sectionRef}
             className={`skill-container skill-container-lifecycle${contentVisible ? " skill-content-visible" : ""}`}
             aria-labelledby="skill-title"
-            onTransitionEnd={handleTransitionEnd}
         >
             <h2 id="skill-title" tabIndex={-1}>Skills</h2>
             <div>

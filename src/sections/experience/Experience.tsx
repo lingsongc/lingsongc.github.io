@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type RefObject } from "react";
+import { useEffect, useMemo, useState, type RefObject } from "react";
 import { IconBriefcase, IconCalendar, IconSchool } from "@tabler/icons-react";
 import { education } from "../../data/education";
 import { experiences } from "../../data/experiences";
@@ -23,9 +23,6 @@ type ExperienceProps = {
 
 // Coordinates the shared Experience and Education timeline, content, and image.
 export function Experience({ lifecycle, orbitRef, onMainCircleImageChange }: ExperienceProps) {
-    const imageVisibleRef = useRef(false);
-    const activeImageRef = useRef<ImageDescriptor | null>(null);
-    const [orbitReady, setOrbitReady] = useState(false);
     const [experienceType, setExperienceType] = useState<ExperienceType>("experience");
     const [activeEventIds, setActiveEventIds] = useState({
         experience: experienceEvents[0].id,
@@ -35,28 +32,28 @@ export function Experience({ lifecycle, orbitRef, onMainCircleImageChange }: Exp
     const activeEvent = activeEvents.find(
         (event) => event.id === activeEventIds[experienceType],
     ) ?? activeEvents[0];
-    activeImageRef.current = eventImage(experienceType, activeEvent.id);
+    const activeImage = useMemo(
+        () => eventImage(experienceType, activeEvent.id),
+        [activeEvent.id, experienceType],
+    );
     const EventTypeIcon = experienceType === "experience" ? IconBriefcase : IconSchool;
     const contentVisible = lifecycle.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
 
     useEffect(() => {
-        imageVisibleRef.current = contentVisible;
-        onMainCircleImageChange(activeImageRef.current);
-        setOrbitReady(contentVisible && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
-    }, [contentVisible, onMainCircleImageChange]);
+        onMainCircleImageChange(activeImage);
+    }, [activeImage, onMainCircleImageChange]);
 
     // Selects a timeline event while preserving each timeline's last selection.
     const activateEvent = (index: number) => {
         const event = activeEvents[index];
         if (!event || event.id === activeEvent.id) return;
         setActiveEventIds((current) => ({ ...current, [experienceType]: event.id }));
-        if (imageVisibleRef.current) onMainCircleImageChange(eventImage(experienceType, event.id));
     };
 
     return (
         <section
-            className={`experience-container${contentVisible ? " experience-content-visible" : ""}${orbitReady ? " experience-orbit-ready" : ""}`}
+            className={`experience-container${contentVisible ? " experience-content-visible" : ""}${lifecycle.phase === "idle" ? " experience-orbit-ready" : ""}`}
             aria-labelledby="experience-title"
         >
             <div className="experience-copy">
@@ -80,7 +77,6 @@ export function Experience({ lifecycle, orbitRef, onMainCircleImageChange }: Exp
                                     onClick={() => {
                                         if (type === experienceType) return;
                                         setExperienceType(type);
-                                        if (imageVisibleRef.current) onMainCircleImageChange(eventImage(type, activeEventIds[type]));
                                     }}
                                     key={type}
                                 >
@@ -127,17 +123,11 @@ export function Experience({ lifecycle, orbitRef, onMainCircleImageChange }: Exp
                 contentVisible={contentVisible}
                 entries={activeEvents}
                 imagePath={(id) => eventImagePath(experienceType, id)}
-                interactive={orbitReady && contentVisible}
+                interactive={lifecycle.active && lifecycle.phase === "idle"}
                 label={experienceType}
                 orbitRef={orbitRef}
                 onEntrySelect={activateEvent}
-                onReady={() => {
-                    if (contentVisible) setOrbitReady(true);
-                }}
-                onTransitionComplete={() => {
-                    if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
-                    lifecycle.onTransitionComplete(lifecycle.phase);
-                }}
+                reducedMotion={lifecycle.reducedMotion}
             />
         </section>
     );

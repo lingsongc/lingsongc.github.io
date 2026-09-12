@@ -19,12 +19,11 @@ export const sceneOrder = [
 ] as const satisfies readonly SceneId[];
 
 export type ScenePhase = "idle" | "closing" | "moving" | "opening";
-export type SceneVisualTransitionPhase = Extract<ScenePhase, "closing" | "opening">;
 
 export type SceneLifecycleControl = {
     active: boolean;
     phase: ScenePhase;
-    onTransitionComplete: (phase: SceneVisualTransitionPhase) => void;
+    reducedMotion: boolean;
 };
 
 export type SceneDirection = "forward" | "backward";

@@ -1,13 +1,11 @@
-import { useLayoutEffect, useRef, type ReactNode, type RefObject } from "react";
-import type { SceneId, ScenePhase } from "../../types/scene";
+import { createContext, useContext, useLayoutEffect, useRef, useState, type ReactNode, type RefObject } from "react";
+import { createPortal } from "react-dom";
 
 export type ScenePanelProps = {
     active: boolean;
     children: ReactNode;
     headingFocusTargetId: string;
     overflowRef?: RefObject<HTMLDivElement | null>;
-    phase: ScenePhase;
-    sceneId: SceneId;
 };
 
 // Provides one stacked scene with active semantics and local overflow ownership.
@@ -16,11 +14,9 @@ export function ScenePanel({
     children,
     headingFocusTargetId,
     overflowRef,
-    phase,
-    sceneId,
 }: ScenePanelProps) {
     const localOverflowRef = useRef<HTMLDivElement>(null);
-    const wasActiveRef = useRef(active);
+    const [overlayHost, setOverlayHost] = useState<HTMLDivElement | null>(null);
 
     useLayoutEffect(() => {
         const overflowElement = localOverflowRef.current;
@@ -28,12 +24,10 @@ export function ScenePanel({
 
         if (active) {
             overflowRef.current = overflowElement;
-            if (!wasActiveRef.current) overflowElement.scrollTop = 0;
+            overflowElement.scrollTop = 0;
         } else if (overflowRef.current === overflowElement) {
             overflowRef.current = null;
         }
-        wasActiveRef.current = active;
-
         return () => {
             if (overflowRef.current === overflowElement) overflowRef.current = null;
         };
@@ -42,18 +36,23 @@ export function ScenePanel({
     return (
         <div
             className={`scene-panel${active ? " scene-panel-active" : ""}`}
-            data-scene-id={sceneId}
-            data-scene-phase={phase}
             aria-hidden={!active}
             inert={!active}
         >
-            <div
-                ref={localOverflowRef}
-                className="scene-panel-overflow"
-                aria-labelledby={headingFocusTargetId}
-            >
-                {children}
-            </div>
+            <ScenePanelOverlayContext value={overlayHost}>
+                <div ref={localOverflowRef} className="scene-panel-overflow" aria-labelledby={headingFocusTargetId}>
+                    {children}
+                </div>
+            </ScenePanelOverlayContext>
+            <div ref={setOverlayHost} className="scene-panel-overlay" />
         </div>
     );
+}
+
+const ScenePanelOverlayContext = createContext<HTMLDivElement | null>(null);
+
+// Renders section-owned foreground content into its panel's non-scrolling layer.
+export function ScenePanelOverlay({ children }: { children: ReactNode }) {
+    const host = useContext(ScenePanelOverlayContext);
+    return host ? createPortal(children, host) : null;
 }

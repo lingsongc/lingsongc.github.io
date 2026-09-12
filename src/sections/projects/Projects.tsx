@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useState } from "react";
+import { ScenePanelOverlay } from "../../components/scene-panel/ScenePanel";
 import { IconArrowUpRight } from "@tabler/icons-react";
 import { projects, type Project } from "../../data/projects";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
@@ -13,28 +13,21 @@ type ProjectsProps = {
 
 // Coordinates project selection, orbit visibility, and the main-circle image.
 export function Projects({ lifecycle, onMainCircleImageChange }: ProjectsProps) {
-    const imageVisibleRef = useRef(false);
-    const activeProjectRef = useRef(projects[0]);
     const [activeProjectId, setActiveProjectId] = useState(projects[0].id);
     const activeProject = projects.find(({ id }) => id === activeProjectId) ?? projects[0];
-    activeProjectRef.current = activeProject;
     const transitionState: ProjectOrbitTransitionState = lifecycle.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle")
         ? "visible"
         : lifecycle?.active === true && lifecycle.phase === "closing"
             ? "exiting"
             : "idle";
-    const contentVisible = transitionState === "visible";
-
     useEffect(() => {
-        imageVisibleRef.current = contentVisible;
-        onMainCircleImageChange(projectImage(activeProjectRef.current));
-    }, [contentVisible, onMainCircleImageChange]);
+        onMainCircleImageChange(projectImage(activeProject));
+    }, [activeProject, onMainCircleImageChange]);
 
     // Selects a project and updates the image when the section is visible.
     const selectProject = (project: Project) => {
         setActiveProjectId(project.id);
-        if (imageVisibleRef.current) onMainCircleImageChange(projectImage(project));
     };
 
     return (
@@ -48,21 +41,15 @@ export function Projects({ lifecycle, onMainCircleImageChange }: ProjectsProps) 
                 projects={projects}
                 transitionState={transitionState}
                 onProjectSelect={selectProject}
-                onTransitionComplete={() => {
-                    if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
-                    lifecycle.onTransitionComplete(lifecycle.phase);
-                }}
             />
-            {createPortal(
+            <ScenePanelOverlay>
                 <div
-                    className={`project-selected-content scene-composition-layer${transitionState === "idle" ? "" : ` project-selected-content-${transitionState}`}`}
-                    aria-hidden={!contentVisible}
+                    className={`project-selected-content${transitionState === "idle" ? "" : ` project-selected-content-${transitionState}`}`}
                     aria-live="polite"
                 >
                     <p className="project-selected-summary">{activeProject.summary}</p>
-                </div>,
-                document.body,
-            )}
+                </div>
+            </ScenePanelOverlay>
             <a
                 className="project-detail-link"
                 href={activeProject.href}

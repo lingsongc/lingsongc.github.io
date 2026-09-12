@@ -1,303 +1,166 @@
-import { useCallback, useEffect, useRef, useSyncExternalStore } from "react";
-import gsap from "gsap";
-import type {
-    SceneId,
-    SceneLifecycleControl,
-    SceneRequest,
-    SceneRequestResult,
-    SceneVisualTransitionPhase,
-} from "../types/scene";
-import {
-    advanceSceneTransition,
-    createSceneTransitionState,
-    recoverSceneTransition,
-    requestSceneTransition,
-    type SceneTransitionState,
-} from "./sceneTransitionState";
-import { sceneIdFromHash, sceneUrl } from "./sceneHistory";
-import { MAIN_CIRCLE_TRAVEL_DURATION_MS } from "./mainCircleTravel";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { MAIN_CIRCLE_TRAVEL_DURATION_MS } from "../components/main-circle/mainCircleGeometry";
+import { sceneOrder, type SceneDirection, type SceneId, type SceneLifecycleControl, type SceneRequest, type SceneRequestResult } from "../types/scene";
 
-export type SlideshowCoordinatorSnapshot = SceneTransitionState & {
-    activeSceneId: SceneId | null;
-    busy: boolean;
-    settledVersion: number;
-    travelProgress: number;
-};
+const SCENE_VISUAL_DURATION_MS = 500;
 
-export type SlideshowTravelDriver = (callbacks: {
-    onComplete: () => void;
-    onProgress: (progress: number) => void;
-}) => () => void;
+export type SceneTransitionState =
+    | { currentSceneId: SceneId; direction: null; phase: "idle"; requestedSceneId: null }
+    | { currentSceneId: SceneId; direction: SceneDirection; phase: "closing" | "moving" | "opening"; requestedSceneId: SceneId };
+type CoordinatorState = SceneTransitionState & { settledVersion: number; travelProgress: number };
 
-export type SlideshowCoordinator = {
-    completeSceneTransition: (sceneId: SceneId, phase: SceneVisualTransitionPhase) => void;
-    dispose: () => void;
-    getSnapshot: () => SlideshowCoordinatorSnapshot;
-    recover: (reason: "resize" | "orientation-change" | "document-hidden") => boolean;
-    requestScene: (request: SceneRequest) => SceneRequestResult;
-    setReducedMotion: (reducedMotion: boolean) => void;
-    subscribe: (listener: () => void) => () => void;
-};
-
-export type SlideshowCoordinatorOptions = {
-    reducedMotion?: boolean;
-    startTravel?: SlideshowTravelDriver;
-};
-
-// Creates the phase owner that waits for Section completion around one travel clock.
-export function createSlideshowCoordinator(
-    initialSceneId: SceneId,
-    options: SlideshowCoordinatorOptions = {},
-): SlideshowCoordinator {
-    const listeners = new Set<() => void>();
-    const startTravel = options.startTravel ?? startGsapTravel;
-    let reducedMotion = options.reducedMotion ?? false;
-    let transitionState = createSceneTransitionState(initialSceneId);
-    let settledVersion = 0;
-    let travelProgress = 0;
-    let cancelTravel: (() => void) | null = null;
-    let disposed = false;
-    let snapshot = coordinatorSnapshot(transitionState, travelProgress, settledVersion);
-
-    // Publishes one immutable snapshot after state or travel progress changes.
-    const publish = () => {
-        snapshot = coordinatorSnapshot(transitionState, travelProgress, settledVersion);
-        listeners.forEach((listener) => listener());
-    };
-
-    // Completes travel only when the controller still owns the moving phase.
-    const completeTravel = () => {
-        if (disposed || transitionState.phase !== "moving") return;
-        cancelTravel = null;
-        travelProgress = 1;
-        transitionState = advanceSceneTransition(transitionState);
-        publish();
-    };
-
-    // Cancels active work and makes the requested destination the only valid resting state.
-    const recover = (reason: "resize" | "orientation-change" | "document-hidden") => {
-        if (disposed || transitionState.phase === "idle") return false;
-        cancelTravel?.();
-        cancelTravel = null;
-        transitionState = recoverSceneTransition(transitionState, reason);
-        travelProgress = 0;
-        settledVersion += 1;
-        publish();
-        return true;
-    };
-
-    return {
-        completeSceneTransition(sceneId, phase) {
-            if (disposed || transitionState.phase !== phase) return;
-            const expectedSceneId = phase === "closing"
-                ? transitionState.currentSceneId
-                : transitionState.requestedSceneId;
-            if (sceneId !== expectedSceneId) return;
-
-            transitionState = advanceSceneTransition(transitionState);
-            if (transitionState.phase === "moving") {
-                travelProgress = 0;
-                publish();
-                cancelTravel = startTravel({
-                    onProgress(progress) {
-                        if (disposed || transitionState.phase !== "moving") return;
-                        travelProgress = clamp(progress, 0, 1);
-                        publish();
-                    },
-                    onComplete: completeTravel,
-                });
-                return;
-            }
-
-            travelProgress = 0;
-            publish();
-        },
-        dispose() {
-            disposed = true;
-            cancelTravel?.();
-            cancelTravel = null;
-            listeners.clear();
-        },
-        getSnapshot: () => snapshot,
-        recover,
-        requestScene(request) {
-            if (disposed) return { status: "ignored", reason: "busy" };
-            const update = requestSceneTransition(transitionState, request);
-            if (update.result.status === "accepted" && reducedMotion) {
-                transitionState = createSceneTransitionState(update.result.destinationSceneId);
-                travelProgress = 0;
-                settledVersion += 1;
-                publish();
-                return update.result;
-            }
-            if (update.state !== transitionState) {
-                transitionState = update.state;
-                travelProgress = 0;
-                publish();
-            }
-            return update.result;
-        },
-        setReducedMotion(value) {
-            reducedMotion = value;
-        },
-        subscribe(listener) {
-            listeners.add(listener);
-            return () => listeners.delete(listener);
-        },
-    };
-}
-
-// Exposes a stable coordinator instance and Section-specific lifecycle adapters to React.
-export function useSlideshowCoordinator(
-    initialSceneId: SceneId,
-    options: SlideshowCoordinatorOptions = {},
-) {
-    const controllerRef = useRef<SlideshowCoordinator | null>(null);
-    const effectVersionRef = useRef(0);
-    if (!controllerRef.current) {
-        controllerRef.current = createSlideshowCoordinator(initialSceneId, options);
-    }
-    const controller = controllerRef.current;
+// Owns slideshow state, phase timing, URL behavior, recovery, and reduced motion.
+export function useSlideshowCoordinator() {
+    const [reducedMotion, setReducedMotion] = useState(() => window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    const [state, setState] = useState<CoordinatorState>(() => ({ ...createSceneTransitionState(initialSceneIdFromHash(window.location.hash)), settledVersion: 0, travelProgress: 0 }));
+    const stateRef = useRef(state);
+    const reducedMotionRef = useRef(reducedMotion);
     const lastHandledHashRef = useRef(window.location.hash);
-    const snapshot = useSyncExternalStore(
-        controller.subscribe,
-        controller.getSnapshot,
-        controller.getSnapshot,
-    );
-    const lastSettledVersionRef = useRef(snapshot.settledVersion);
+    const lastSettledVersionRef = useRef(state.settledVersion);
+    const phaseTimerRef = useRef<number | undefined>(undefined);
+    const travelFrameRef = useRef(0);
+
+    const commit = useCallback((next: CoordinatorState) => { stateRef.current = next; setState(next); }, []);
+    const settleRequestedScene = useCallback(() => {
+        const current = stateRef.current;
+        if (current.phase === "idle") return false;
+        window.clearTimeout(phaseTimerRef.current);
+        cancelAnimationFrame(travelFrameRef.current);
+        commit({ ...createSceneTransitionState(current.requestedSceneId), settledVersion: current.settledVersion + 1, travelProgress: 0 });
+        return true;
+    }, [commit]);
+
+    const requestScene = useCallback((request: SceneRequest): SceneRequestResult => {
+        const current = stateRef.current;
+        const update = requestSceneTransition(current, request);
+        if (update.result.status !== "accepted") return update.result;
+        commit(reducedMotionRef.current
+            ? { ...createSceneTransitionState(update.result.destinationSceneId), settledVersion: current.settledVersion + 1, travelProgress: 0 }
+            : { ...update.state, settledVersion: current.settledVersion, travelProgress: 0 });
+        return update.result;
+    }, [commit]);
 
     useEffect(() => {
-        const effectVersion = ++effectVersionRef.current;
-        return () => {
-            // Strict Mode immediately recreates effects, so defer disposal until a genuine unmount.
-            queueMicrotask(() => {
-                if (effectVersionRef.current === effectVersion) controller.dispose();
-            });
+        window.clearTimeout(phaseTimerRef.current);
+        cancelAnimationFrame(travelFrameRef.current);
+        if (state.phase === "closing") {
+            phaseTimerRef.current = window.setTimeout(() => {
+                const current = stateRef.current;
+                if (current.phase === "closing") commit({ ...advanceSceneTransition(current), settledVersion: current.settledVersion, travelProgress: 0 });
+            }, SCENE_VISUAL_DURATION_MS);
+        } else if (state.phase === "moving") {
+            const startedAt = performance.now();
+            const tick = (now: number) => {
+                const current = stateRef.current;
+                if (current.phase !== "moving") return;
+                const progress = clamp((now - startedAt) / MAIN_CIRCLE_TRAVEL_DURATION_MS, 0, 1);
+                if (progress >= 1) {
+                    commit({ ...advanceSceneTransition(current), settledVersion: current.settledVersion, travelProgress: 1 });
+                    return;
+                }
+                commit({ ...current, travelProgress: progress });
+                travelFrameRef.current = requestAnimationFrame(tick);
+            };
+            travelFrameRef.current = requestAnimationFrame(tick);
+        } else if (state.phase === "opening") {
+            phaseTimerRef.current = window.setTimeout(() => {
+                const current = stateRef.current;
+                if (current.phase === "opening") commit({ ...createSceneTransitionState(current.requestedSceneId), settledVersion: current.settledVersion, travelProgress: 0 });
+            }, SCENE_VISUAL_DURATION_MS);
+        }
+        return () => { window.clearTimeout(phaseTimerRef.current); cancelAnimationFrame(travelFrameRef.current); };
+    }, [commit, state.phase]);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+        const updatePreference = () => {
+            reducedMotionRef.current = mediaQuery.matches;
+            setReducedMotion(mediaQuery.matches);
+            if (mediaQuery.matches) settleRequestedScene();
         };
-    }, [controller]);
-
-    useEffect(
-        () => controller.setReducedMotion(options.reducedMotion ?? false),
-        [controller, options.reducedMotion],
-    );
+        mediaQuery.addEventListener("change", updatePreference);
+        return () => mediaQuery.removeEventListener("change", updatePreference);
+    }, [settleRequestedScene]);
 
     useEffect(() => {
-        // Replaces only malformed initial hashes; an absent hash remains the valid Home default.
         if (!window.location.hash || sceneIdFromHash(window.location.hash)) return;
         lastHandledHashRef.current = "#home";
         window.history.replaceState({ sceneId: "home" }, "", sceneUrl("home", window.location));
     }, []);
 
     useEffect(() => {
-        // Writes on normal arrival or an immediate environmental and reduced-motion settlement.
-        const arrivedDuringOpening = snapshot.phase === "opening"
-            && snapshot.requestedSceneId === snapshot.currentSceneId;
-        const arrivedImmediately = snapshot.settledVersion !== lastSettledVersionRef.current;
+        const arrivedDuringOpening = state.phase === "opening" && state.requestedSceneId === state.currentSceneId;
+        const arrivedImmediately = state.settledVersion !== lastSettledVersionRef.current;
         if (!arrivedDuringOpening && !arrivedImmediately) return;
-        lastSettledVersionRef.current = snapshot.settledVersion;
-        if (sceneIdFromHash(window.location.hash) === snapshot.currentSceneId) return;
-
-        lastHandledHashRef.current = `#${snapshot.currentSceneId}`;
-        window.history.pushState(
-            { sceneId: snapshot.currentSceneId },
-            "",
-            sceneUrl(snapshot.currentSceneId, window.location),
-        );
-    }, [snapshot.currentSceneId, snapshot.phase, snapshot.requestedSceneId, snapshot.settledVersion]);
+        lastSettledVersionRef.current = state.settledVersion;
+        if (sceneIdFromHash(window.location.hash) === state.currentSceneId) return;
+        lastHandledHashRef.current = `#${state.currentSceneId}`;
+        window.history.pushState({ sceneId: state.currentSceneId }, "", sceneUrl(state.currentSceneId, window.location));
+    }, [state.currentSceneId, state.phase, state.requestedSceneId, state.settledVersion]);
 
     useEffect(() => {
-        // Stops a busy timeline rather than leaving geometry half-way through a changed environment.
-        const handleResize = () => controller.recover("resize");
-        const handleOrientationChange = () => controller.recover("orientation-change");
-        const handleVisibilityChange = () => {
-            if (document.hidden) controller.recover("document-hidden");
-        };
-
-        window.addEventListener("resize", handleResize);
-        window.addEventListener("orientationchange", handleOrientationChange);
-        document.addEventListener("visibilitychange", handleVisibilityChange);
+        const recover = () => { settleRequestedScene(); };
+        const hide = () => { if (document.hidden) settleRequestedScene(); };
+        window.addEventListener("resize", recover);
+        window.addEventListener("orientationchange", recover);
+        document.addEventListener("visibilitychange", hide);
         return () => {
-            window.removeEventListener("resize", handleResize);
-            window.removeEventListener("orientationchange", handleOrientationChange);
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("resize", recover);
+            window.removeEventListener("orientationchange", recover);
+            document.removeEventListener("visibilitychange", hide);
         };
-    }, [controller]);
+    }, [settleRequestedScene]);
 
     useEffect(() => {
-        // Routes native Back, Forward, and manually changed hashes through the direct coordinator path.
         const requestLocationScene = () => {
             const hash = window.location.hash;
             if (hash === lastHandledHashRef.current) return;
             lastHandledHashRef.current = hash;
-
             const destinationSceneId = sceneIdFromHash(hash);
             if (!destinationSceneId) {
                 lastHandledHashRef.current = "#home";
                 window.history.replaceState({ sceneId: "home" }, "", sceneUrl("home", window.location));
-                controller.requestScene({
-                    kind: "direct",
-                    destinationSceneId: "home",
-                    source: "history",
-                });
-                return;
             }
-            controller.requestScene({
-                kind: "direct",
-                destinationSceneId,
-                source: "history",
-            });
+            requestScene({ kind: "direct", destinationSceneId: destinationSceneId ?? "home", source: "history" });
         };
-
         window.addEventListener("popstate", requestLocationScene);
         window.addEventListener("hashchange", requestLocationScene);
-        return () => {
-            window.removeEventListener("popstate", requestLocationScene);
-            window.removeEventListener("hashchange", requestLocationScene);
-        };
-    }, [controller]);
+        return () => { window.removeEventListener("popstate", requestLocationScene); window.removeEventListener("hashchange", requestLocationScene); };
+    }, [requestScene]);
 
     const lifecycleFor = useCallback((sceneId: SceneId): SceneLifecycleControl => ({
-        active: snapshot.activeSceneId === sceneId,
-        phase: snapshot.phase,
-        onTransitionComplete: (phase) => controller.completeSceneTransition(sceneId, phase),
-    }), [controller, snapshot.activeSceneId, snapshot.phase]);
+        active: state.phase !== "moving" && state.currentSceneId === sceneId,
+        phase: state.phase,
+        reducedMotion,
+    }), [reducedMotion, state.currentSceneId, state.phase]);
 
-    return {
-        ...snapshot,
-        lifecycleFor,
-        requestScene: controller.requestScene,
-    };
+    return { ...state, activeSceneId: state.phase === "moving" ? null : state.currentSceneId, busy: state.phase !== "idle", lifecycleFor, reducedMotion, requestScene };
 }
 
-// Runs the provisional one-second normalized travel clock without owning geometry.
-function startGsapTravel({ onComplete, onProgress }: Parameters<SlideshowTravelDriver>[0]) {
-    const clock = { progress: 0 };
-    const tween = gsap.to(clock, {
-        progress: 1,
-        duration: MAIN_CIRCLE_TRAVEL_DURATION_MS / 1000,
-        ease: "none",
-        onUpdate: () => onProgress(clock.progress),
-        onComplete,
-    });
-    return () => tween.kill();
+export function createSceneTransitionState(currentSceneId: SceneId): SceneTransitionState {
+    return { currentSceneId, direction: null, phase: "idle", requestedSceneId: null };
 }
 
-// Combines pure transition state with the coordinator's derived public fields.
-function coordinatorSnapshot(
-    state: SceneTransitionState,
-    travelProgress: number,
-    settledVersion: number,
-): SlideshowCoordinatorSnapshot {
-    return {
-        ...state,
-        activeSceneId: state.phase === "moving" ? null : state.currentSceneId,
-        busy: state.phase !== "idle",
-        settledVersion,
-        travelProgress,
-    };
+// Evaluates one request without queuing input while the coordinator is busy.
+export function requestSceneTransition(state: SceneTransitionState, request: SceneRequest) {
+    if (state.phase !== "idle") return { result: { status: "ignored", reason: "busy" } as const, state };
+    const currentIndex = sceneOrder.indexOf(state.currentSceneId);
+    const destinationSceneId = request.kind === "direct" ? request.destinationSceneId : sceneOrder[currentIndex + (request.direction === "forward" ? 1 : -1)] ?? null;
+    if (!destinationSceneId) return { result: { status: "rejected", reason: "boundary" } as const, state };
+    if (destinationSceneId === state.currentSceneId) return { result: { status: "ignored", reason: "same-scene" } as const, state };
+    const direction = sceneOrder.indexOf(destinationSceneId) > currentIndex ? "forward" as const : "backward" as const;
+    const result = { status: "accepted" as const, destinationSceneId, direction };
+    return { result, state: { currentSceneId: state.currentSceneId, direction, phase: "closing" as const, requestedSceneId: destinationSceneId } };
 }
 
-// Keeps injected travel drivers from publishing progress outside the valid range.
-function clamp(value: number, minimum: number, maximum: number) {
-    return Math.min(Math.max(value, minimum), maximum);
+export function advanceSceneTransition(state: SceneTransitionState): SceneTransitionState {
+    if (state.phase === "closing") return { ...state, phase: "moving" };
+    if (state.phase === "moving") return { ...state, currentSceneId: state.requestedSceneId, phase: "opening" };
+    if (state.phase === "opening") return createSceneTransitionState(state.requestedSceneId);
+    return state;
 }
+
+export function sceneIdFromHash(hash: string): SceneId | null { const candidate = hash.replace(/^#/, ""); return sceneOrder.find((sceneId) => sceneId === candidate) ?? null; }
+export function initialSceneIdFromHash(hash: string): SceneId { return sceneIdFromHash(hash) ?? "home"; }
+export function sceneUrl(sceneId: SceneId, location: Pick<Location, "pathname" | "search">) { return `${location.pathname}${location.search}#${sceneId}`; }
+function clamp(value: number, minimum: number, maximum: number) { return Math.min(Math.max(value, minimum), maximum); }

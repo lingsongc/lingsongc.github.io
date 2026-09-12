@@ -1,4 +1,4 @@
-import { useEffect, useRef, type TransitionEvent } from "react";
+import { useEffect } from "react";
 import { aboutDetails } from "../../data/about";
 import type { ImageDescriptor, MainCircleImagePublisher } from "../../types/images";
 import type { SceneLifecycleControl } from "../../types/scene";
@@ -17,7 +17,6 @@ type AboutProps = {
 
 // Reveals About exclusively from the explicit slideshow lifecycle.
 export function About({ lifecycle, onMainCircleImageChange }: AboutProps) {
-    const contentRef = useRef<HTMLDivElement>(null);
     const paragraphs = aboutDetails.description.trim().split(/\n\s*\n/);
     const contentVisible = lifecycle.active === true
         && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
@@ -26,38 +25,12 @@ export function About({ lifecycle, onMainCircleImageChange }: AboutProps) {
         onMainCircleImageChange(aboutImage);
     }, [onMainCircleImageChange]);
 
-    useEffect(() => {
-        if (!lifecycle.active || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")) return;
-        const content = contentRef.current;
-        const hasTimedTransition = content
-            ? getComputedStyle(content).transitionDuration
-                .split(",")
-                .some((duration) => Number.parseFloat(duration) > 0)
-            : false;
-        if (!content || hasTimedTransition) return;
-
-        // A zero-duration transition has no transitionend event, so complete it immediately.
-        lifecycle.onTransitionComplete(lifecycle.phase);
-    }, [lifecycle]);
-
-    // Reports completion only when About's owned seam transition actually finishes.
-    const handleContentTransitionEnd = (event: TransitionEvent<HTMLDivElement>) => {
-        if (
-            !lifecycle.active
-            || event.currentTarget !== event.target
-            || event.propertyName !== "clip-path"
-            || (lifecycle.phase !== "opening" && lifecycle.phase !== "closing")
-        ) return;
-
-        lifecycle.onTransitionComplete(lifecycle.phase);
-    };
-
     return (
         <section
             className={`about-container${contentVisible ? " about-content-visible" : ""}`}
             aria-labelledby="about-title"
         >
-            <div ref={contentRef} className="about-text" onTransitionEnd={handleContentTransitionEnd}>
+            <div className="about-text">
                 <h2 id="about-title" tabIndex={-1}>About Me</h2>
                 <div className="about-description">
                     {paragraphs.map((paragraph) => (

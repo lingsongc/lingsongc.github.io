@@ -1,15 +1,16 @@
-import { useEffect, useId, useRef, type RefObject } from "react";
+import { useEffect, useId, useRef } from "react";
+import type { MainCircleEndpoint } from "../../types/mainCircle";
 import { createWarpedGridPaths } from "./backgroundGridGeometry";
 
 const GRID_SPACING = 48;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 
 type BackgroundGridProps = {
-    warpTargetRef?: RefObject<HTMLElement | null>;
+    circleGeometry?: MainCircleEndpoint | null;
 };
 
 // Renders a fixed SVG grid that bends and fades around the main circle.
-export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
+export function BackgroundGrid({ circleGeometry = null }: BackgroundGridProps) {
     const linesRef = useRef<SVGGElement>(null);
     const fadeCircleRef = useRef<SVGCircleElement>(null);
     const filterId = useId();
@@ -20,32 +21,20 @@ export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
         const fadeCircle = fadeCircleRef.current;
         if (!lines || !fadeCircle) return;
 
-        const pathElements: SVGPathElement[] = [];
-        let animationFrame = 0;
-        let lastSignature = "";
-
-        // Updates at most once per frame while geometry or resistance is changing.
+        const pathElements = [...lines.querySelectorAll<SVGPathElement>("path")];
+        const circle = circleGeometry ? {
+            x: circleGeometry.left,
+            y: circleGeometry.top,
+            radius: circleGeometry.width / 2,
+        } : null;
         const render = () => {
-            animationFrame = 0;
             if (document.hidden) return;
-
-            const warpTarget = warpTargetRef?.current;
-            const rect = warpTarget?.getBoundingClientRect();
-            const circle = rect
-                ? {
-                    x: rect.left + rect.width / 2,
-                    y: rect.top + rect.height / 2,
-                    radius: Math.min(rect.width, rect.height) / 2,
-                }
-                : null;
             const circleSignature = circle
                 ? `${circle.x.toFixed(1)}:${circle.y.toFixed(1)}:${circle.radius.toFixed(1)}`
                 : "static";
             const signature = `${innerWidth}:${innerHeight}:${circleSignature}`;
-
-            // Avoids rewriting every SVG path on unchanged animation frames.
-            if (signature !== lastSignature) {
-                lastSignature = signature;
+            if (lines.dataset.signature !== signature) {
+                lines.dataset.signature = signature;
                 const pathData = createWarpedGridPaths(
                     innerWidth,
                     innerHeight,
@@ -69,28 +58,14 @@ export function BackgroundGrid({ warpTargetRef }: BackgroundGridProps) {
                     fadeCircle.setAttribute("r", "0");
                 }
             }
-
-            animationFrame = requestAnimationFrame(render);
         };
-
-        // Stops the frame loop while hidden and resumes with a fresh geometry sample.
         const handleVisibilityChange = () => {
-            if (document.hidden) {
-                cancelAnimationFrame(animationFrame);
-                animationFrame = 0;
-                return;
-            }
-            lastSignature = "";
-            if (animationFrame === 0) animationFrame = requestAnimationFrame(render);
+            if (!document.hidden) render();
         };
-
-        animationFrame = requestAnimationFrame(render);
+        render();
         document.addEventListener("visibilitychange", handleVisibilityChange);
-        return () => {
-            cancelAnimationFrame(animationFrame);
-            document.removeEventListener("visibilitychange", handleVisibilityChange);
-        };
-    }, [warpTargetRef]);
+        return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }, [circleGeometry]);
 
     return (
         <>

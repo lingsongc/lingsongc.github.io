@@ -35,17 +35,26 @@ export function fitProjectAngleToViewport(
     };
     if (isSafe(normalizedAngle)) return normalizedAngle;
 
-    // A hundredth-degree search keeps both axes visible without changing ring radii.
-    let nearestAngle = normalizedAngle;
-    let nearestDistance = Number.POSITIVE_INFINITY;
-    for (let step = 0; step < 36000; step += 1) {
-        const candidate = step / 100;
-        if (!isSafe(candidate)) continue;
-        const directDistance = Math.abs(candidate - normalizedAngle);
-        const distance = Math.min(directDistance, 360 - directDistance);
-        if (distance >= nearestDistance - 0.000001) continue;
-        nearestAngle = candidate;
-        nearestDistance = distance;
+    // Searches outward from the requested angle, then refines only the first safe boundary.
+    const coarseStep = 0.25;
+    for (let distance = coarseStep; distance <= 180; distance += coarseStep) {
+        for (const direction of [1, -1]) {
+            const candidate = normalizeAngle(normalizedAngle + distance * direction);
+            if (!isSafe(candidate)) continue;
+            let unsafeDistance = Math.max(0, distance - coarseStep);
+            let safeDistance = distance;
+            for (let refinement = 0; refinement < 12; refinement += 1) {
+                const midpoint = (unsafeDistance + safeDistance) / 2;
+                if (isSafe(normalizeAngle(normalizedAngle + midpoint * direction))) safeDistance = midpoint;
+                else unsafeDistance = midpoint;
+            }
+            return normalizeAngle(normalizedAngle + safeDistance * direction);
+        }
     }
-    return nearestAngle;
+    return normalizedAngle;
+}
+
+// Wraps angles while the outward search crosses zero degrees.
+function normalizeAngle(angle: number) {
+    return (angle % 360 + 360) % 360;
 }

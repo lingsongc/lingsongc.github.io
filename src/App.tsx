@@ -1,13 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { BackgroundGrid } from "./components/background-grid/BackgroundGrid";
 import { MainCircle } from "./components/main-circle/MainCircle";
+import { useMainCircle } from "./components/main-circle/useMainCircle";
 import { Navigation } from "./components/navigation/Navigation";
 import { ScenePanel } from "./components/scene-panel/ScenePanel";
-import { homeCircleSize } from "./motion/mainCircleGeometry";
-import { resolveMainCircleSceneEndpoint } from "./motion/mainCircleSceneEndpoints";
-import { useMainCircleImageLifecycle } from "./motion/useMainCircleImageLifecycle";
-import { initialSceneIdFromHash } from "./motion/sceneHistory";
-import { useReducedMotionPreference } from "./motion/useReducedMotionPreference";
+import { homeCircleSize, resolveMainCircleSceneEndpoint } from "./components/main-circle/mainCircleGeometry";
 import { useSlideshowCoordinator } from "./motion/useSlideshowCoordinator";
 import { useSceneInput } from "./motion/useSceneInput";
 import { About } from "./sections/about/About";
@@ -31,31 +28,18 @@ const sceneHeadingIds: Record<SceneId, string> = {
 
 // Composes the six viewport Sections around one page-level slideshow coordinator.
 export default function App() {
-    const mainCircleRef = useRef<HTMLDivElement>(null);
     const activeSceneScrollerRef = useRef<HTMLDivElement>(null);
     const experienceOrbitRef = useRef<HTMLElement>(null);
-    const navigationRef = useRef<HTMLElement>(null);
-    const navigationCopyrightRef = useRef<HTMLElement>(null);
     const navigationRailRef = useRef<HTMLDivElement>(null);
-    const [easedTravelProgress, setEasedTravelProgress] = useState(0);
-    const initialSceneIdRef = useRef(initialSceneIdFromHash(window.location.hash));
-    const reducedMotion = useReducedMotionPreference();
-    const slideshow = useSlideshowCoordinator(initialSceneIdRef.current, { reducedMotion });
+    const slideshow = useSlideshowCoordinator();
     const previousScenePhaseRef = useRef<ScenePhase | null>(null);
     const previousSettledVersionRef = useRef(slideshow.settledVersion);
     const sceneInput = useSceneInput({
         activeScrollerRef: activeSceneScrollerRef,
         currentSceneId: slideshow.currentSceneId,
         phase: slideshow.phase,
-        reducedMotion,
         requestScene: slideshow.requestScene,
     });
-    const mainCircleImage = useMainCircleImageLifecycle({
-        currentSceneId: slideshow.currentSceneId,
-        phase: slideshow.phase,
-        requestedSceneId: slideshow.requestedSceneId,
-    });
-
     // Measures the current viewport-owned inputs needed by a requested endpoint.
     const resolveCircleEndpoint = useCallback((sceneId: SceneId) => {
         const experienceBounds = experienceOrbitRef.current?.getBoundingClientRect();
@@ -75,33 +59,42 @@ export default function App() {
         });
     }, []);
 
+    const mainCircle = useMainCircle({
+        currentSceneId: slideshow.currentSceneId,
+        requestedSceneId: slideshow.requestedSceneId,
+        phase: slideshow.phase,
+        travelProgress: slideshow.travelProgress,
+        layoutVersion: slideshow.settledVersion,
+        resolveEndpoint: resolveCircleEndpoint,
+    });
+
     // Gives each Section a stable descriptor publisher without exposing the registry.
     const publishHomeImage = useCallback<MainCircleImagePublisher>(
-        (image) => mainCircleImage.publishSceneImage("home", image),
-        [mainCircleImage.publishSceneImage],
+        (image) => mainCircle.publishSceneImage("home", image),
+        [mainCircle.publishSceneImage],
     );
     const publishAboutImage = useCallback<MainCircleImagePublisher>(
-        (image) => mainCircleImage.publishSceneImage("about", image),
-        [mainCircleImage.publishSceneImage],
+        (image) => mainCircle.publishSceneImage("about", image),
+        [mainCircle.publishSceneImage],
     );
     const publishExperienceImage = useCallback<MainCircleImagePublisher>(
-        (image) => mainCircleImage.publishSceneImage("experience", image),
-        [mainCircleImage.publishSceneImage],
+        (image) => mainCircle.publishSceneImage("experience", image),
+        [mainCircle.publishSceneImage],
     );
     const publishProjectImage = useCallback<MainCircleImagePublisher>(
-        (image) => mainCircleImage.publishSceneImage("projects", image),
-        [mainCircleImage.publishSceneImage],
+        (image) => mainCircle.publishSceneImage("projects", image),
+        [mainCircle.publishSceneImage],
     );
 
     // Converts a named control activation into one direct, non-queued request.
     const requestScene = useCallback((sceneId: SceneId) => {
-        sceneInput.cancelResistance();
+        sceneInput.cancelPendingInput();
         slideshow.requestScene({
             kind: "direct",
             destinationSceneId: sceneId,
             source: "navigation",
         });
-    }, [slideshow.requestScene, sceneInput.cancelResistance]);
+    }, [slideshow.requestScene, sceneInput.cancelPendingInput]);
 
     useEffect(() => {
         const previousPhase = previousScenePhaseRef.current;
@@ -119,11 +112,9 @@ export default function App() {
 
     return (
         <>
-            <BackgroundGrid warpTargetRef={mainCircleRef} />
+            <BackgroundGrid circleGeometry={mainCircle.geometry} />
 
             <Navigation
-                copyrightRef={navigationCopyrightRef}
-                navigationRef={navigationRef}
                 railRef={navigationRailRef}
                 sceneControl={{
                     busy: slideshow.busy,
@@ -131,31 +122,21 @@ export default function App() {
                     destinationSceneId: slideshow.requestedSceneId,
                     onSceneRequest: requestScene,
                     phase: slideshow.phase,
-                    travelProgress: easedTravelProgress,
+                    travelProgress: mainCircle.easedTravelProgress,
                 }}
             />
 
             <main className="slideshow-stage">
                 <MainCircle
-                    circleRef={mainCircleRef}
-                    directTransition={{
-                        currentSceneId: slideshow.currentSceneId,
-                        requestedSceneId: slideshow.requestedSceneId,
-                        phase: slideshow.phase,
-                        travelProgress: slideshow.travelProgress,
-                        resolveEndpoint: resolveCircleEndpoint,
-                        onTravelProgress: setEasedTravelProgress,
-                    }}
-                    image={mainCircleImage.image}
-                    imageVisible={mainCircleImage.imageVisible}
+                    geometry={mainCircle.geometry}
+                    image={mainCircle.image}
+                    imageVisible={mainCircle.imageVisible}
                 />
 
                 <ScenePanel
                     active={slideshow.activeSceneId === "home"}
                     headingFocusTargetId="home-title"
                     overflowRef={activeSceneScrollerRef}
-                    phase={slideshow.phase}
-                    sceneId="home"
                 >
                     <Home
                         lifecycle={slideshow.lifecycleFor("home")}
@@ -167,8 +148,6 @@ export default function App() {
                     active={slideshow.activeSceneId === "about"}
                     headingFocusTargetId="about-title"
                     overflowRef={activeSceneScrollerRef}
-                    phase={slideshow.phase}
-                    sceneId="about"
                 >
                     <About
                         lifecycle={slideshow.lifecycleFor("about")}
@@ -180,8 +159,6 @@ export default function App() {
                     active={slideshow.activeSceneId === "experience"}
                     headingFocusTargetId="experience-title"
                     overflowRef={activeSceneScrollerRef}
-                    phase={slideshow.phase}
-                    sceneId="experience"
                 >
                     <Experience
                         lifecycle={slideshow.lifecycleFor("experience")}
@@ -194,8 +171,6 @@ export default function App() {
                     active={slideshow.activeSceneId === "projects"}
                     headingFocusTargetId="project-title"
                     overflowRef={activeSceneScrollerRef}
-                    phase={slideshow.phase}
-                    sceneId="projects"
                 >
                     <Projects
                         lifecycle={slideshow.lifecycleFor("projects")}
@@ -207,8 +182,6 @@ export default function App() {
                     active={slideshow.activeSceneId === "skills"}
                     headingFocusTargetId="skill-title"
                     overflowRef={activeSceneScrollerRef}
-                    phase={slideshow.phase}
-                    sceneId="skills"
                 >
                     <Skills lifecycle={slideshow.lifecycleFor("skills")} />
                 </ScenePanel>
@@ -217,8 +190,6 @@ export default function App() {
                     active={slideshow.activeSceneId === "contact"}
                     headingFocusTargetId="contact-title"
                     overflowRef={activeSceneScrollerRef}
-                    phase={slideshow.phase}
-                    sceneId="contact"
                 >
                     <Contact lifecycle={slideshow.lifecycleFor("contact")} />
                 </ScenePanel>

@@ -44,6 +44,7 @@
     inset: 0;
     opacity: 0;
     visibility: hidden;
+    transition: opacity 60ms linear, visibility 0s linear 500ms;
 }
 
 .contact-blob-layer {
@@ -68,7 +69,24 @@
     top: 50%;
     left: 50%;
     aspect-ratio: 1;
-    transform: translate(-50%, -50%);
+    transform: translate(calc(-50% + var(--contact-initial-x)), calc(-50% + var(--contact-initial-y)));
+    transition: transform 500ms ease-in-out;
+}
+
+.contact-split-visible .contact-blob-layer {
+    opacity: 1;
+    visibility: visible;
+    transition-delay: 0s;
+}
+
+.contact-split-visible .contact-link-layer {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 120ms linear 380ms, visibility 0s;
+}
+
+.contact-split-visible :is(.contact-satellite, .contact-link) {
+    transform: translate(calc(-50% + var(--contact-final-x)), calc(-50% + var(--contact-final-y)));
 }
 
 .contact-link {
@@ -90,4 +108,8 @@
 
 @media (prefers-reduced-motion: reduce) {
     .contact-blob-layer { filter: none; }
+    .contact-blob-layer,
+    .contact-link-layer,
+    .contact-satellite,
+    .contact-link { transition: none; }
 }

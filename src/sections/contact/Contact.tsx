@@ -1,198 +1,63 @@
-import { useEffect, useRef } from "react";
-import { useGSAP } from "@gsap/react";
-import gsap from "gsap";
+import { useLayoutEffect, useRef, useState, type CSSProperties } from "react";
 import type { SceneLifecycleControl } from "../../types/scene";
 import { contactFittedFinalOffset, contactInitialOffset } from "./contactGeometry";
 
-gsap.registerPlugin(useGSAP);
-
-type ContactProps = {
-    lifecycle: SceneLifecycleControl;
+type ContactProps = { lifecycle: SceneLifecycleControl };
+type ContactProfile = typeof contactProfiles[number];
+type ProfileStyle = CSSProperties & {
+    "--contact-initial-x": string;
+    "--contact-initial-y": string;
+    "--contact-final-x": string;
+    "--contact-final-y": string;
 };
 
 const contactProfiles = [
-    {
-        id: "github",
-        label: "GitHub",
-        href: "https://github.com/lingsongc",
-        offset: [-0.78, 0.26],
-        diameterRatio: 0.36,
-    },
-    {
-        id: "instagram",
-        label: "Instagram",
-        href: "https://www.instagram.com/lingsongc/",
-        offset: [-0.62, -0.58],
-        diameterRatio: 0.28,
-    },
-    {
-        id: "linkedin",
-        label: "LinkedIn",
-        href: "https://www.linkedin.com/in/lingsongc/",
-        offset: [0.78, -0.28],
-        diameterRatio: 0.31,
-    },
+    { id: "github", label: "GitHub", href: "https://github.com/lingsongc", offset: [-0.78, 0.26], diameterRatio: 0.36 },
+    { id: "instagram", label: "Instagram", href: "https://www.instagram.com/lingsongc/", offset: [-0.62, -0.58], diameterRatio: 0.28 },
+    { id: "linkedin", label: "LinkedIn", href: "https://www.linkedin.com/in/lingsongc/", offset: [0.78, -0.28], diameterRatio: 0.31 },
 ] as const;
 
-const contactProfilesById = new Map(contactProfiles.map((profile) => [profile.id, profile]));
-
-// Renders Contact content and animates its profile links out from the main circle.
+// Renders Contact with measured CSS offsets for its gooey profile split.
 export function Contact({ lifecycle }: ContactProps) {
-    const sectionRef = useRef<HTMLElement>(null);
     const orbitRef = useRef<HTMLDivElement>(null);
-    const blobLayerRef = useRef<HTMLDivElement>(null);
-    const linkLayerRef = useRef<HTMLElement>(null);
-    const satelliteRefs = useRef<Array<HTMLSpanElement | null>>([]);
-    const linkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
-    const splitTimelineRef = useRef<gsap.core.Timeline | null>(null);
-    const lifecycleRef = useRef(lifecycle);
-    lifecycleRef.current = lifecycle;
+    const [layout, setLayout] = useState({ orbitSize: 0, viewportWidth: 0, viewportHeight: 0 });
+    const visible = lifecycle.active && (lifecycle.phase === "opening" || lifecycle.phase === "idle");
 
-    useGSAP(() => {
-        const section = sectionRef.current;
+    useLayoutEffect(() => {
         const orbit = orbitRef.current;
-        const blobLayer = blobLayerRef.current;
-        const linkLayer = linkLayerRef.current;
-        if (!section || !orbit || !blobLayer || !linkLayer) return;
-
-        const splitElements = [...satelliteRefs.current, ...linkRefs.current]
-            .filter((element): element is HTMLElement => element !== null);
-        // Finds the shared profile settings for a rendered link or shape.
-        const contactProfile = (element: HTMLElement) => (
-            contactProfilesById.get(element.dataset.contactLink as typeof contactProfiles[number]["id"])
-        );
-        
-        // Calculates a rendered profile's final offset from the orbit center.
-        const profileFinalOffset = (element: HTMLElement, axis: 0 | 1) => {
-            const profile = contactProfile(element);
-            return contactFittedFinalOffset(
-                profile?.offset ?? [0, 0],
-                profile?.diameterRatio ?? 0,
-                orbit.offsetWidth,
-                window.innerWidth,
-                window.innerHeight,
-                axis,
-            );
-        };
-        
-        // Calculates a rendered profile's starting position inside the circle.
-        const profileInitialOffset = (element: HTMLElement, axis: 0 | 1) => {
-            const profile = contactProfile(element);
-            return contactInitialOffset(
-                profile?.offset ?? [0, 0],
-                profile?.diameterRatio ?? 0,
-                orbit.offsetWidth,
-                axis,
-            );
-        };
-
-        gsap.set([blobLayer, linkLayer], { autoAlpha: 0 });
-        gsap.set(splitElements, {
-            xPercent: -50,
-            yPercent: -50,
-            x: (_, element: HTMLElement) => profileInitialOffset(element, 0),
-            y: (_, element: HTMLElement) => profileInitialOffset(element, 1),
-            scale: 1,
+        if (!orbit) return;
+        const measure = () => setLayout({
+            orbitSize: orbit.offsetWidth,
+            viewportWidth: window.innerWidth,
+            viewportHeight: window.innerHeight,
         });
-        const splitTimeline = gsap.timeline({
-            paused: true,
-            onComplete: () => {
-                const currentLifecycle = lifecycleRef.current;
-                if (currentLifecycle?.phase === "opening") {
-                    currentLifecycle.onTransitionComplete("opening");
-                }
-            },
-            onReverseComplete: () => {
-                const currentLifecycle = lifecycleRef.current;
-                if (currentLifecycle?.phase === "closing") {
-                    currentLifecycle.onTransitionComplete("closing");
-                }
-            },
-        })
-            .to(blobLayer, { autoAlpha: 1, duration: 0.06 }, 0)
-            .to(splitElements, {
-                x: (_, element: HTMLElement) => profileFinalOffset(element, 0),
-                y: (_, element: HTMLElement) => profileFinalOffset(element, 1),
-                duration: 0.5,
-                ease: "power2.inOut",
-            }, 0)
-            .to(linkLayer, { autoAlpha: 1, duration: 0.12 }, 0.38);
-
-        splitTimelineRef.current = splitTimeline;
-        return () => {
-            splitTimeline.kill();
-            splitTimelineRef.current = null;
-        };
-    }, {
-        scope: sectionRef,
-        dependencies: [],
-        revertOnUpdate: true,
-    });
-
-    useEffect(() => {
-        const splitTimeline = splitTimelineRef.current;
-        if (!splitTimeline) return;
-        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-        if (lifecycle.active && lifecycle.phase === "idle") {
-            splitTimeline.progress(1, true).pause();
-        } else if (lifecycle.active && lifecycle.phase === "opening") {
-            if (reducedMotion) {
-                splitTimeline.progress(1, true).pause();
-                lifecycle.onTransitionComplete("opening");
-            } else {
-                splitTimeline.play();
-            }
-        } else if (lifecycle.active && lifecycle.phase === "closing") {
-            if (reducedMotion) {
-                splitTimeline.progress(0, true).pause();
-                lifecycle.onTransitionComplete("closing");
-            } else {
-                splitTimeline.reverse();
-            }
-        } else {
-            splitTimeline.progress(0, true).pause();
-        }
-    }, [lifecycle.active, lifecycle.phase]);
+        const observer = new ResizeObserver(measure);
+        observer.observe(orbit);
+        measure();
+        return () => observer.disconnect();
+    }, []);
 
     return (
-        <section ref={sectionRef} id="contact" className="contact-container" aria-labelledby="contact-title">
-            <div ref={orbitRef} className="contact-orbit">
+        <section id="contact" className="contact-container" aria-labelledby="contact-title">
+            <div ref={orbitRef} className={`contact-orbit${visible ? " contact-split-visible" : ""}`}>
                 <svg width="0" height="0" aria-hidden="true">
                     <defs>
                         <filter id="contact-goo" x="-50%" y="-50%" width="200%" height="200%" colorInterpolationFilters="sRGB">
                             <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="contact-blur" />
-                            <feColorMatrix
-                                in="contact-blur"
-                                values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -10"
-                                result="contact-goo-alpha"
-                            />
+                            <feColorMatrix in="contact-blur" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 24 -10" result="contact-goo-alpha" />
                             <feBlend in="SourceGraphic" in2="contact-goo-alpha" />
                         </filter>
                     </defs>
                 </svg>
-                <div ref={blobLayerRef} className="contact-blob-layer" aria-hidden="true">
+                <div className="contact-blob-layer" aria-hidden="true">
                     <span className="contact-blob-center" />
-                    {contactProfiles.map((profile, index) => (
-                        <span
-                            ref={(element) => { satelliteRefs.current[index] = element; }}
-                            className="contact-satellite"
-                            data-contact-link={profile.id}
-                            style={{ width: `${profile.diameterRatio * 100}%` }}
-                            key={profile.id}
-                        />
+                    {contactProfiles.map((profile) => (
+                        <span className="contact-satellite" style={profileStyle(profile, layout)} key={profile.id} />
                     ))}
                 </div>
-                <nav ref={linkLayerRef} className="contact-link-layer" aria-label="Social profiles">
-                    {contactProfiles.map((profile, index) => (
-                        <a
-                            ref={(element) => { linkRefs.current[index] = element; }}
-                            className="contact-link"
-                            data-contact-link={profile.id}
-                            href={profile.href}
-                            style={{ width: `${profile.diameterRatio * 100}%` }}
-                            key={profile.id}
-                        >
+                <nav className="contact-link-layer" aria-label="Social profiles">
+                    {contactProfiles.map((profile) => (
+                        <a className="contact-link" href={profile.href} style={profileStyle(profile, layout)} key={profile.id}>
                             {profile.label}
                         </a>
                     ))}
@@ -205,4 +70,16 @@ export function Contact({ lifecycle }: ContactProps) {
             </div>
         </section>
     );
+}
+
+// Publishes the measured start and fitted endpoint as CSS variables.
+function profileStyle(profile: ContactProfile, layout: { orbitSize: number; viewportWidth: number; viewportHeight: number }): ProfileStyle {
+    const { orbitSize, viewportWidth, viewportHeight } = layout;
+    return {
+        width: `${profile.diameterRatio * 100}%`,
+        "--contact-initial-x": `${contactInitialOffset(profile.offset, profile.diameterRatio, orbitSize, 0)}px`,
+        "--contact-initial-y": `${contactInitialOffset(profile.offset, profile.diameterRatio, orbitSize, 1)}px`,
+        "--contact-final-x": `${contactFittedFinalOffset(profile.offset, profile.diameterRatio, orbitSize, viewportWidth, viewportHeight, 0)}px`,
+        "--contact-final-y": `${contactFittedFinalOffset(profile.offset, profile.diameterRatio, orbitSize, viewportWidth, viewportHeight, 1)}px`,
+    };
 }
