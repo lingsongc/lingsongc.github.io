@@ -41,8 +41,10 @@ export function useSceneInput({ activeScrollerRef, currentSceneId, phase, reques
         touchGestureRef.current = null;
     }, []);
 
+    // Clears pending timers and gesture state when the hook unmounts.
     useEffect(() => cancelPendingInput, [cancelPendingInput]);
 
+    // Resets input state across phases and gates momentum after a completed transition.
     useEffect(() => {
         const previousPhase = previousPhaseRef.current;
         previousPhaseRef.current = phase;
@@ -53,6 +55,7 @@ export function useSceneInput({ activeScrollerRef, currentSceneId, phase, reques
         }
     }, [cancelPendingInput, phase]);
 
+    // Converts unowned wheel input into deliberate adjacent-scene requests while idle.
     useEffect(() => {
         if (phase !== "idle") return;
 
@@ -110,6 +113,7 @@ export function useSceneInput({ activeScrollerRef, currentSceneId, phase, reques
         };
     }, [activeScrollerRef, currentSceneId, phase, requestScene]);
 
+    // Tracks one vertical touch gesture and commits its scene request on release.
     useEffect(() => {
         if (phase !== "idle") return;
         const handleTouchStart = (event: TouchEvent) => {
@@ -169,6 +173,7 @@ export function useSceneInput({ activeScrollerRef, currentSceneId, phase, reques
         };
     }, [activeScrollerRef, currentSceneId, phase, requestScene]);
 
+    // Gives scroll owners first keyboard priority, then requests adjacent scenes.
     useEffect(() => {
         if (phase !== "idle") return;
         const handleKeyDown = (event: KeyboardEvent) => {

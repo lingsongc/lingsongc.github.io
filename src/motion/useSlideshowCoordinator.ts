@@ -40,6 +40,7 @@ export function useSlideshowCoordinator() {
         return update.result;
     }, [commit]);
 
+    // Runs paint-aligned close, travel, and open clocks for the current transition.
     useEffect(() => {
         cancelAnimationFrame(phaseFrameRef.current);
         cancelAnimationFrame(travelFrameRef.current);
@@ -77,6 +78,7 @@ export function useSlideshowCoordinator() {
         return () => { cancelAnimationFrame(phaseFrameRef.current); cancelAnimationFrame(travelFrameRef.current); };
     }, [commit, state.phase]);
 
+    // Tracks reduced-motion changes and settles any active transition immediately.
     useEffect(() => {
         const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
         const updatePreference = () => {
@@ -88,12 +90,14 @@ export function useSlideshowCoordinator() {
         return () => mediaQuery.removeEventListener("change", updatePreference);
     }, [settleRequestedScene]);
 
+    // Replaces an invalid initial hash with the canonical Home scene URL.
     useEffect(() => {
         if (!window.location.hash || sceneIdFromHash(window.location.hash)) return;
         lastHandledHashRef.current = "#home";
         window.history.replaceState({ sceneId: "home" }, "", sceneUrl("home", window.location));
     }, []);
 
+    // Publishes the arrived scene to history when opening begins or recovery settles.
     useEffect(() => {
         const arrivedDuringOpening = state.phase === "opening" && state.requestedSceneId === state.currentSceneId;
         const arrivedImmediately = state.settledVersion !== lastSettledVersionRef.current;
@@ -104,6 +108,7 @@ export function useSlideshowCoordinator() {
         window.history.pushState({ sceneId: state.currentSceneId }, "", sceneUrl(state.currentSceneId, window.location));
     }, [state.currentSceneId, state.phase, state.requestedSceneId, state.settledVersion]);
 
+    // Settles active transitions when layout or document visibility invalidates geometry.
     useEffect(() => {
         const recover = () => { settleRequestedScene(); };
         const hide = () => { if (document.hidden) settleRequestedScene(); };
@@ -117,6 +122,7 @@ export function useSlideshowCoordinator() {
         };
     }, [settleRequestedScene]);
 
+    // Routes Back, Forward, and external hash changes through the same scene request path.
     useEffect(() => {
         const requestLocationScene = () => {
             const hash = window.location.hash;
