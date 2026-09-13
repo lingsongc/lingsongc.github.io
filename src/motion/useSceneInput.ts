@@ -4,12 +4,18 @@ import {
     applyWheelIntent, createWheelIntentState, firstScrollableOwnerIndex,
     isTerminalSceneDirection, keyboardSceneDirection, keyboardScrollDistance,
     normalizeWheelDelta, releaseWheelNeutrality, releasedTouchDirection,
-    touchDragIntent, touchVerticalProgress, WHEEL_INTENT_PAUSE_MS,
+    touchDragIntent, touchVerticalProgress, WHEEL_INTENT_PAUSE_MS, WHEEL_INTENT_THRESHOLD,
 } from "./sceneInputModel";
+
+const WHEEL_FEEDBACK_COMMIT_MS = 180;
+const WHEEL_FEEDBACK_FULL_REVEAL_MS = 140;
+const WHEEL_FEEDBACK_FULL_HOLD_MS = 60;
+const WHEEL_FEEDBACK_RETURN_MS = 300;
 
 type SceneInputOptions = {
     activeScrollerRef: RefObject<HTMLDivElement | null>;
     currentSceneId: SceneId;
+    onWheelFeedbackChange: (progress: number, durationMs?: number) => void;
     phase: ScenePhase;
     requestScene: (request: SceneRequest) => SceneRequestResult;
 };
@@ -24,22 +30,32 @@ type TouchGesture = {
 };
 
 // Owns page-level wheel, touch, and keyboard events around the pure input model.
-export function useSceneInput({ activeScrollerRef, currentSceneId, phase, requestScene }: SceneInputOptions) {
+export function useSceneInput({
+    activeScrollerRef,
+    currentSceneId,
+    onWheelFeedbackChange,
+    phase,
+    requestScene,
+}: SceneInputOptions) {
     const wheelIntentRef = useRef(createWheelIntentState());
     const touchGestureRef = useRef<TouchGesture | null>(null);
     const previousPhaseRef = useRef(phase);
     const intentTimerRef = useRef<number | undefined>(undefined);
+    const commitTimerRef = useRef<number | undefined>(undefined);
     const neutralTimerRef = useRef<number | undefined>(undefined);
 
     // Cancels accumulated browser-event state before a direct request or phase change.
     const cancelPendingInput = useCallback(() => {
         window.clearTimeout(intentTimerRef.current);
+        window.clearTimeout(commitTimerRef.current);
         window.clearTimeout(neutralTimerRef.current);
         intentTimerRef.current = undefined;
+        commitTimerRef.current = undefined;
         neutralTimerRef.current = undefined;
         wheelIntentRef.current = createWheelIntentState();
         touchGestureRef.current = null;
-    }, []);
+        onWheelFeedbackChange(0, WHEEL_FEEDBACK_COMMIT_MS);
+    }, [onWheelFeedbackChange]);
 
     // Clears pending timers and gesture state when the hook unmounts.
     useEffect(() => cancelPendingInput, [cancelPendingInput]);
@@ -70,7 +86,10 @@ export function useSceneInput({ activeScrollerRef, currentSceneId, phase, reques
         const scheduleIntentExpiry = () => {
             window.clearTimeout(intentTimerRef.current);
             intentTimerRef.current = window.setTimeout(() => {
-                if (!wheelIntentRef.current.neutralRequired) wheelIntentRef.current = createWheelIntentState();
+                if (!wheelIntentRef.current.neutralRequired) {
+                    wheelIntentRef.current = createWheelIntentState();
+                    onWheelFeedbackChange(0, WHEEL_FEEDBACK_RETURN_MS);
+                }
             }, WHEEL_INTENT_PAUSE_MS);
         };
         const handleWheel = (event: WheelEvent) => {
@@ -81,6 +100,7 @@ export function useSceneInput({ activeScrollerRef, currentSceneId, phase, reques
             const direction = impulse > 0 ? "forward" : "backward";
             if (firstScrollableOwner(inputScrollOwners(event.target, activeScrollerRef.current), direction)) {
                 wheelIntentRef.current = createWheelIntentState(true, now);
+                onWheelFeedbackChange(0, WHEEL_FEEDBACK_RETURN_MS);
                 scheduleNeutralRelease();
                 return;
             }
@@ -92,16 +112,24 @@ export function useSceneInput({ activeScrollerRef, currentSceneId, phase, reques
             }
             if (isTerminalSceneDirection(currentSceneId, direction)) {
                 wheelIntentRef.current = createWheelIntentState();
+                onWheelFeedbackChange(0, WHEEL_FEEDBACK_RETURN_MS);
                 return;
             }
             const update = applyWheelIntent(wheelIntentRef.current, impulse, now);
             wheelIntentRef.current = update.state;
             if (!update.committedDirection) {
+                onWheelFeedbackChange(update.state.accumulation / WHEEL_INTENT_THRESHOLD);
                 scheduleIntentExpiry();
                 return;
             }
             window.clearTimeout(intentTimerRef.current);
-            requestScene({ kind: "adjacent", direction: update.committedDirection, source: "wheel" });
+            const committedDirection = update.committedDirection;
+            onWheelFeedbackChange(committedDirection === "forward" ? 1 : -1, WHEEL_FEEDBACK_FULL_REVEAL_MS);
+            commitTimerRef.current = window.setTimeout(() => {
+                commitTimerRef.current = undefined;
+                onWheelFeedbackChange(0, WHEEL_FEEDBACK_COMMIT_MS);
+                requestScene({ kind: "adjacent", direction: committedDirection, source: "wheel" });
+            }, WHEEL_FEEDBACK_FULL_REVEAL_MS + WHEEL_FEEDBACK_FULL_HOLD_MS);
         };
 
         window.addEventListener("wheel", handleWheel, { passive: false });
@@ -109,9 +137,10 @@ export function useSceneInput({ activeScrollerRef, currentSceneId, phase, reques
         return () => {
             window.removeEventListener("wheel", handleWheel);
             window.clearTimeout(intentTimerRef.current);
+            window.clearTimeout(commitTimerRef.current);
             window.clearTimeout(neutralTimerRef.current);
         };
-    }, [activeScrollerRef, currentSceneId, phase, requestScene]);
+    }, [activeScrollerRef, currentSceneId, onWheelFeedbackChange, phase, requestScene]);
 
     // Tracks one vertical touch gesture and commits its scene request on release.
     useEffect(() => {

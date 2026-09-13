@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from "react";
-import { BackgroundGrid } from "./components/background-grid/BackgroundGrid";
+import { BackgroundGrid, type BackgroundGridHandle } from "./components/background-grid/BackgroundGrid";
 import { MainCircle } from "./components/main-circle/MainCircle";
 import { useMainCircle } from "./components/main-circle/useMainCircle";
 import { Navigation } from "./components/navigation/Navigation";
@@ -29,14 +29,27 @@ const sceneHeadingIds: Record<SceneId, string> = {
 // Composes the six viewport Sections around one page-level slideshow coordinator.
 export default function App() {
     const activeSceneScrollerRef = useRef<HTMLDivElement>(null);
+    const backgroundGridRef = useRef<BackgroundGridHandle>(null);
     const experienceOrbitRef = useRef<HTMLElement>(null);
     const navigationRailRef = useRef<HTMLDivElement>(null);
     const slideshow = useSlideshowCoordinator();
     const previousScenePhaseRef = useRef<ScenePhase | null>(null);
     const previousSettledVersionRef = useRef(slideshow.settledVersion);
+    // Keeps reduced-motion input still while forwarding ordinary wheel intent to the grid owner.
+    const updateWheelFeedback = useCallback((progress: number, durationMs?: number) => {
+        backgroundGridRef.current?.setScrollFeedback(
+            slideshow.reducedMotion ? 0 : progress,
+            slideshow.reducedMotion ? 0 : durationMs,
+        );
+    }, [slideshow.reducedMotion]);
+    // Removes any active deformation immediately when reduced motion becomes preferred.
+    useEffect(() => {
+        if (slideshow.reducedMotion) backgroundGridRef.current?.setScrollFeedback(0, 0);
+    }, [slideshow.reducedMotion]);
     const sceneInput = useSceneInput({
         activeScrollerRef: activeSceneScrollerRef,
         currentSceneId: slideshow.currentSceneId,
+        onWheelFeedbackChange: updateWheelFeedback,
         phase: slideshow.phase,
         requestScene: slideshow.requestScene,
     });
@@ -112,7 +125,7 @@ export default function App() {
 
     return (
         <>
-            <BackgroundGrid circleGeometry={mainCircle.geometry} />
+            <BackgroundGrid ref={backgroundGridRef} circleGeometry={mainCircle.geometry} />
 
             <Navigation
                 railRef={navigationRailRef}
