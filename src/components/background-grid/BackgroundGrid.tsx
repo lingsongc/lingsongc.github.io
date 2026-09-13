@@ -1,10 +1,11 @@
 import { forwardRef, useCallback, useEffect, useId, useImperativeHandle, useRef } from "react";
 import type { MainCircleEndpoint } from "../../types/mainCircle";
-import { createWarpedGridPaths } from "./backgroundGridGeometry";
+import { createScrollTearRevealPaths, createWarpedGridPaths } from "./backgroundGridGeometry";
 
 const GRID_SPACING = 48;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const FEEDBACK_EPSILON = 0.001;
+const FEEDBACK_BACK_OVERSHOOT = 1.7;
 
 type BackgroundGridProps = {
     circleGeometry?: MainCircleEndpoint | null;
@@ -27,6 +28,10 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
     ref,
 ) {
     const linesRef = useRef<SVGGElement>(null);
+    const tearRevealRef = useRef<SVGPathElement>(null);
+    const tearMaskFillRef = useRef<SVGPathElement>(null);
+    const tearMaskLeftRef = useRef<SVGPathElement>(null);
+    const tearMaskRightRef = useRef<SVGPathElement>(null);
     const fadeCircleRef = useRef<SVGCircleElement>(null);
     const feedbackAnimationRef = useRef<FeedbackAnimation | null>(null);
     const feedbackFrameRef = useRef<number | undefined>(undefined);
@@ -34,6 +39,8 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
     const renderRef = useRef<() => void>(() => undefined);
     const filterId = useId();
     const maskId = useId();
+    const tearEdgeFilterId = useId();
+    const tearMaskId = useId();
 
     // Interpolates between wheel-event targets so discrete notches never step the SVG paths.
     const animateScrollFeedback = useCallback((now: number) => {
@@ -43,7 +50,9 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
         const timeProgress = animation.durationMs <= 0
             ? 1
             : Math.min(1, (now - animation.startedAt) / animation.durationMs);
-        const easedProgress = 1 - Math.pow(1 - timeProgress, 3);
+        const easedProgress = Math.abs(animation.to) === 1
+            ? easeOutBack(timeProgress)
+            : 1 - Math.pow(1 - timeProgress, 3);
         feedbackProgressRef.current = animation.from
             + (animation.to - animation.from) * easedProgress;
         renderRef.current();
@@ -78,7 +87,11 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
     useEffect(() => {
         const lines = linesRef.current;
         const fadeCircle = fadeCircleRef.current;
-        if (!lines || !fadeCircle) return;
+        const tearReveal = tearRevealRef.current;
+        const tearMaskFill = tearMaskFillRef.current;
+        const tearMaskLeft = tearMaskLeftRef.current;
+        const tearMaskRight = tearMaskRightRef.current;
+        if (!lines || !fadeCircle || !tearReveal || !tearMaskFill || !tearMaskLeft || !tearMaskRight) return;
 
         const pathElements = [...lines.querySelectorAll<SVGPathElement>("path")];
         const circle = circleGeometry ? {
@@ -102,6 +115,15 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
                     GRID_SPACING,
                     feedbackProgressRef.current,
                 );
+                const tearPaths = createScrollTearRevealPaths(
+                    innerWidth,
+                    innerHeight,
+                    feedbackProgressRef.current,
+                );
+                tearReveal.setAttribute("d", tearPaths.fill);
+                tearMaskFill.setAttribute("d", tearPaths.fill);
+                tearMaskLeft.setAttribute("d", tearPaths.leftSeam);
+                tearMaskRight.setAttribute("d", tearPaths.rightSeam);
 
                 while (pathElements.length < pathData.length) {
                     const path = document.createElementNS(SVG_NAMESPACE, "path");
@@ -144,11 +166,42 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
                         <rect width="100%" height="100%" fill="white" />
                         <circle ref={fadeCircleRef} fill="black" filter={`url(#${filterId})`} />
                     </mask>
+
+                    <filter id={tearEdgeFilterId} x="-100%" y="-20%" width="300%" height="140%">
+                        <feGaussianBlur stdDeviation="10" />
+                    </filter>
+
+                    <mask id={tearMaskId} maskUnits="userSpaceOnUse">
+                        <path ref={tearMaskFillRef} fill="white" />
+                        <g
+                            fill="none"
+                            stroke="black"
+                            strokeWidth="18"
+                            strokeLinecap="round"
+                            filter={`url(#${tearEdgeFilterId})`}
+                        >
+                            <path ref={tearMaskLeftRef} />
+                            <path ref={tearMaskRightRef} />
+                        </g>
+                    </mask>
                 </defs>
 
+                <path
+                    ref={tearRevealRef}
+                    className="background-grid-tear-reveal"
+                    mask={`url(#${tearMaskId})`}
+                />
                 <g ref={linesRef} className="background-grid-lines" mask={`url(#${maskId})`} />
             </svg>
 
         </>
     );
 });
+
+// Adds one small, bounded overshoot as the complete tear settles into its cap.
+function easeOutBack(progress: number) {
+    const shiftedProgress = progress - 1;
+    return 1
+        + (FEEDBACK_BACK_OVERSHOOT + 1) * Math.pow(shiftedProgress, 3)
+        + FEEDBACK_BACK_OVERSHOOT * Math.pow(shiftedProgress, 2);
+}

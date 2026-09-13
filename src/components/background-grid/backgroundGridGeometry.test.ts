@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+    createScrollTearRevealPaths,
     createWarpedGridPaths,
+    easeOutScrollProgress,
     scrollFeedbackDisplacementX,
     warpGridPoint,
     type GridCircle,
@@ -68,13 +70,13 @@ describe("background grid geometry", () => {
         expect(scrollFeedbackDisplacementX(720, 766, completeFeedback)).not.toBe(0);
     });
 
-    it("uses a one-to-one depth and half-width ratio", () => {
+    it("uses an equilateral depth and half-width ratio", () => {
         const completeFeedback = { ...forwardFeedback, progress: 1 };
 
-        expect(scrollFeedbackDisplacementX(854, 900, completeFeedback)).not.toBe(0);
-        expect(scrollFeedbackDisplacementX(855, 900, completeFeedback)).toBe(0);
-        expect(scrollFeedbackDisplacementX(787, 833, completeFeedback)).not.toBe(0);
-        expect(scrollFeedbackDisplacementX(788, 833, completeFeedback)).toBe(0);
+        expect(scrollFeedbackDisplacementX(797, 900, completeFeedback)).not.toBe(0);
+        expect(scrollFeedbackDisplacementX(798, 900, completeFeedback)).toBe(0);
+        expect(scrollFeedbackDisplacementX(759, 833, completeFeedback)).not.toBe(0);
+        expect(scrollFeedbackDisplacementX(760, 833, completeFeedback)).toBe(0);
     });
 
     it("adds restrained layered crumpling to the geometric opening", () => {
@@ -89,6 +91,40 @@ describe("background grid geometry", () => {
         ));
 
         expect(Math.max(...displacements.map(Math.abs))).toBeLessThanOrEqual(235);
+    });
+
+    it("front-loads visual growth while preserving the complete cap", () => {
+        expect(easeOutScrollProgress(1 / 3)).toBeCloseTo(5 / 9);
+        expect(easeOutScrollProgress(2 / 3)).toBeCloseTo(8 / 9);
+        expect(easeOutScrollProgress(1)).toBe(1);
+    });
+
+    it("allows only a small horizontal stretch beyond complete progress", () => {
+        const complete = scrollFeedbackDisplacementX(720, 900, { ...forwardFeedback, progress: 1 });
+        const stretched = scrollFeedbackDisplacementX(720, 900, { ...forwardFeedback, progress: 1.04 });
+
+        expect(stretched).toBeGreaterThan(complete);
+        expect(stretched).toBeCloseTo(complete * 1.04);
+    });
+
+    it("builds the red reveal inside the same capped tear boundary", () => {
+        expect(createScrollTearRevealPaths(1440, 900, 0)).toEqual({
+            fill: "",
+            leftSeam: "",
+            rightSeam: "",
+        });
+        const tearPaths = createScrollTearRevealPaths(1440, 900, 1);
+        const coordinates = pathCoordinates(tearPaths.fill);
+        const xValues = coordinates.map(([x]) => x);
+        const yValues = coordinates.map(([, y]) => y);
+
+        expect(Math.min(...xValues)).toBeLessThan(720);
+        expect(Math.max(...xValues)).toBeGreaterThan(720);
+        expect(Math.min(...yValues)).toBe(765);
+        expect(Math.max(...yValues)).toBe(900);
+        expect(pathCoordinates(tearPaths.leftSeam).map(([, y]) => y)).toEqual(
+            pathCoordinates(tearPaths.rightSeam).map(([, y]) => y),
+        );
     });
 
 });

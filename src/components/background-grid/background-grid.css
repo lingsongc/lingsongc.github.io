@@ -14,3 +14,8 @@
     stroke-width: 1;
     stroke-opacity: 0.32;
 }
+
+.background-grid-tear-reveal {
+    fill: var(--colour-accent);
+    opacity: 0.5;
+}
