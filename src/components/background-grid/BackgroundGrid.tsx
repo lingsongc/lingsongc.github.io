@@ -6,6 +6,8 @@ const GRID_SPACING = 48;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
 const FEEDBACK_EPSILON = 0.001;
 const FEEDBACK_BACK_OVERSHOOT = 1.7;
+const TEAR_EDGE_FADE_BLUR = 16;
+const TEAR_EDGE_FADE_STROKE = 32;
 
 type BackgroundGridProps = {
     circleGeometry?: MainCircleEndpoint | null;
@@ -168,7 +170,7 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
                     </mask>
 
                     <filter id={tearEdgeFilterId} x="-100%" y="-20%" width="300%" height="140%">
-                        <feGaussianBlur stdDeviation="10" />
+                        <feGaussianBlur stdDeviation={TEAR_EDGE_FADE_BLUR} />
                     </filter>
 
                     <mask id={tearMaskId} maskUnits="userSpaceOnUse">
@@ -176,7 +178,7 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
                         <g
                             fill="none"
                             stroke="black"
-                            strokeWidth="18"
+                            strokeWidth={TEAR_EDGE_FADE_STROKE}
                             strokeLinecap="round"
                             filter={`url(#${tearEdgeFilterId})`}
                         >

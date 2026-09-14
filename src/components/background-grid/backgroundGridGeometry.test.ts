@@ -4,6 +4,7 @@ import {
     createWarpedGridPaths,
     easeOutScrollProgress,
     scrollFeedbackDisplacementX,
+    scrollRevealDisplacementX,
     warpGridPoint,
     type GridCircle,
     type GridScrollFeedback,
@@ -70,13 +71,13 @@ describe("background grid geometry", () => {
         expect(scrollFeedbackDisplacementX(720, 766, completeFeedback)).not.toBe(0);
     });
 
-    it("uses an equilateral depth and half-width ratio", () => {
+    it("preserves the equilateral base width while curving both sides inward", () => {
         const completeFeedback = { ...forwardFeedback, progress: 1 };
 
         expect(scrollFeedbackDisplacementX(797, 900, completeFeedback)).not.toBe(0);
         expect(scrollFeedbackDisplacementX(798, 900, completeFeedback)).toBe(0);
-        expect(scrollFeedbackDisplacementX(759, 833, completeFeedback)).not.toBe(0);
-        expect(scrollFeedbackDisplacementX(760, 833, completeFeedback)).toBe(0);
+        expect(scrollFeedbackDisplacementX(747, 833, completeFeedback)).not.toBe(0);
+        expect(scrollFeedbackDisplacementX(748, 833, completeFeedback)).toBe(0);
     });
 
     it("adds restrained layered crumpling to the geometric opening", () => {
@@ -90,7 +91,30 @@ describe("background grid geometry", () => {
             scrollFeedbackDisplacementX(index * 24, 900, { ...forwardFeedback, progress: 1 })
         ));
 
-        expect(Math.max(...displacements.map(Math.abs))).toBeLessThanOrEqual(235);
+        expect(Math.max(...displacements.map(Math.abs))).toBeLessThanOrEqual(190);
+    });
+
+    it("separates aggressive grid crumpling from the restrained red reveal", () => {
+        const completeFeedback = { ...forwardFeedback, progress: 1 };
+        const gridOffsets: number[] = [];
+        const revealOffsets: number[] = [];
+
+        for (let y = 766; y <= 900; y += 8) {
+            const depth = y - 765;
+            const localHalfWidth = depth
+                / Math.sqrt(3)
+                * Math.sqrt(depth / 135);
+            const gridDisplacement = scrollFeedbackDisplacementX(720, y, completeFeedback);
+            const revealDisplacement = scrollRevealDisplacementX(720, y, completeFeedback);
+
+            gridOffsets.push(Math.abs(gridDisplacement - localHalfWidth) / localHalfWidth);
+            revealOffsets.push(Math.abs(revealDisplacement - localHalfWidth) / localHalfWidth);
+        }
+
+        expect(Math.max(...gridOffsets)).toBeGreaterThan(0.75);
+        expect(Math.max(...gridOffsets)).toBeLessThanOrEqual(2);
+        expect(Math.max(...revealOffsets)).toBeGreaterThan(0.03);
+        expect(Math.max(...revealOffsets)).toBeLessThanOrEqual(0.2);
     });
 
     it("front-loads visual growth while preserving the complete cap", () => {
@@ -114,6 +138,7 @@ describe("background grid geometry", () => {
             rightSeam: "",
         });
         const tearPaths = createScrollTearRevealPaths(1440, 900, 1);
+        expect(createScrollTearRevealPaths(1440, 900, 1)).toEqual(tearPaths);
         const coordinates = pathCoordinates(tearPaths.fill);
         const xValues = coordinates.map(([x]) => x);
         const yValues = coordinates.map(([, y]) => y);
