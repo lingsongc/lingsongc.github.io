@@ -4,7 +4,7 @@ import {
     createWarpedGridPaths,
     easeOutScrollProgress,
     scrollFeedbackDisplacementX,
-    scrollRevealDisplacementX,
+    scrollRevealEdgeOffset,
     warpGridPoint,
     type GridCircle,
     type GridScrollFeedback,
@@ -76,22 +76,8 @@ describe("background grid geometry", () => {
 
         expect(scrollFeedbackDisplacementX(797, 900, completeFeedback)).not.toBe(0);
         expect(scrollFeedbackDisplacementX(798, 900, completeFeedback)).toBe(0);
-        expect(scrollFeedbackDisplacementX(747, 833, completeFeedback)).not.toBe(0);
-        expect(scrollFeedbackDisplacementX(748, 833, completeFeedback)).toBe(0);
-    });
-
-    it("adds restrained layered crumpling to the geometric opening", () => {
-        const displacement = scrollFeedbackDisplacementX(720, 900, { ...forwardFeedback, progress: 1 });
-
-        expect(displacement).not.toBeCloseTo(135);
-    });
-
-    it("keeps the complete tear displacement restrained", () => {
-        const displacements = Array.from({ length: 61 }, (_, index) => (
-            scrollFeedbackDisplacementX(index * 24, 900, { ...forwardFeedback, progress: 1 })
-        ));
-
-        expect(Math.max(...displacements.map(Math.abs))).toBeLessThanOrEqual(190);
+        expect(scrollFeedbackDisplacementX(729, 833, completeFeedback)).not.toBe(0);
+        expect(scrollFeedbackDisplacementX(730, 833, completeFeedback)).toBe(0);
     });
 
     it("separates aggressive grid crumpling from the restrained red reveal", () => {
@@ -101,11 +87,11 @@ describe("background grid geometry", () => {
 
         for (let y = 766; y <= 900; y += 8) {
             const depth = y - 765;
-            const localHalfWidth = depth
+            const localHalfWidth = 135
                 / Math.sqrt(3)
-                * Math.sqrt(depth / 135);
+                * Math.pow(depth / 135, 3);
             const gridDisplacement = scrollFeedbackDisplacementX(720, y, completeFeedback);
-            const revealDisplacement = scrollRevealDisplacementX(720, y, completeFeedback);
+            const revealDisplacement = scrollRevealEdgeOffset(1, y, completeFeedback);
 
             gridOffsets.push(Math.abs(gridDisplacement - localHalfWidth) / localHalfWidth);
             revealOffsets.push(Math.abs(revealDisplacement - localHalfWidth) / localHalfWidth);

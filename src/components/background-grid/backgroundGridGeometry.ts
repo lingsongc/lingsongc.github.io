@@ -10,20 +10,23 @@ export type GridScrollFeedback = {
     width: number;
 };
 
-export type ScrollTearRevealPaths = {
+type ScrollTearRevealPaths = {
     fill: string;
     leftSeam: string;
     rightSeam: string;
 };
 
-type ScrollTearPoint = {
-    direction: number;
+type ScrollTearProfile = {
     easedProgress: number;
     elasticStretch: number;
+    tearHalfWidth: number;
+    verticalInfluence: number;
+};
+
+type ScrollTearPoint = ScrollTearProfile & {
+    direction: -1 | 1;
     horizontalInfluence: number;
     influence: number;
-    triangleHalfWidth: number;
-    verticalInfluence: number;
 };
 
 const SAMPLE_STEP = 24;
@@ -88,8 +91,8 @@ export function createScrollTearRevealPaths(
     for (let index = 0; index <= sampleCount; index += 1) {
         const progress = index / sampleCount;
         const y = tipY + (edgeY - tipY) * progress;
-        const leftX = centerX + scrollRevealDisplacementX(centerX - 0.01, y, feedback);
-        const rightX = centerX + scrollRevealDisplacementX(centerX, y, feedback);
+        const leftX = centerX + scrollRevealEdgeOffset(-1, y, feedback);
+        const rightX = centerX + scrollRevealEdgeOffset(1, y, feedback);
         leftEdge.push(`${leftX.toFixed(1)} ${y.toFixed(1)}`);
         rightEdge.push(`${rightX.toFixed(1)} ${y.toFixed(1)}`);
     }
@@ -127,34 +130,38 @@ export function scrollFeedbackDisplacementX(
     const fold = (Math.abs(Math.sin(y * 0.08 + x * 0.05)) - 0.5) * GRID_FOLD_STRENGTH;
     const ripple = Math.sin(y * 0.2 + x * 0.1) * GRID_RIPPLE_STRENGTH;
     const noise = smoothNoise(point.verticalInfluence * 8 + x / 120, sideSeed) * GRID_NOISE_STRENGTH;
-    const crumpleLimit = point.triangleHalfWidth * GRID_CRUMPLE_LIMIT_RATIO;
+    const crumpleLimit = point.tearHalfWidth * GRID_CRUMPLE_LIMIT_RATIO;
     const crumple = clamp(fold + ripple + noise, -crumpleLimit, crumpleLimit)
         * point.influence
         * point.easedProgress
         * point.elasticStretch;
-    return tearOpeningX(point) + crumple;
+    const opening = point.direction
+        * point.tearHalfWidth
+        * Math.pow(point.horizontalInfluence, 1.35)
+        * point.elasticStretch;
+    return opening + crumple;
 }
 
-// Keeps the red reveal close to its concave silhouette independently of the grid crumple.
-export function scrollRevealDisplacementX(
-    x: number,
+// Resolves one red seam edge without relying on an offset from the viewport center.
+export function scrollRevealEdgeOffset(
+    direction: -1 | 1,
     y: number,
     feedback: GridScrollFeedback | null,
 ) {
-    const point = createScrollTearPoint(x, y, feedback);
-    if (!point) return 0;
+    const profile = createScrollTearProfile(y, feedback);
+    if (!profile) return 0;
 
-    const sideSeed = SCROLL_NOISE_SEED + (point.direction < 0 ? 7 : 43);
-    const fold = Math.sin(point.verticalInfluence * Math.PI * 5 + sideSeed);
-    const noise = smoothNoise(point.verticalInfluence * 7, sideSeed + 11);
+    const sideSeed = SCROLL_NOISE_SEED + (direction < 0 ? 7 : 43);
+    const fold = Math.sin(profile.verticalInfluence * Math.PI * 5 + sideSeed);
+    const noise = smoothNoise(profile.verticalInfluence * 7, sideSeed + 11);
     const crumplePattern = fold * REVEAL_FOLD_WEIGHT + noise * REVEAL_NOISE_WEIGHT;
     const crumple = crumplePattern
-        * point.triangleHalfWidth
+        * profile.tearHalfWidth
         * REVEAL_CRUMPLE_RATIO
-        * point.influence
-        * point.easedProgress
-        * point.elasticStretch;
-    return tearOpeningX(point) + crumple;
+        * profile.verticalInfluence
+        * profile.easedProgress
+        * profile.elasticStretch;
+    return direction * profile.tearHalfWidth * profile.elasticStretch + crumple;
 }
 
 // Front-loads visual growth without changing the linear logical wheel threshold.
@@ -187,6 +194,29 @@ function createScrollTearPoint(
     y: number,
     feedback: GridScrollFeedback | null,
 ): ScrollTearPoint | null {
+    const profile = createScrollTearProfile(y, feedback);
+    if (!profile || !feedback) return null;
+    const horizontalInfluence = clamp(
+        1 - Math.abs(x - feedback.width / 2) / profile.tearHalfWidth,
+        0,
+        1,
+    );
+    const influence = profile.verticalInfluence * horizontalInfluence;
+    if (influence === 0) return null;
+
+    return {
+        direction: x < feedback.width / 2 ? -1 : 1,
+        ...profile,
+        horizontalInfluence,
+        influence,
+    };
+}
+
+// Resolves the vertical tear profile shared by grid points and the two reveal edges.
+function createScrollTearProfile(
+    y: number,
+    feedback: GridScrollFeedback | null,
+): ScrollTearProfile | null {
     if (!feedback || feedback.progress === 0 || feedback.width <= 0 || feedback.height <= 0) return null;
 
     const rawProgress = Math.abs(feedback.progress);
@@ -198,34 +228,14 @@ function createScrollTearPoint(
     if (depthInsideTear === 0) return null;
 
     const verticalInfluence = depthInsideTear / tearHeight;
-    const triangleHalfWidth = tearHeight
-        * TEAR_HALF_BASE_RATIO
-        * Math.pow(verticalInfluence, TEAR_SIDE_CONCAVITY_EXPONENT);
-    const horizontalInfluence = clamp(
-        1 - Math.abs(x - feedback.width / 2) / triangleHalfWidth,
-        0,
-        1,
-    );
-    const influence = verticalInfluence * horizontalInfluence;
-    if (influence === 0) return null;
-
     return {
-        direction: x < feedback.width / 2 ? -1 : 1,
         easedProgress,
         elasticStretch,
-        horizontalInfluence,
-        influence,
-        triangleHalfWidth,
+        tearHalfWidth: tearHeight
+            * TEAR_HALF_BASE_RATIO
+            * Math.pow(verticalInfluence, TEAR_SIDE_CONCAVITY_EXPONENT),
         verticalInfluence,
     };
-}
-
-// Opens either layer inside the shared concave envelope.
-function tearOpeningX(point: ScrollTearPoint) {
-    return point.direction
-        * point.triangleHalfWidth
-        * Math.pow(point.horizontalInfluence, 1.35)
-        * point.elasticStretch;
 }
 
 // Produces stable interpolated noise so the tear stays irregular without flickering between frames.
@@ -267,7 +277,7 @@ function createLinePath(
         const crossesActiveSeam = !vertical
             && offset >= centerX
             && offset - SAMPLE_STEP < centerX
-            && scrollFeedbackDisplacementX(centerX, sourceY, scrollFeedback) !== 0;
+            && createScrollTearProfile(sourceY, scrollFeedback) !== null;
         points.push(`${points.length === 0 || crossesActiveSeam ? "M" : "L"}${x.toFixed(1)} ${y.toFixed(1)}`);
     }
 

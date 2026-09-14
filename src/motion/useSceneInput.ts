@@ -7,15 +7,15 @@ import {
     touchDragIntent, touchVerticalProgress, WHEEL_INTENT_PAUSE_MS, WHEEL_INTENT_THRESHOLD,
 } from "./sceneInputModel";
 
-const WHEEL_FEEDBACK_COMMIT_MS = 180;
-const WHEEL_FEEDBACK_FULL_REVEAL_MS = 140;
-const WHEEL_FEEDBACK_FULL_HOLD_MS = 60;
+const WHEEL_FEEDBACK_RESET_MS = 180;
+const WHEEL_FEEDBACK_EVENT_MS = 140;
+const WHEEL_FEEDBACK_HOLD_MS = 60;
 const WHEEL_FEEDBACK_RETURN_MS = 300;
 
 type SceneInputOptions = {
     activeScrollerRef: RefObject<HTMLDivElement | null>;
     currentSceneId: SceneId;
-    onWheelFeedbackChange: (progress: number, durationMs?: number) => void;
+    onWheelFeedbackChange: (progress: number, durationMs: number) => void;
     phase: ScenePhase;
     requestScene: (request: SceneRequest) => SceneRequestResult;
 };
@@ -54,7 +54,7 @@ export function useSceneInput({
         neutralTimerRef.current = undefined;
         wheelIntentRef.current = createWheelIntentState();
         touchGestureRef.current = null;
-        onWheelFeedbackChange(0, WHEEL_FEEDBACK_COMMIT_MS);
+        onWheelFeedbackChange(0, WHEEL_FEEDBACK_RESET_MS);
     }, [onWheelFeedbackChange]);
 
     // Clears pending timers and gesture state when the hook unmounts.
@@ -118,18 +118,18 @@ export function useSceneInput({
             const update = applyWheelIntent(wheelIntentRef.current, impulse, now);
             wheelIntentRef.current = update.state;
             if (!update.committedDirection) {
-                onWheelFeedbackChange(update.state.accumulation / WHEEL_INTENT_THRESHOLD);
+                onWheelFeedbackChange(update.state.accumulation / WHEEL_INTENT_THRESHOLD, WHEEL_FEEDBACK_EVENT_MS);
                 scheduleIntentExpiry();
                 return;
             }
             window.clearTimeout(intentTimerRef.current);
             const committedDirection = update.committedDirection;
-            onWheelFeedbackChange(committedDirection === "forward" ? 1 : -1, WHEEL_FEEDBACK_FULL_REVEAL_MS);
+            onWheelFeedbackChange(committedDirection === "forward" ? 1 : -1, WHEEL_FEEDBACK_EVENT_MS);
             commitTimerRef.current = window.setTimeout(() => {
                 commitTimerRef.current = undefined;
-                onWheelFeedbackChange(0, WHEEL_FEEDBACK_COMMIT_MS);
+                onWheelFeedbackChange(0, WHEEL_FEEDBACK_RESET_MS);
                 requestScene({ kind: "adjacent", direction: committedDirection, source: "wheel" });
-            }, WHEEL_FEEDBACK_FULL_REVEAL_MS + WHEEL_FEEDBACK_FULL_HOLD_MS);
+            }, WHEEL_FEEDBACK_EVENT_MS + WHEEL_FEEDBACK_HOLD_MS);
         };
 
         window.addEventListener("wheel", handleWheel, { passive: false });

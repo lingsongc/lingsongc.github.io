@@ -36,7 +36,7 @@ export default function App() {
     const previousScenePhaseRef = useRef<ScenePhase | null>(null);
     const previousSettledVersionRef = useRef(slideshow.settledVersion);
     // Keeps reduced-motion input still while forwarding ordinary wheel intent to the grid owner.
-    const updateWheelFeedback = useCallback((progress: number, durationMs?: number) => {
+    const updateWheelFeedback = useCallback((progress: number, durationMs: number) => {
         backgroundGridRef.current?.setScrollFeedback(
             slideshow.reducedMotion ? 0 : progress,
             slideshow.reducedMotion ? 0 : durationMs,

@@ -4,7 +4,6 @@ import { createScrollTearRevealPaths, createWarpedGridPaths } from "./background
 
 const GRID_SPACING = 48;
 const SVG_NAMESPACE = "http://www.w3.org/2000/svg";
-const FEEDBACK_EPSILON = 0.001;
 const FEEDBACK_BACK_OVERSHOOT = 1.7;
 const TEAR_EDGE_FADE_BLUR = 16;
 const TEAR_EDGE_FADE_STROKE = 32;
@@ -14,7 +13,7 @@ type BackgroundGridProps = {
 };
 
 export type BackgroundGridHandle = {
-    setScrollFeedback: (progress: number, durationMs?: number) => void;
+    setScrollFeedback: (progress: number, durationMs: number) => void;
 };
 
 type FeedbackAnimation = {
@@ -30,17 +29,18 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
     ref,
 ) {
     const linesRef = useRef<SVGGElement>(null);
-    const tearRevealRef = useRef<SVGPathElement>(null);
-    const tearMaskFillRef = useRef<SVGPathElement>(null);
+    const tearPathRef = useRef<SVGPathElement>(null);
     const tearMaskLeftRef = useRef<SVGPathElement>(null);
     const tearMaskRightRef = useRef<SVGPathElement>(null);
     const fadeCircleRef = useRef<SVGCircleElement>(null);
     const feedbackAnimationRef = useRef<FeedbackAnimation | null>(null);
     const feedbackFrameRef = useRef<number | undefined>(undefined);
     const feedbackProgressRef = useRef(0);
-    const renderRef = useRef<() => void>(() => undefined);
+    const renderRef = useRef<(() => void) | null>(null);
+    const renderSignatureRef = useRef("");
     const filterId = useId();
     const maskId = useId();
+    const tearPathId = useId();
     const tearEdgeFilterId = useId();
     const tearMaskId = useId();
 
@@ -55,23 +55,34 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
         const easedProgress = Math.abs(animation.to) === 1
             ? easeOutBack(timeProgress)
             : 1 - Math.pow(1 - timeProgress, 3);
-        feedbackProgressRef.current = animation.from
-            + (animation.to - animation.from) * easedProgress;
-        renderRef.current();
+        feedbackProgressRef.current = timeProgress === 1
+            ? animation.to
+            : animation.from + (animation.to - animation.from) * easedProgress;
+        renderRef.current?.();
 
         if (timeProgress < 1) {
             feedbackFrameRef.current = requestAnimationFrame(animateScrollFeedback);
             return;
         }
-        feedbackProgressRef.current = Math.abs(animation.to) < FEEDBACK_EPSILON ? 0 : animation.to;
         feedbackAnimationRef.current = null;
         feedbackFrameRef.current = undefined;
     }, []);
 
     useImperativeHandle(ref, () => ({
-        setScrollFeedback(progress, durationMs = 140) {
+        setScrollFeedback(progress, durationMs) {
             const target = Math.min(1, Math.max(-1, progress));
+            const activeAnimation = feedbackAnimationRef.current;
+            if (activeAnimation?.to === target && activeAnimation.durationMs === durationMs) return;
+            if (!activeAnimation && feedbackProgressRef.current === target) return;
+
             cancelAnimationFrame(feedbackFrameRef.current ?? 0);
+            if (durationMs <= 0) {
+                feedbackAnimationRef.current = null;
+                feedbackFrameRef.current = undefined;
+                feedbackProgressRef.current = target;
+                renderRef.current?.();
+                return;
+            }
             feedbackAnimationRef.current = {
                 durationMs,
                 from: feedbackProgressRef.current,
@@ -89,11 +100,10 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
     useEffect(() => {
         const lines = linesRef.current;
         const fadeCircle = fadeCircleRef.current;
-        const tearReveal = tearRevealRef.current;
-        const tearMaskFill = tearMaskFillRef.current;
+        const tearPath = tearPathRef.current;
         const tearMaskLeft = tearMaskLeftRef.current;
         const tearMaskRight = tearMaskRightRef.current;
-        if (!lines || !fadeCircle || !tearReveal || !tearMaskFill || !tearMaskLeft || !tearMaskRight) return;
+        if (!lines || !fadeCircle || !tearPath || !tearMaskLeft || !tearMaskRight) return;
 
         const pathElements = [...lines.querySelectorAll<SVGPathElement>("path")];
         const circle = circleGeometry ? {
@@ -108,8 +118,8 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
                 : "static";
             const feedbackSignature = feedbackProgressRef.current.toFixed(4);
             const signature = `${innerWidth}:${innerHeight}:${circleSignature}:${feedbackSignature}`;
-            if (lines.dataset.signature !== signature) {
-                lines.dataset.signature = signature;
+            if (renderSignatureRef.current !== signature) {
+                renderSignatureRef.current = signature;
                 const pathData = createWarpedGridPaths(
                     innerWidth,
                     innerHeight,
@@ -122,8 +132,7 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
                     innerHeight,
                     feedbackProgressRef.current,
                 );
-                tearReveal.setAttribute("d", tearPaths.fill);
-                tearMaskFill.setAttribute("d", tearPaths.fill);
+                tearPath.setAttribute("d", tearPaths.fill);
                 tearMaskLeft.setAttribute("d", tearPaths.leftSeam);
                 tearMaskRight.setAttribute("d", tearPaths.rightSeam);
 
@@ -152,7 +161,7 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
         document.addEventListener("visibilitychange", handleVisibilityChange);
         return () => {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
-            if (renderRef.current === render) renderRef.current = () => undefined;
+            if (renderRef.current === render) renderRef.current = null;
         };
     }, [circleGeometry]);
 
@@ -169,12 +178,14 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
                         <circle ref={fadeCircleRef} fill="black" filter={`url(#${filterId})`} />
                     </mask>
 
+                    <path ref={tearPathRef} id={tearPathId} />
+
                     <filter id={tearEdgeFilterId} x="-100%" y="-20%" width="300%" height="140%">
                         <feGaussianBlur stdDeviation={TEAR_EDGE_FADE_BLUR} />
                     </filter>
 
                     <mask id={tearMaskId} maskUnits="userSpaceOnUse">
-                        <path ref={tearMaskFillRef} fill="white" />
+                        <use href={`#${tearPathId}`} fill="white" />
                         <g
                             fill="none"
                             stroke="black"
@@ -188,8 +199,8 @@ export const BackgroundGrid = forwardRef<BackgroundGridHandle, BackgroundGridPro
                     </mask>
                 </defs>
 
-                <path
-                    ref={tearRevealRef}
+                <use
+                    href={`#${tearPathId}`}
                     className="background-grid-tear-reveal"
                     mask={`url(#${tearMaskId})`}
                 />
